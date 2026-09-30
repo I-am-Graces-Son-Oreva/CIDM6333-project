@@ -61,3 +61,21 @@
 - Cost: The agent loses useful write capabilities and cannot access repositories outside those allowed by the fine-grained PAT.
 - Failure mode: Untrusted content could still reach the agent through another path that is not blocked by the chosen settings.
 - Preservation: The restricted fine-grained PAT limits what repository data the agent can access, and read-only mode limits its ability to write data out through GitHub.
+
+## Nine-Component Design Analysis
+
+| Component | GitHub MCP Server Analysis |
+|---|---|
+| Foundation | The system uses an AI model connected to GitHub through the GitHub MCP server, with GitHub authentication controlling repository access. |
+| Perception | The agent can receive repository content through tools such as `issue_read`, `get_file_contents`, and `pull_request_read`. This can include text written by strangers, so untrusted public content can enter the model's context. Lockdown mode reduces this exposure by limiting content surfaced from public repositories. |
+| Planning & reasoning | The model can combine multiple tool calls into a sequence, including reading an issue, accessing repository data, and deciding what action to take next. |
+| Tools & orchestration | GitHub MCP provides both read and write tools. A dangerous combination is a private read path together with a public write path. A restricted fine-grained PAT limits which repositories can be accessed, while `--read-only` removes write capabilities. |
+| Memory & context | Private repository data returned by a tool can enter the model's working context and may remain available while later actions are planned. |
+| Coordination | The workflow coordinates the model, GitHub MCP server, GitHub permissions, and the human operator. Security should not depend only on the model following instructions; the MCP configuration and GitHub permissions should constrain what the agent can actually do. |
+| Evaluation & feedback | I would check whether untrusted public content can reach the agent, whether repositories outside the PAT scope can be read, and whether a GitHub write path remains available. |
+| Governance & human | I would use lockdown mode, a fine-grained PAT restricted to only necessary repositories, and read-only mode. These controls preserve human authority by limiting what the agent can access and change instead of relying only on instructions given to the model. |
+| Runtime & operations | The server configuration and token permissions should remain restricted while the agent is running, and the settings should be checked before granting broader access. |
+
+## Connection Decision
+
+I would connect the GitHub MCP server only with restricted settings. I would use lockdown mode, a fine-grained PAT limited to only the repositories the agent needs, and read-only mode when write access is not necessary. These settings reduce the attack path examined in this lab by limiting untrusted public content, restricting access to private repository data, and removing GitHub write paths. The cost is that the agent loses useful capabilities such as creating, modifying, or merging GitHub content. I would not rely only on an instruction telling the model not to reveal private data because the configuration outside the model should enforce the boundary.
