@@ -1,0 +1,20 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "notes": {
+      "type": "local",
+      "command": [
+        "uv",
+        "run",
+        "--with",
+        "mcp",
+        "python",
+        "/Users/orevisco/CIDM6333-project/evolution-05/lab/notes_server.py"
+      ],
+            "enabled": true
+    }
+  },
+  "permission": {
+    "notes_write_note": "deny"
+  }
+}
