@@ -2,3 +2,18 @@
 {"time": "2026-11-07 20:13:07", "event": "read_success", "tool": "read_note", "name": "welcome", "subject": "honest-client", "validated_scopes": ["notes:read"], "success": true}
 {"time": "2026-11-08 12:03:38", "event": "write_denied", "tool": "write_note", "name": "unauthorized-test", "subject": "red-client", "validated_scopes": ["notes:read"]}
 {"time": "2026-11-08 12:10:48", "event": "write_denied", "tool": "write_note", "name": "forged-scope-test", "subject": "red-client", "validated_scopes": ["notes:read"]}
+{"time": "2026-11-08 12:45:28", "event": "scope_denied", "tool": null, "reason": "tool_not_in_scope_table"}
+{"time": "2026-11-08 12:48:12", "event": "scope_denied", "tool": null, "reason": "tool_not_in_scope_table"}
+{"time": "2026-11-08 12:50:27", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 12:53:10", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 12:53:10", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 12:53:10", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 12:58:05", "event": "read_success", "tool": "read_note", "name": "welcome", "subject": "honest-client", "validated_scopes": ["notes:read"], "success": true}
+{"time": "2026-11-08 12:58:42", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 12:59:29", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 12:59:29", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 12:59:29", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 13:20:08", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 13:20:08", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 13:20:08", "event": "scope_denied", "tool": "write_note", "subject": "red-client", "required_scope": "notes:write", "validated_scopes": ["notes:read"], "reason": "insufficient_scope"}
+{"time": "2026-11-08 13:20:08", "event": "token_denied", "subject": "wrong-audience-client", "audience": "http://wrong-audience.example/mcp", "reason": "wrong_audience"}

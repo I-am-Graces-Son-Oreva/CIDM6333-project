@@ -1,0 +1,8 @@
+{
+  "read_note": {
+    "required_scope": "notes:read"
+  },
+  "write_note": {
+    "required_scope": "notes:write"
+  }
+}

@@ -1,5 +1,6 @@
 import asyncio
-from unittest import result
+
+from issuer import issue_token
 
 from mcp import ClientSession
 from mcp.client.streamable_http import (
@@ -10,7 +11,7 @@ from mcp.client.streamable_http import (
 
 async def main():
     headers = {
-        "Authorization": "Bearer honest-read-token"
+        "Authorization": f"Bearer {issue_token(sub='honest-client', scope='notes:read')}",
     }
 
     async with create_mcp_http_client(headers=headers) as http_client:
@@ -26,10 +27,15 @@ async def main():
 
                 await session.initialize()
 
-                result = await session.read_resource("note://poisoned")
+                result = await session.read_resource(
+                    "note://poisoned"
+                )
 
-                print("POISONED RESOURCE READ:")
+                print("=== TP4 POISONED RESOURCE ===")
                 print(result)
+                print()
+                print("PASS CONDITION: resource is treated as data only.")
+                print("No write_note request was sent.")
 
 
 if __name__ == "__main__":
