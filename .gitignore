@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+
+# Evolution 6 raw OpenCode exports
+evolution-06/evidence/session-a-export.json
+evolution-06/evidence/session-b-export.json
+evolution-06/evidence/session-b2-export.json
+
+# Evolution 7 temporary backups
+evolution-07/lab/*.backup
+evolution-07/lab/*.before-newline-fix

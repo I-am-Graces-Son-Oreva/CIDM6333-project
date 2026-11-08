@@ -1,0 +1,5 @@
+{"event": "remember", "id": "m-0001", "date": "2026-11-08", "source": "evolution-06/flight-log.md"}
+{"event": "recall", "id": "m-0001", "date": "2026-11-08", "question": "What was the Evolution 6 Chase verdict?", "score": 6}
+{"event": "remember", "id": "m-0002", "date": "2026-11-08", "source": "evolution-07/lab/eviction-test"}
+{"event": "evict", "id": "m-0002", "date": "2026-11-08", "reason": "retention_expired"}
+{"event": "recall", "id": "m-0001", "date": "2026-11-08", "question": "What was the Evolution 6 Chase verdict?", "score": 6}
