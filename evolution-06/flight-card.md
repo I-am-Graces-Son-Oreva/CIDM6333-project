@@ -249,12 +249,12 @@ The Chase does not rely on the author's summary.
 
 ## GO / NO-GO
 
-**Status: AWAITING CHASE REVIEW**
+**Status: GO — CHASE APPROVED**
 
 No official Sortie 6 flight begins before Chase GO.
 
 ### Chase Review
 
-Verdict: PENDING
+Verdict: GO
 
-Reason: PENDING
+Reason: Flight Card reviewed; test points, evidence, falsifiers, and abort conditions are sufficiently defined to fly.
