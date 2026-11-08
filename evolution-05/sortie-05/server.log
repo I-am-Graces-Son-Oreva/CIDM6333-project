@@ -1,0 +1,4 @@
+{"time": "2026-11-07 20:05:34", "event": "tool_call", "tool": "read_note", "name": "welcome"}
+{"time": "2026-11-07 20:13:07", "event": "read_success", "tool": "read_note", "name": "welcome", "subject": "honest-client", "validated_scopes": ["notes:read"], "success": true}
+{"time": "2026-11-08 12:03:38", "event": "write_denied", "tool": "write_note", "name": "unauthorized-test", "subject": "red-client", "validated_scopes": ["notes:read"]}
+{"time": "2026-11-08 12:10:48", "event": "write_denied", "tool": "write_note", "name": "forged-scope-test", "subject": "red-client", "validated_scopes": ["notes:read"]}
