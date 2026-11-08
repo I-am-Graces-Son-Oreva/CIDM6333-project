@@ -301,3 +301,63 @@ I also kept the official Sortie 5 evidence separate from the earlier MCP poisoni
 The main thing I learned is that a client should not be able to give itself more authority by putting a stronger scope in a header, body, or tool argument. The server must validate authorization itself before allowing a protected action.
 
 The flight results supported this design: the honest read succeeded, unauthorized and forged write attempts were denied, the poisoned resource caused no write, the write ledger stayed unchanged, and the wrong-audience request returned HTTP 401.
+
+
+---
+
+## Evolution 6 — Context Engineering
+
+**Date:** November 8, 2026
+
+**Model:** ChatGPT
+
+**Interface:** ChatGPT web interface
+
+**AI response:**
+ChatGPT helped me translate the Evolution 6 Flight Card into a small context
+engineering implementation. It helped me build tests for the budget meter,
+compactor keep list, seven-section handoff, resume loader, and L1/L2/L3
+precedence rule.
+
+ChatGPT also helped me inspect an OpenCode Session A export without treating
+the visible TUI context number as sufficient evidence. The export showed six
+user turns but twelve actual model calls, so I recorded provider usage at the
+model-call level.
+
+For the resume test, ChatGPT helped me create a handoff with one concrete first
+action and then start a separate OpenCode Session B without Session A's
+transcript. Session B followed the handoff correctly.
+
+A deliberately stale L3 status view was also tested against the append-only L2
+ledger.
+
+**My decision:** Accepted with testing and evidence.
+
+**What I accepted:**
+I accepted the design where important context moves to durable files, each
+model call has measurable budget evidence, compaction has a declared keep
+list, and a fresh session resumes from a structured handoff.
+
+I also accepted the precedence rule:
+
+`L2 ledger > L1 canon > L3 derived views`
+
+**What I modified or rejected:**
+I did not treat the OpenCode TUI context number as proof of my own budget
+meter. I used the exported provider usage fields instead.
+
+I also did not claim that OpenCode automatically compacted at my declared
+6,400-token threshold. The controlled Sprint compaction was tested separately
+in my own implementation.
+
+The raw OpenCode session exports are not intended for the repository because
+they may contain repository file contents.
+
+**Why:**
+The main thing I learned is that an agent's conversation is not a reliable
+long-term source of truth. Important state needs to survive outside the
+temporary context window.
+
+The fresh-session test made this clear: Session B could continue the work
+without Session A's transcript because the important state had been written to
+the handoff and runtime ledger.

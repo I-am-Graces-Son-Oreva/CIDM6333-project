@@ -1,0 +1,13 @@
+COMPACTED SESSION
+Older disposable conversation and tool detail removed.
+Declared keep list follows verbatim:
+Complete Sortie 6 and prove that a fresh session can resume from the handoff without loss of intent.
+Open test point.
+Exact next action.
+AGENTS.md
+evolution-06/flight-card.md
+README.md
+evolution-06/runtime-ledger.jsonl
+L2 ledger outranks L1 canon.
+L1 canon outranks L3 derived views.
+A stale L3 view cannot block or override the ledger.
