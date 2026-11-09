@@ -1,7 +1,12 @@
 # Evolution 7 — Chase Independent Preflight Handoff
 
 ## Status
-AWAITING INDEPENDENT CHASE REVIEW — NO GO CLAIMED.
+CHASE NO-GO CORRECTIONS IN PROGRESS — PREVIOUS NO-GO REMAINS VALID.
+
+The implementation now fails closed on existing sandbox, private, sidecar,
+and OpenCode data paths; preserves existing ledgers; and includes a synthetic-
+validated capture command. These changes are uncommitted and require a
+separate independent Chase re-review. No GO or PASS is claimed.
 
 ## Code and evidence
 - Implementation commit: 6755cce

@@ -38,6 +38,7 @@ from src.e7_memory.conditions import (
     tp5_isolation,
     verify_on_event,
 )
+from src.e7_memory.capture import capture_evidence
 from src.e7_memory.fixture import FIXTURE_PATH, claim_text, load_fixture
 from src.e7_memory.preflight import run_preflight
 from src.e7_memory.sandbox import probe, sandbox_available
@@ -617,6 +618,156 @@ def test_launch_scripts_use_fresh_data_dir_and_sandbox(tmp_path):
     assert str(Path.home() / ".local" / "share" / "opencode") in on_profile
     assert str((tmp_path / "private").resolve()) in on_profile
     assert str((tmp_path / "on.private.json").resolve()) in on_profile
+
+
+def test_off_builder_fails_closed_when_sandbox_exists(tmp_path):
+    sandbox = tmp_path / "off"
+    sandbox.mkdir()
+    marker = sandbox / "prior-session.txt"
+    marker.write_text("preserve me", encoding="utf-8")
+
+    with pytest.raises(FileExistsError, match="sandbox target already exists"):
+        build_off_sandbox(sandbox)
+
+    assert marker.read_text(encoding="utf-8") == "preserve me"
+    assert sorted(path.name for path in sandbox.iterdir()) == [
+        "prior-session.txt"
+    ]
+
+
+def test_on_builder_preserves_existing_private_ledger(tmp_path):
+    private = tmp_path / "private"
+    private.mkdir()
+    ledger = private / "fixture-memory-ledger.jsonl"
+    original = '{"event":"recall","evidence":"prior"}\n'
+    ledger.write_text(original, encoding="utf-8")
+
+    with pytest.raises(FileExistsError, match="private target already exists"):
+        build_on_sandbox(tmp_path / "on", private)
+
+    assert ledger.read_text(encoding="utf-8") == original
+    assert not (tmp_path / "on").exists()
+
+
+def test_launch_script_rejects_preexisting_data_directory(tmp_path):
+    sandbox = tmp_path / "off"
+    build_off_sandbox(sandbox)
+    data = sandbox / "data"
+    data.mkdir()
+    marker = data / "prior.db"
+    marker.write_text("prior session", encoding="utf-8")
+
+    result = subprocess.run(
+        [str(sandbox / "launch.sh"), "synthetic prompt"],
+        cwd=sandbox,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "Refusing to reuse OpenCode data directory" in result.stderr
+    assert marker.read_text(encoding="utf-8") == "prior session"
+
+
+def test_synthetic_capture_records_complete_immutable_evidence(tmp_path):
+    synthetic = tmp_path / "synthetic.py"
+    synthetic.write_text(
+        "import json\n"
+        "print(json.dumps({'type': 'tool_use', 'part': "
+        "{'tool': 'bash', 'state': {'input': {'command': 'synthetic'}}}}))\n"
+        "print(json.dumps({'type': 'text', 'part': "
+        "{'text': 'Not in memory.'}}))\n",
+        encoding="utf-8",
+    )
+    ledger = tmp_path / "recall-ledger.jsonl"
+    ledger.write_text(
+        '{"event":"recall","schema":"e7-memory-v2"}\n',
+        encoding="utf-8",
+    )
+    store = tmp_path / "store.jsonl"
+    store.write_text('{"id":"m-synthetic"}\n', encoding="utf-8")
+    output = tmp_path / "capture-tp1"
+
+    manifest = capture_evidence(
+        output,
+        condition="memory-off",
+        test_point="TP1-synthetic",
+        command=[sys.executable, str(synthetic)],
+        recall_ledger=ledger,
+        hash_paths=[store, ledger],
+    )
+
+    assert (output / "opencode-events.jsonl").read_text(
+        encoding="utf-8"
+    ).count("\n") == 2
+    assert (output / "verbatim-answer.txt").read_text(
+        encoding="utf-8"
+    ) == "Not in memory.\n"
+    tool_events = (output / "tool-trace.jsonl").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    assert len(tool_events) == 1
+    assert json.loads(tool_events[0])["type"] == "tool_use"
+    assert (output / "recall-events.jsonl").read_bytes() == ledger.read_bytes()
+    assert manifest["command"][0] == sys.executable
+    assert manifest["condition"] == "memory-off"
+    assert manifest["test_point"] == "TP1-synthetic"
+    assert manifest["returncode"] == 0
+    assert manifest["hashes_before"] == manifest["hashes_after"]
+    assert set(manifest["artifact_sha256"]) >= {
+        "opencode-events.jsonl",
+        "verbatim-answer.txt",
+        "tool-trace.jsonl",
+        "recall-events.jsonl",
+    }
+
+    with pytest.raises(FileExistsError, match="evidence target already exists"):
+        capture_evidence(
+            output,
+            condition="memory-off",
+            test_point="TP1-synthetic",
+            command=[sys.executable, str(synthetic)],
+        )
+
+
+def test_capture_cli_uses_synthetic_command_without_opencode(tmp_path):
+    synthetic = tmp_path / "emit.py"
+    synthetic.write_text(
+        "import json\n"
+        "print(json.dumps({'type': 'text', 'part': {'text': '4'}}))\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "tp3-off"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.e7_memory",
+            "capture",
+            "--output",
+            str(output),
+            "--condition",
+            "memory-off",
+            "--test-point",
+            "TP3-OFF-synthetic",
+            "--",
+            sys.executable,
+            str(synthetic),
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (output / "verbatim-answer.txt").read_text(
+        encoding="utf-8"
+    ) == "4\n"
+    manifest = json.loads(result.stdout)
+    assert manifest["test_point"] == "TP3-OFF-synthetic"
 
 
 def test_fixture_source_matches_private_location():

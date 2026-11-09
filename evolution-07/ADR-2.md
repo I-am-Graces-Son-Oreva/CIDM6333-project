@@ -1,6 +1,6 @@
 # ADR-2: Memory Retrieval, State, Eviction, and Retention
 
-Status: Implemented locally — preflight corrections applied; official sortie pending re-review
+Status: Implemented locally — Chase NO-GO corrections pending independent re-review
 Date: 2026-11-08
 
 ## Context
@@ -100,9 +100,12 @@ directory, and the real OpenCode data directory. The generated
 `opencode.json` uses the OpenCode 1.18.20 V1 `permission` key (not the
 V2 `permissions` key) to deny `read`, `glob`, `grep`, `list`, `bash`,
 `task`, `skill`, `webfetch`, `websearch`, `edit`, and `todowrite`.
-Every launch script also sets a fresh `XDG_DATA_HOME` and
-`OPENCODE_DB` inside the sandbox so the session does not reuse the real
-OpenCode log or database. The real data directory is denied because
+Every builder requires nonexistent sandbox and private targets. Every launch
+script also sets `XDG_DATA_HOME` and `OPENCODE_DB` inside the sandbox and fails
+closed if the data directory already exists, so neither an earlier isolated
+session nor the real OpenCode log or database can be reused. Existing private
+paths and ledgers are preserved and cause the builder to stop; they are never
+deleted or truncated. The real data directory is denied because
 its log file contains a copy of the private passphrase from an earlier
 interactive session.
 
@@ -166,6 +169,15 @@ not claimed as passed. The enforcement evidence is the operating-system
 sandbox denial output plus a test that the installed OpenCode binary
 accepts and preserves the generated V1 `permission` configuration.
 
+Official evidence capture uses `python3 -m src.e7_memory capture` with a
+unique nonexistent output path and an OpenCode launch command containing
+`--format json`. The capture preserves raw JSON events and standard error,
+derives the verbatim text answer and tool-event trace, optionally copies the
+private recall ledger, records relevant before/after file hashes, and writes
+an artifact-hash manifest. It refuses to overwrite an existing capture path.
+A synthetic event producer tests this procedure without invoking a model; that
+test output is not official sortie evidence.
+
 TP5 eviction uses a temporary copy of the store and ledger. Before and
 after snapshots verify that eviction does not modify the official
 memory files.
@@ -205,14 +217,15 @@ Local pytest results for the memory implementation:
 
 - `tests/test_e7_memory.py`: 8 tests passed, including the structured
   `query()` result path used by the localhost service.
-- `tests/test_e7_isolation.py`: 19 tests passed, including real
+- `tests/test_e7_isolation.py`: 24 tests passed, including real
   sandbox-denial probes, cross-condition private-artifact denial,
   absence-aware probe handling, ON private-store and sidecar denial,
   threshold rejection, generated-config compatibility with the
   installed OpenCode binary, launch-script contents, the `serve-on`
   CLI path used by `launch.sh`, lifecycle reachability, fixture-source
-  consistency, TP5, and historical-ledger preservation.
-- Full suite: 32 tests passed = 19 E7 isolation + 8 E7 memory + 5 E6
+  consistency, TP5, historical-ledger preservation, fail-closed fresh paths,
+  and synthetic evidence capture without a model call.
+- Full suite: 37 tests passed = 24 E7 isolation + 8 E7 memory + 5 E6
   context tests.
 
 Preflight isolation evidence:
@@ -225,7 +238,8 @@ Sortie 7 memory-OFF/memory-ON comparison has not yet been performed.
 
 ## Remaining Work
 
-- Obtain a new Chase preflight review after the corrections are committed.
+- Obtain a new independent Chase preflight review after these uncommitted
+  corrections receive human review and are committed.
 - Obtain Chase GO before the official sortie.
 - Run memory-OFF and memory-ON comparisons with the corrected sandboxes.
 - Verify absent-question, control-question, and eviction behavior.

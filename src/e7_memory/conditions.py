@@ -451,7 +451,12 @@ def probes_ok(probes):
 def build_off_sandbox(sandbox, manifest_path=None, private_paths=()):
     require_sandbox()
     sandbox = Path(sandbox)
-    sandbox.mkdir(parents=True, exist_ok=True)
+    try:
+        sandbox.mkdir(parents=True, exist_ok=False)
+    except FileExistsError as exc:
+        raise FileExistsError(
+            f"sandbox target already exists: {sandbox}"
+        ) from exc
 
     (sandbox / "question-recall.txt").write_text(
         QUESTION_RECALL + "\n",
@@ -547,15 +552,26 @@ def build_on_sandbox(sandbox, private_dir, manifest_path=None,
     require_sandbox()
     sandbox = Path(sandbox)
     private_dir = Path(private_dir)
-    sandbox.mkdir(parents=True, exist_ok=True)
-    private_dir.mkdir(parents=True, exist_ok=True)
+    if sandbox.exists():
+        raise FileExistsError(
+            f"sandbox target already exists: {sandbox}"
+        )
+    if private_dir.exists():
+        raise FileExistsError(
+            f"private target already exists: {private_dir}"
+        )
+    sidecar = sidecar_path(sandbox)
+    if sidecar.exists():
+        raise FileExistsError(
+            f"private sidecar already exists: {sidecar}"
+        )
+    sandbox.mkdir(parents=True, exist_ok=False)
+    private_dir.mkdir(parents=True, exist_ok=False)
 
     fixture = load_fixture()
     store = private_dir / "fixture-memory.jsonl"
     ledger = private_dir / "fixture-memory-ledger.jsonl"
 
-    if ledger.exists():
-        ledger.unlink()
     build_fixture_store(store, fixture)
 
     port = free_port()

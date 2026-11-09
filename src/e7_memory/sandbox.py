@@ -132,6 +132,13 @@ def write_launch_script(path, sandbox, serve=False):
         f'HERE="{sandbox}"',
         'export XDG_DATA_HOME="$HERE/data"',
         'export OPENCODE_DB="$XDG_DATA_HOME/opencode.db"',
+        'if [ -e "$XDG_DATA_HOME" ]; then',
+        (
+            '  echo "Refusing to reuse OpenCode data directory: '
+            '$XDG_DATA_HOME" >&2'
+        ),
+        "  exit 73",
+        "fi",
         'mkdir -p "$XDG_DATA_HOME"',
     ]
 

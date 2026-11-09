@@ -1,3 +1,4 @@
+from .capture import capture_evidence
 from .conditions import (
     CONTROL_AGENT_ANSWER,
     LEDGER_SCHEMA,
@@ -40,6 +41,7 @@ __all__ = [
     "build_on_sandbox",
     "claim_hash",
     "claim_text",
+    "capture_evidence",
     "isolation_probes",
     "load_fixture",
     "opencode_config",

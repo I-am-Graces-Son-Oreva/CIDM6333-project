@@ -3,6 +3,7 @@ import json
 import sys
 from pathlib import Path
 
+from .capture import capture_evidence
 from .conditions import (
     QUESTION_RECALL,
     build_off_sandbox,
@@ -59,6 +60,14 @@ def main(argv=None):
 
     preflight = subparsers.add_parser("preflight")
     preflight.add_argument("--evidence-dir", required=True)
+
+    capture = subparsers.add_parser("capture")
+    capture.add_argument("--output", required=True)
+    capture.add_argument("--condition", required=True)
+    capture.add_argument("--test-point", required=True)
+    capture.add_argument("--recall-ledger")
+    capture.add_argument("--hash", action="append", default=[])
+    capture.add_argument("capture_command", nargs=argparse.REMAINDER)
 
     args = parser.parse_args(argv)
 
@@ -169,6 +178,23 @@ def main(argv=None):
             and tp5_data["recall_returns_not_in_memory"]
         )
         return 0 if checks else 1
+
+    if args.command == "capture":
+        command = args.capture_command
+        if command and command[0] == "--":
+            command = command[1:]
+        if not command:
+            parser.error("capture requires a command after --")
+        manifest = capture_evidence(
+            args.output,
+            condition=args.condition,
+            test_point=args.test_point,
+            command=command,
+            recall_ledger=args.recall_ledger,
+            hash_paths=args.hash,
+        )
+        print(json.dumps(manifest, indent=2, sort_keys=True))
+        return manifest["returncode"]
 
     return 2
 

@@ -1,6 +1,6 @@
 # Evolution 7 — Flight Card 7
 
-Status: DRAFT — Preflight corrections applied; awaiting Chase re-review
+Status: DRAFT — Chase NO-GO corrections implemented; awaiting independent re-review
 Date: 2026-11-08
 
 ## Mission
@@ -93,15 +93,23 @@ must not be represented as official sortie evidence.
 
 ## Operational Procedures
 
+Allocate a unique run root. `mktemp -d` creates a new directory and fails
+rather than selecting a previous run. Builders also reject any existing
+sandbox, private directory, or sidecar target.
+
+```
+E7_RUN_ROOT=$(mktemp -d /tmp/e7-sortie.XXXXXX)
+```
+
 Build the memory-OFF sandbox:
 
 ```
 python3 -m src.e7_memory build-off \
-  --sandbox /tmp/e7-off \
-  --manifest /tmp/e7-off-manifest.json \
-  --deny /tmp/e7-on \
-  --deny /tmp/e7-on-private \
-  --deny /tmp/e7-on.private.json
+  --sandbox "$E7_RUN_ROOT/off" \
+  --manifest "$E7_RUN_ROOT/off-manifest.json" \
+  --deny "$E7_RUN_ROOT/on" \
+  --deny "$E7_RUN_ROOT/on-private" \
+  --deny "$E7_RUN_ROOT/on.private.json"
 ```
 
 The builder always denies `/tmp/e7-artifacts` and any existing `/tmp/e7-*`
@@ -112,20 +120,69 @@ Build the memory-ON sandbox and private fixture store and ledger:
 
 ```
 python3 -m src.e7_memory build-on \
-  --sandbox /tmp/e7-on \
-  --private /tmp/e7-on-private \
-  --manifest /tmp/e7-on-manifest.json \
-  --deny /tmp/e7-off
+  --sandbox "$E7_RUN_ROOT/on" \
+  --private "$E7_RUN_ROOT/on-private" \
+  --manifest "$E7_RUN_ROOT/on-manifest.json" \
+  --deny "$E7_RUN_ROOT/off"
 ```
 
 The ON profile denies its own private directory, store, ledger, and sidecar,
-plus the OFF sandbox and the discovered E7 artifact roots.
+plus the OFF sandbox and the discovered E7 artifact roots. The builder never
+deletes an existing ledger: an existing private path is a hard error.
 
 Each build writes `opencode.json` using the OpenCode 1.18.20 V1
 `permission` key, `sandbox.sb` using the Seatbelt profile, and `launch.sh`.
-The launch script sets a fresh `XDG_DATA_HOME` and `OPENCODE_DB` inside the
-sandbox, starts the ON service when needed, and runs OpenCode under
-`/usr/bin/sandbox-exec`.
+The launch script sets `XDG_DATA_HOME` and `OPENCODE_DB` inside the sandbox,
+refuses to launch if that data directory already exists, starts the ON service
+when needed, and runs OpenCode under `/usr/bin/sandbox-exec`.
+
+### Reproducible evidence capture
+
+For each condition and test point, use a distinct output directory that does
+not already exist. The capture command refuses overwrite, invokes the launch
+script with OpenCode's raw JSON event format, preserves standard error, derives
+the verbatim text answer and tool-event trace, copies the recall ledger when
+provided, and records SHA-256 hashes before and after the run.
+
+Memory-OFF example:
+
+```
+python3 -m src.e7_memory capture \
+  --output "$E7_RUN_ROOT/evidence/tp1-off" \
+  --condition memory-off \
+  --test-point TP1 \
+  --hash evolution-07/lab/memory.jsonl \
+  --hash evolution-07/lab/memory-ledger.jsonl \
+  -- "$E7_RUN_ROOT/off/launch.sh" --format json \
+  "What is the E7 private fixture passphrase?"
+```
+
+Memory-ON example:
+
+```
+python3 -m src.e7_memory capture \
+  --output "$E7_RUN_ROOT/evidence/tp2-on" \
+  --condition memory-on \
+  --test-point TP2 \
+  --recall-ledger "$E7_RUN_ROOT/on-private/fixture-memory-ledger.jsonl" \
+  --hash "$E7_RUN_ROOT/on-private/fixture-memory.jsonl" \
+  --hash "$E7_RUN_ROOT/on-private/fixture-memory-ledger.jsonl" \
+  --hash evolution-07/lab/memory.jsonl \
+  --hash evolution-07/lab/memory-ledger.jsonl \
+  -- "$E7_RUN_ROOT/on/launch.sh" --format json \
+  "Use python3 ask_memory.py to answer exactly: What is the E7 private fixture passphrase?"
+```
+
+Repeat with new output directories for TP3-OFF, TP3-ON, and TP4.
+Each capture directory contains `opencode-events.jsonl`,
+`opencode-stderr.txt`, `verbatim-answer.txt`, `tool-trace.jsonl`, optional
+`recall-events.jsonl`, and `capture-manifest.json`. TP5 continues to use its
+isolated temporary store procedure, whose evidence records the temporary
+store diff and official-file hashes before and after.
+
+The capture implementation is validated with a synthetic JSON-event producer
+that makes no OpenCode model call. This validation is not official sortie
+evidence.
 
 Run the retriever for a question in the memory-ON sandbox:
 
@@ -179,7 +236,8 @@ python3 -m src.e7_memory preflight \
 
 Memory-OFF session:
 
-1. Run `/tmp/e7-off/launch.sh` from a fresh shell. The script changes to the
+1. Run `$E7_RUN_ROOT/off/launch.sh` through the capture command from a fresh
+   shell. The script changes to the
    OFF sandbox, uses a fresh OpenCode data directory, and runs OpenCode under
    the Seatbelt profile.
 2. The generated config denies Read, Glob, Grep, List, Bash, Task, and the
@@ -191,7 +249,8 @@ Memory-OFF session:
 
 Memory-ON session:
 
-1. Run `/tmp/e7-on/launch.sh` from a fresh shell. The script starts the
+1. Run `$E7_RUN_ROOT/on/launch.sh` through the capture command from a fresh
+   shell. The script starts the
    localhost service outside the sandbox, changes to the ON sandbox, uses a
    fresh OpenCode data directory, and runs OpenCode under the Seatbelt profile.
 2. The generated config denies Read, Glob, Grep, List, Task, and the other
