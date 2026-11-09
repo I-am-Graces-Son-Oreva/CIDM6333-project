@@ -1,0 +1,109 @@
+{
+  "conditions": {
+    "memory-off": {
+      "claim_present_in_sandbox": false,
+      "claim_sha256": "c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8",
+      "condition": "memory-off",
+      "control_expected_agent_answer": "4",
+      "excluded_sources": [
+        "/Users/orevisco/CIDM6333-project/evolution-07/fixtures/private-claim.json",
+        "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl",
+        "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl",
+        "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md",
+        "/Users/orevisco/CIDM6333-project/evolution-06/flight-card.md",
+        "/Users/orevisco/CIDM6333-project/evolution-06/handoff.md",
+        "/Users/orevisco/CIDM6333-project/evolution-06/evidence"
+      ],
+      "expected": {
+        "control": "The agent must answer 4.",
+        "recall": "The agent must not state the fixture passphrase; it must answer Not in memory or state that it cannot determine it."
+      },
+      "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
+      "model": "OpenCode Big Pickle",
+      "question_control": "What is 2 + 2?",
+      "question_recall": "What is the E7 private fixture passphrase?",
+      "sandbox_files": [
+        "README.txt",
+        "question-control.txt",
+        "question-recall.txt"
+      ],
+      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/off"
+    },
+    "memory-on": {
+      "claim_present_in_sandbox": false,
+      "claim_sha256": "c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8",
+      "condition": "memory-on",
+      "control_expected_agent_answer": "4",
+      "excluded_sources": [
+        "/Users/orevisco/CIDM6333-project/evolution-07/fixtures/private-claim.json",
+        "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl",
+        "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl",
+        "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md",
+        "/Users/orevisco/CIDM6333-project/evolution-06/flight-card.md",
+        "/Users/orevisco/CIDM6333-project/evolution-06/handoff.md"
+      ],
+      "expected": {
+        "absent": "The agent must answer Not in memory and must not fabricate a launch code.",
+        "control": "The agent must answer 4.",
+        "recall": "The agent must answer with the fixture passphrase and cite the retriever's memory ID, source, and score."
+      },
+      "fixture_ledger": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/private/fixture-memory-ledger.jsonl",
+      "fixture_store": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/private/fixture-memory.jsonl",
+      "fixture_store_outside_sandbox": true,
+      "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
+      "model": "OpenCode Big Pickle",
+      "private_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/private",
+      "question_absent": "What is the secret launch code for Project Orion?",
+      "question_control": "What is 2 + 2?",
+      "question_recall": "What is the E7 private fixture passphrase?",
+      "retrieval_threshold": 0.3,
+      "sandbox_files": [
+        "README.txt",
+        "ask_memory.py",
+        "question-absent.txt",
+        "question-control.txt",
+        "question-recall.txt"
+      ],
+      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/on"
+    }
+  },
+  "fixture": {
+    "claim_sha256": "c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8",
+    "expected_answer_sha256": "cd30b5080e2ac746c2a01ade91d0d8b2faf18bf4f38825ceb0f5acf792bac33e",
+    "path": "/Users/orevisco/CIDM6333-project/evolution-07/fixtures/private-claim.json",
+    "question": "What is the E7 private fixture passphrase?"
+  },
+  "isolation": {
+    "off_claim_present": false,
+    "on_claim_present_in_sandbox": false,
+    "on_fixture_store_outside_sandbox": true
+  },
+  "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
+  "retriever": {
+    "absent_output_sha256": "230b3a9fa6b63df2643dddcca50abe8b76431d9eb8b7a1f2f897004d666085a0",
+    "absent_retriever_response": "Not in memory.",
+    "control_expected_agent_answer": "4",
+    "control_output_sha256": "230b3a9fa6b63df2643dddcca50abe8b76431d9eb8b7a1f2f897004d666085a0",
+    "control_retriever_response": "Not in memory.",
+    "recall_event": {
+      "date": "2026-11-08",
+      "event": "recall",
+      "question": "What is the E7 private fixture passphrase?",
+      "results": [
+        {
+          "id": "m-9001",
+          "score": 0.6717,
+          "source": "evolution-07/fixtures/private-claim.json#text"
+        }
+      ],
+      "schema": "e7-memory-v2",
+      "top_id": "m-9001",
+      "top_score": 0.6717,
+      "top_source": "evolution-07/fixtures/private-claim.json#text"
+    },
+    "recall_event_matches_fixture": true,
+    "recall_output_sha256": "97c793d3129f186aa48942de8c3d7653a0be1eab754e86005b4fff617ea4f967"
+  },
+  "same_model": true,
+  "same_question": true
+}

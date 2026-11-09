@@ -1,6 +1,6 @@
 # ADR-2: Memory Retrieval, State, Eviction, and Retention
 
-Status: Implemented locally — official sortie pending
+Status: Implemented locally — preflight corrections applied; official sortie pending re-review
 Date: 2026-11-08
 
 ## Context
@@ -71,6 +71,48 @@ runtime ledger take precedence over older memories.
 
 Memory must not silently override a newer source.
 
+### 7. Ledger Schema Versions
+
+Historical events already present in
+`evolution-07/lab/memory-ledger.jsonl` were written by an earlier
+local prototype. Those events use the prototype schema: a top-level
+`id` and `score`, no `source`, no `effective_date`, and no `schema`
+field.
+
+The historical prototype events are retained unchanged for audit.
+They must not be represented as official sortie evidence. New events
+written by the current implementation include
+`"schema": "e7-memory-v2"`, a `results` list whose entries contain
+`id`, `source`, and `score`, and top-level `top_id`, `top_source`,
+and `top_score`.
+
+Historical events must not be rewritten or deleted to make them match
+the new schema.
+
+### 8. Preflight Isolation and Evidence
+
+The memory-OFF condition runs in a sandbox that contains only the
+questions and instructions. The sandbox excludes the private fixture,
+the official memory store, the official ledger, Evolution 6 files, and
+Evolution 6 evidence. A manifest records the sandbox contents and
+whether the fixture claim appears anywhere inside it.
+
+The memory-ON condition uses a private fixture store and ledger outside
+the sandbox. The agent obtains the answer by running `ask_memory.py`,
+which calls the retriever. A matching recall event must record the
+memory ID, source, and score. The condition uses a retrieval threshold
+of 0.30 so the control and absent questions return `Not in memory.`
+
+The private fixture is `evolution-07/fixtures/private-claim.json`. Its
+plaintext claim is not stored in this ADR, the Flight Card, source
+code, tests, or historical transcripts. The fixture is the only
+ordinary repository data file that contains the claim, and the
+memory-OFF sandbox excludes it.
+
+TP5 eviction uses a temporary copy of the store and ledger. Before and
+after snapshots verify that eviction does not modify the official
+memory files.
+
 ## Rejected Alternatives
 
 ### Alternative 1: Store memories only in conversation history
@@ -102,22 +144,26 @@ Consequence: expiration and eviction are required.
 
 ## Evidence So Far
 
-Local pytest results:
-- test_remember_and_recall: PASS
-- test_eviction: PASS
-- test_forget: PASS
+Local pytest results for the memory implementation:
 
-Seven local tests passed on 2026-11-08.
+- `tests/test_e7_memory.py`: 7 tests passed.
+- `tests/test_e7_isolation.py`: isolation, fixture, retriever,
+  TP5, and historical-ledger tests added during preflight correction.
 
-The official Sortie 7 memory-OFF/memory-ON
-comparison has not yet been performed.
+Preflight isolation evidence:
+
+- `evolution-07/evidence/preflight-isolation.json`
+- `evolution-07/evidence/preflight-tp5-isolation.json`
+
+These preflight files are not official sortie evidence. The official
+Sortie 7 memory-OFF/memory-ON comparison has not yet been performed.
 
 ## Remaining Work
 
-- Confirm the official Flight Card 7 acceptance criteria.
+- Obtain a new Chase preflight review after the corrections are committed.
 - Obtain Chase GO before the official sortie.
-- Run memory-OFF and memory-ON comparisons.
-- Verify absent-question and eviction behavior.
+- Run memory-OFF and memory-ON comparisons with the corrected sandboxes.
+- Verify absent-question, control-question, and eviction behavior.
 - Record verbatim answers and supporting evidence.
 - Complete the design analysis and AI_LOG.
 - Record the final Chase verdict.

@@ -9,9 +9,11 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parent
 STORE = BASE / "memory.jsonl"
 LEDGER = BASE / "memory-ledger.jsonl"
+LEDGER_SCHEMA = "e7-memory-v2"
 
 
 def read_jsonl(path):
+    path = Path(path)
     if not path.exists():
         return []
     return [
@@ -22,28 +24,33 @@ def read_jsonl(path):
 
 
 def write_jsonl(path, records):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as file:
         for record in records:
             file.write(json.dumps(record) + chr(10))
 
 
-def log_event(event, **details):
+def log_event(ledger_path, event, **details):
+    ledger_path = Path(ledger_path)
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
     record = {
         "event": event,
+        "schema": LEDGER_SCHEMA,
         "date": date.today().isoformat(),
         **details
     }
-    with LEDGER.open("a", encoding="utf-8") as file:
+    with ledger_path.open("a", encoding="utf-8") as file:
         file.write(json.dumps(record) + chr(10))
 
 
-def next_id():
+def next_id(store_path=STORE, ledger_path=LEDGER):
     ids = set()
 
-    for record in read_jsonl(STORE):
+    for record in read_jsonl(store_path):
         ids.add(int(record["id"].split("-")[1]))
 
-    for event in read_jsonl(LEDGER):
+    for event in read_jsonl(ledger_path):
         memory_id = event.get("id", "")
         if re.fullmatch(r"m-\d+", memory_id):
             ids.add(int(memory_id.split("-")[1]))
@@ -52,14 +59,15 @@ def next_id():
 
 
 def remember(text, source, until, kind="episodic",
-             supersedes=None):
-    records = read_jsonl(STORE)
+             supersedes=None, store_path=STORE,
+             ledger_path=LEDGER):
+    records = read_jsonl(store_path)
 
     if supersedes:
         if not any(r["id"] == supersedes for r in records):
             raise ValueError("Superseded memory ID not found")
 
-    memory_id = next_id()
+    memory_id = next_id(store_path, ledger_path)
 
     record = {
         "id": memory_id,
@@ -73,8 +81,9 @@ def remember(text, source, until, kind="episodic",
     }
 
     records.append(record)
-    write_jsonl(STORE, records)
+    write_jsonl(store_path, records)
     log_event(
+        ledger_path,
         "remember",
         id=memory_id,
         source=source,
@@ -88,9 +97,10 @@ def tokenize(text):
 
 
 def recall(question, top_k=3, threshold=0.05,
-           today=None):
+           today=None, store_path=STORE,
+           ledger_path=LEDGER):
     today = today or date.today().isoformat()
-    records = read_jsonl(STORE)
+    records = read_jsonl(store_path)
 
     superseded_ids = {
         r["supersedes"]
@@ -108,7 +118,15 @@ def recall(question, top_k=3, threshold=0.05,
     documents = [Counter(tokenize(r["text"])) for r in active]
 
     if not query or not documents:
-        log_event("recall", question=question, results=[])
+        log_event(
+            ledger_path,
+            "recall",
+            question=question,
+            results=[],
+            top_id=None,
+            top_source=None,
+            top_score=None
+        )
         print("Not in memory.")
         return
 
@@ -152,13 +170,28 @@ def recall(question, top_k=3, threshold=0.05,
     scored.sort(key=lambda item: (-item[0], item[1]["id"]))
     results = scored[:top_k]
 
+    event_results = [
+        {
+            "id": record["id"],
+            "source": record["source"],
+            "score": round(score, 4)
+        }
+        for score, record in results
+    ]
+    top = event_results[0] if event_results else {
+        "id": None,
+        "source": None,
+        "score": None
+    }
+
     log_event(
+        ledger_path,
         "recall",
         question=question,
-        results=[
-            {"id": r["id"], "score": round(score, 4)}
-            for score, r in results
-        ]
+        results=event_results,
+        top_id=top["id"],
+        top_source=top["source"],
+        top_score=top["score"]
     )
 
     if not results:
@@ -174,8 +207,8 @@ def recall(question, top_k=3, threshold=0.05,
         print()
 
 
-def evict(today):
-    records = read_jsonl(STORE)
+def evict(today, store_path=STORE, ledger_path=LEDGER):
+    records = read_jsonl(store_path)
 
     expired = [
         r for r in records
@@ -186,10 +219,11 @@ def evict(today):
         if r["retain_until"] >= today
     ]
 
-    write_jsonl(STORE, active)
+    write_jsonl(store_path, active)
 
     for record in expired:
         log_event(
+            ledger_path,
             "evict",
             id=record["id"],
             reason="retention_expired",
@@ -199,8 +233,9 @@ def evict(today):
     print(f"Evicted {len(expired)} memories.")
 
 
-def forget(memory_id, reason):
-    records = read_jsonl(STORE)
+def forget(memory_id, reason, store_path=STORE,
+           ledger_path=LEDGER):
+    records = read_jsonl(store_path)
     remaining = [
         r for r in records
         if r["id"] != memory_id
@@ -210,8 +245,9 @@ def forget(memory_id, reason):
         print("Memory not found.")
         return
 
-    write_jsonl(STORE, remaining)
+    write_jsonl(store_path, remaining)
     log_event(
+        ledger_path,
         "forget",
         id=memory_id,
         reason=reason
@@ -236,8 +272,13 @@ def main():
     parser.add_argument("--today")
     parser.add_argument("--id")
     parser.add_argument("--reason")
+    parser.add_argument("--store")
+    parser.add_argument("--ledger")
 
     args = parser.parse_args()
+
+    store_path = Path(args.store) if args.store else STORE
+    ledger_path = Path(args.ledger) if args.ledger else LEDGER
 
     if args.command == "remember":
         if not all([args.text, args.source, args.until]):
@@ -246,7 +287,8 @@ def main():
             )
         remember(
             args.text, args.source, args.until,
-            args.kind, args.supersedes
+            args.kind, args.supersedes,
+            store_path, ledger_path
         )
 
     elif args.command == "recall":
@@ -256,16 +298,23 @@ def main():
             parser.error("Invalid top-k or threshold")
         recall(
             args.question, args.top_k,
-            args.threshold, args.today
+            args.threshold, args.today,
+            store_path, ledger_path
         )
 
     elif args.command == "evict":
-        evict(args.today or date.today().isoformat())
+        evict(
+            args.today or date.today().isoformat(),
+            store_path, ledger_path
+        )
 
     elif args.command == "forget":
         if not args.id or not args.reason:
             parser.error("forget requires --id and --reason")
-        forget(args.id, args.reason)
+        forget(
+            args.id, args.reason,
+            store_path, ledger_path
+        )
 
 
 if __name__ == "__main__":

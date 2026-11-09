@@ -1,0 +1,40 @@
+{
+  "eviction_events": [
+    {
+      "date": "2026-11-08",
+      "event": "evict",
+      "id": "m-0002",
+      "reason": "retention_expired"
+    },
+    {
+      "date": "2026-11-08",
+      "effective_date": "2026-11-08",
+      "event": "evict",
+      "id": "m-0003",
+      "reason": "retention_expired",
+      "schema": "e7-memory-v2"
+    }
+  ],
+  "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
+  "official_ledger_after_sha256": "9d74bf75a1933ab4c1cdbed7ea493ee4bb7d959651d9d4dbe8157608127dd8bf",
+  "official_ledger_before_sha256": "9d74bf75a1933ab4c1cdbed7ea493ee4bb7d959651d9d4dbe8157608127dd8bf",
+  "official_store_after_sha256": "c00cb481caa90355a11640f7c79728bfcb93b578fb05936d4f6799ea8817fdcf",
+  "official_store_before_sha256": "c00cb481caa90355a11640f7c79728bfcb93b578fb05936d4f6799ea8817fdcf",
+  "official_unchanged": true,
+  "recall_after_eviction": "Not in memory.",
+  "recall_returns_not_in_memory": true,
+  "temp_ledger_after_sha256": "011d705e33a2075af24414e11bb399940e727ecd116b8af6e007b9a47c4f322e",
+  "temp_ledger_before_sha256": "49d2d6319c0625f72fdc374100a95982f5768498b477bf7a0b240b4f5212462a",
+  "temp_ledger_changed": true,
+  "temp_store_after_ids": [
+    "m-0001"
+  ],
+  "temp_store_after_sha256": "c00cb481caa90355a11640f7c79728bfcb93b578fb05936d4f6799ea8817fdcf",
+  "temp_store_before_ids": [
+    "m-0001",
+    "m-0003"
+  ],
+  "temp_store_before_sha256": "75b8ede38e8a92f8d1d64620aeec3b7e1fbf918bc3cbe61b22b7bceaefe7cdda",
+  "temp_store_changed": true,
+  "today": "2026-11-08"
+}

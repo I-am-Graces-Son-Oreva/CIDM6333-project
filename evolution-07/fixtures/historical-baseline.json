@@ -1,0 +1,7 @@
+{
+  "label": "PREFLIGHT BASELINE — PRESERVE HISTORICAL EVENTS",
+  "memory_jsonl_sha256": "c00cb481caa90355a11640f7c79728bfcb93b578fb05936d4f6799ea8817fdcf",
+  "memory_ledger_jsonl_sha256": "9d74bf75a1933ab4c1cdbed7ea493ee4bb7d959651d9d4dbe8157608127dd8bf",
+  "memory_ledger_prefix_sha256": "9d74bf75a1933ab4c1cdbed7ea493ee4bb7d959651d9d4dbe8157608127dd8bf",
+  "historical_ledger_event_count": 5
+}

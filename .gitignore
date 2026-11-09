@@ -10,3 +10,7 @@ evolution-06/evidence/session-b2-export.json
 # Evolution 7 temporary backups
 evolution-07/lab/*.backup
 evolution-07/lab/*.before-newline-fix
+
+# Evolution 7 private test material
+evolution-07/fixtures/private-claim.json
+evolution-07/fixtures/*private*
