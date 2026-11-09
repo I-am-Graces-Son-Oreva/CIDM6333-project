@@ -5,7 +5,30 @@
       "claim_sha256": "c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8",
       "condition": "memory-off",
       "control_expected_agent_answer": "4",
-      "data_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/data",
+      "data_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off/data",
+      "denied_private_artifacts": [
+        "/private/tmp/e7-artifacts",
+        "/private/tmp/e7-demo-1cnh",
+        "/private/tmp/e7-final.err",
+        "/private/tmp/e7-final.json",
+        "/private/tmp/e7-offdemo-BgJs",
+        "/private/tmp/e7-pf.err",
+        "/private/tmp/e7-pf.json",
+        "/private/tmp/e7-preflight-err.txt",
+        "/private/tmp/e7-preflight-final.err",
+        "/private/tmp/e7-preflight-final.json",
+        "/private/tmp/e7-preflight-final.out",
+        "/private/tmp/e7-preflight-official.err",
+        "/private/tmp/e7-preflight-official.json",
+        "/private/tmp/e7-preflight-out.json",
+        "/private/tmp/e7-preflight-test",
+        "/private/tmp/e7-review-p3Ws",
+        "/private/tmp/e7-review-preflight.err",
+        "/private/tmp/e7-review-preflight.out",
+        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on",
+        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json",
+        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private"
+      ],
       "excluded_sources": [
         "/Users/orevisco/CIDM6333-private-e7/private-claim.json",
         "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl",
@@ -26,10 +49,10 @@
       },
       "isolation_mode": "macos-seatbelt + opencode-v1-permission-deny",
       "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
-      "launch_script": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/launch.sh",
+      "launch_script": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off/launch.sh",
       "model": "OpenCode Big Pickle",
       "model_id": "opencode/big-pickle",
-      "opencode_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/opencode.json",
+      "opencode_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off/opencode.json",
       "opencode_permission": {
         "bash": "deny",
         "doom_loop": "deny",
@@ -63,15 +86,38 @@
         "question-recall.txt",
         "sandbox.sb"
       ],
-      "sandbox_profile": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/sandbox.sb",
-      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off"
+      "sandbox_profile": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off/sandbox.sb",
+      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off"
     },
     "memory-on": {
       "claim_present_in_sandbox": false,
       "claim_sha256": "c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8",
       "condition": "memory-on",
       "control_expected_agent_answer": "4",
-      "data_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/data",
+      "data_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/data",
+      "denied_private_artifacts": [
+        "/private/tmp/e7-artifacts",
+        "/private/tmp/e7-demo-1cnh",
+        "/private/tmp/e7-final.err",
+        "/private/tmp/e7-final.json",
+        "/private/tmp/e7-offdemo-BgJs",
+        "/private/tmp/e7-pf.err",
+        "/private/tmp/e7-pf.json",
+        "/private/tmp/e7-preflight-err.txt",
+        "/private/tmp/e7-preflight-final.err",
+        "/private/tmp/e7-preflight-final.json",
+        "/private/tmp/e7-preflight-final.out",
+        "/private/tmp/e7-preflight-official.err",
+        "/private/tmp/e7-preflight-official.json",
+        "/private/tmp/e7-preflight-out.json",
+        "/private/tmp/e7-preflight-test",
+        "/private/tmp/e7-review-p3Ws",
+        "/private/tmp/e7-review-preflight.err",
+        "/private/tmp/e7-review-preflight.out",
+        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off",
+        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json",
+        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private"
+      ],
       "excluded_sources": [
         "/Users/orevisco/CIDM6333-private-e7/private-claim.json",
         "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl",
@@ -87,8 +133,8 @@
         "control": "The agent must answer 4.",
         "recall": "The agent must answer with the fixture passphrase and cite the retriever's memory ID, source, and score."
       },
-      "fixture_ledger": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory-ledger.jsonl",
-      "fixture_store": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory.jsonl",
+      "fixture_ledger": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory-ledger.jsonl",
+      "fixture_store": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory.jsonl",
       "fixture_store_outside_sandbox": true,
       "generation": {
         "temperature": "provider-default",
@@ -96,10 +142,10 @@
       },
       "isolation_mode": "macos-seatbelt + localhost-retriever + opencode-v1-permission-deny-read",
       "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
-      "launch_script": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/launch.sh",
+      "launch_script": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/launch.sh",
       "model": "OpenCode Big Pickle",
       "model_id": "opencode/big-pickle",
-      "opencode_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/opencode.json",
+      "opencode_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/opencode.json",
       "opencode_permission": {
         "bash": "allow",
         "doom_loop": "deny",
@@ -118,17 +164,17 @@
         "webfetch": "deny",
         "websearch": "deny"
       },
-      "private_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private",
+      "private_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private",
       "protected_paths": [
         "/Users/orevisco/CIDM6333-project",
         "/Users/orevisco/CIDM6333-private-e7",
         "/Users/orevisco/.local/share/opencode",
-        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private"
+        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private"
       ],
       "question_absent": "What is the secret launch code for Project Orion?",
       "question_control": "What is 2 + 2?",
       "question_recall": "What is the E7 private fixture passphrase?",
-      "retrieval_interface": "http://127.0.0.1:64541/recall",
+      "retrieval_interface": "http://127.0.0.1:64800/recall",
       "retrieval_service_outside_sandbox": true,
       "retrieval_threshold": 0.3,
       "sandbox_files": [
@@ -142,10 +188,10 @@
         "sandbox.sb",
         "service.json"
       ],
-      "sandbox_profile": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/sandbox.sb",
-      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on",
-      "service_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/service.json",
-      "sidecar": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on.private.json",
+      "sandbox_profile": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/sandbox.sb",
+      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on",
+      "service_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/service.json",
+      "sidecar": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json",
       "sidecar_denied": true
     }
   },
@@ -158,8 +204,33 @@
   },
   "isolation": {
     "off_claim_present": false,
+    "off_denied_private_artifacts": [
+      "/private/tmp/e7-artifacts",
+      "/private/tmp/e7-demo-1cnh",
+      "/private/tmp/e7-final.err",
+      "/private/tmp/e7-final.json",
+      "/private/tmp/e7-offdemo-BgJs",
+      "/private/tmp/e7-pf.err",
+      "/private/tmp/e7-pf.json",
+      "/private/tmp/e7-preflight-err.txt",
+      "/private/tmp/e7-preflight-final.err",
+      "/private/tmp/e7-preflight-final.json",
+      "/private/tmp/e7-preflight-final.out",
+      "/private/tmp/e7-preflight-official.err",
+      "/private/tmp/e7-preflight-official.json",
+      "/private/tmp/e7-preflight-out.json",
+      "/private/tmp/e7-preflight-test",
+      "/private/tmp/e7-review-p3Ws",
+      "/private/tmp/e7-review-preflight.err",
+      "/private/tmp/e7-review-preflight.out",
+      "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on",
+      "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json",
+      "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private"
+    ],
     "off_negative_probes": [
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/cat",
           "/Users/orevisco/CIDM6333-private-e7/private-claim.json"
@@ -173,6 +244,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/cat",
           "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl"
@@ -186,6 +259,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/cat",
           "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl"
@@ -199,6 +274,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/cat",
           "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md"
@@ -212,6 +289,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/cat",
           "/Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json"
@@ -225,6 +304,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/cat",
           "/Users/orevisco/.local/share/opencode/log/opencode.log"
@@ -238,6 +319,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/cat",
           "/Users/orevisco/.local/share/opencode/opencode.db"
@@ -251,6 +334,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/sh",
           "-c",
@@ -265,6 +350,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/usr/bin/python3",
           "-c",
@@ -279,6 +366,8 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/usr/bin/grep",
           "-r",
@@ -294,161 +383,11 @@
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": false,
         "command": [
           "/bin/cat",
-          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/question-recall.txt"
-        ],
-        "denied": false,
-        "expected": "allowed",
-        "leaked": false,
-        "name": "allowed_question_read",
-        "returncode": 0,
-        "stderr": "",
-        "stdout": "What is the E7 private fixture passphrase?\n"
-      }
-    ],
-    "off_probes_ok": true,
-    "on_claim_present_in_sandbox": false,
-    "on_fixture_store_outside_sandbox": true,
-    "on_negative_probes": [
-      {
-        "command": [
-          "/bin/cat",
-          "/Users/orevisco/CIDM6333-private-e7/private-claim.json"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "private_fixture",
-        "returncode": 1,
-        "stderr": "cat: /Users/orevisco/CIDM6333-private-e7/private-claim.json: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/bin/cat",
-          "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "official_store",
-        "returncode": 1,
-        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/bin/cat",
-          "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "official_ledger",
-        "returncode": 1,
-        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/bin/cat",
-          "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "e6_flight_log",
-        "returncode": 1,
-        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-06/flight-log.md: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/bin/cat",
-          "/Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "e6_evidence",
-        "returncode": 1,
-        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/bin/cat",
-          "/Users/orevisco/.local/share/opencode/log/opencode.log"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "opencode_real_log",
-        "returncode": 1,
-        "stderr": "cat: /Users/orevisco/.local/share/opencode/log/opencode.log: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/bin/cat",
-          "/Users/orevisco/.local/share/opencode/opencode.db"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "opencode_real_db",
-        "returncode": 1,
-        "stderr": "cat: /Users/orevisco/.local/share/opencode/opencode.db: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/bin/sh",
-          "-c",
-          "cat /Users/orevisco/CIDM6333-private-e7/private-claim.json"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "shell_escape_private_fixture",
-        "returncode": 1,
-        "stderr": "cat: /Users/orevisco/CIDM6333-private-e7/private-claim.json: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/usr/bin/python3",
-          "-c",
-          "print(open('/Users/orevisco/CIDM6333-private-e7/private-claim.json').read())"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "python_escape_private_fixture",
-        "returncode": 1,
-        "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nPermissionError: [Errno 1] Operation not permitted: '/Users/orevisco/CIDM6333-private-e7/private-claim.json'\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/usr/bin/grep",
-          "-r",
-          "m-0001",
-          "/Users/orevisco/CIDM6333-project"
-        ],
-        "denied": true,
-        "expected": "denied",
-        "leaked": false,
-        "name": "repository_search",
-        "returncode": 2,
-        "stderr": "grep: /Users/orevisco/CIDM6333-project: Operation not permitted\n",
-        "stdout": ""
-      },
-      {
-        "command": [
-          "/bin/cat",
-          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/question-recall.txt"
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off/question-recall.txt"
         ],
         "denied": false,
         "expected": "allowed",
@@ -459,48 +398,1827 @@
         "stdout": "What is the E7 private fixture passphrase?\n"
       },
       {
+        "absent": false,
+        "allow_absent": true,
         "command": [
           "/bin/cat",
-          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory.jsonl"
+          "/tmp/e7-artifacts/private/fixture-memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_private_store",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/private/fixture-memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": true,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/private/fixture-memory-ledger.jsonl"
+        ],
+        "denied": false,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_private_ledger",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/private/fixture-memory-ledger.jsonl: No such file or directory\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/on.private.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_sidecar",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/on.private.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/on/service.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_service_config",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/on/service.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/on/sandbox.sb"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_on_profile",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/on/sandbox.sb: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-demo-1cnh/private/fixture-memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_demo_private_store",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-demo-1cnh/private/fixture-memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": true,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-demo-1cnh/private/fixture-memory-ledger.jsonl"
+        ],
+        "denied": false,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_demo_private_ledger",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-demo-1cnh/private/fixture-memory-ledger.jsonl: No such file or directory\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_07",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_08",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/launch.sh"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_09",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/launch.sh: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/question-recall.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_10",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/question-recall.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/opencode.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_11",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/opencode.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/README.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_12",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/README.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/question-control.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_13",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/question-control.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/ask_memory.py"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_14",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/ask_memory.py: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/question-absent.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_15",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/question-absent.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/launch.sh"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_16",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/launch.sh: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/question-recall.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_17",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/question-recall.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/sandbox.sb"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_18",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/sandbox.sb: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/opencode.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_19",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/opencode.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/README.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_20",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/README.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/question-control.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_21",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/question-control.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/question-recall.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_22",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/question-recall.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/README.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_23",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/README.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/question-control.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_24",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/question-control.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/ask_memory.py"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_25",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/ask_memory.py: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/question-absent.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_26",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/question-absent.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-final.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_27",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-final.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-final.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_28",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-final.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-offdemo-BgJs/off/question-recall.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_29",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-offdemo-BgJs/off/question-recall.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-offdemo-BgJs/off/README.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_30",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-offdemo-BgJs/off/README.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-offdemo-BgJs/off/question-control.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_31",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-offdemo-BgJs/off/question-control.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-pf.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_32",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-pf.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-pf.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_33",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-pf.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-err.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_34",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-err.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-final.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_35",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-final.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-final.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_36",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-final.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-final.out"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_37",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-final.out: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-official.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_38",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-official.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-official.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_39",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-official.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-out.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_40",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-out.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-test/preflight-tp5-isolation.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_41",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-test/preflight-tp5-isolation.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-test/preflight-isolation.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_42",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-test/preflight-isolation.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-p3Ws/preflight-tp5-isolation.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_43",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-p3Ws/preflight-tp5-isolation.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-p3Ws/err.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_44",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-p3Ws/err.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-p3Ws/preflight-isolation.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_45",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-p3Ws/preflight-isolation.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-p3Ws/out.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_46",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-p3Ws/out.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-preflight.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_47",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-preflight.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-preflight.out"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_48",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-preflight.out: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/service.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "on_sandbox_service_config",
+        "returncode": 1,
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/service.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/sandbox.sb"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "on_sandbox_profile",
+        "returncode": 1,
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/sandbox.sb: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory.jsonl"
         ],
         "denied": true,
         "expected": "denied",
         "leaked": false,
         "name": "private_store",
         "returncode": 1,
-        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory.jsonl: Operation not permitted\n",
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory.jsonl: Operation not permitted\n",
         "stdout": ""
       },
       {
+        "absent": true,
+        "allow_absent": true,
         "command": [
           "/bin/cat",
-          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory-ledger.jsonl"
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory-ledger.jsonl"
         ],
-        "denied": true,
+        "denied": false,
         "expected": "denied",
         "leaked": false,
         "name": "private_ledger",
         "returncode": 1,
-        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory-ledger.jsonl: Operation not permitted\n",
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory-ledger.jsonl: No such file or directory\n",
         "stdout": ""
       },
       {
+        "absent": false,
+        "allow_absent": true,
         "command": [
           "/bin/cat",
-          "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on.private.json"
+          "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json"
         ],
         "denied": true,
         "expected": "denied",
         "leaked": false,
         "name": "private_sidecar",
         "returncode": 1,
-        "stderr": "cat: /private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on.private.json: Operation not permitted\n",
+        "stderr": "cat: /private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json: Operation not permitted\n",
+        "stdout": ""
+      }
+    ],
+    "off_probes_ok": true,
+    "on_claim_present_in_sandbox": false,
+    "on_denied_private_artifacts": [
+      "/private/tmp/e7-artifacts",
+      "/private/tmp/e7-demo-1cnh",
+      "/private/tmp/e7-final.err",
+      "/private/tmp/e7-final.json",
+      "/private/tmp/e7-offdemo-BgJs",
+      "/private/tmp/e7-pf.err",
+      "/private/tmp/e7-pf.json",
+      "/private/tmp/e7-preflight-err.txt",
+      "/private/tmp/e7-preflight-final.err",
+      "/private/tmp/e7-preflight-final.json",
+      "/private/tmp/e7-preflight-final.out",
+      "/private/tmp/e7-preflight-official.err",
+      "/private/tmp/e7-preflight-official.json",
+      "/private/tmp/e7-preflight-out.json",
+      "/private/tmp/e7-preflight-test",
+      "/private/tmp/e7-review-p3Ws",
+      "/private/tmp/e7-review-preflight.err",
+      "/private/tmp/e7-review-preflight.out",
+      "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off",
+      "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json",
+      "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private"
+    ],
+    "on_fixture_store_outside_sandbox": true,
+    "on_negative_probes": [
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-private-e7/private-claim.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_fixture",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-private-e7/private-claim.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "official_store",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "official_ledger",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "e6_flight_log",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-06/flight-log.md: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "e6_evidence",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/.local/share/opencode/log/opencode.log"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "opencode_real_log",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/.local/share/opencode/log/opencode.log: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/.local/share/opencode/opencode.db"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "opencode_real_db",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/.local/share/opencode/opencode.db: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/sh",
+          "-c",
+          "cat /Users/orevisco/CIDM6333-private-e7/private-claim.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "shell_escape_private_fixture",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-private-e7/private-claim.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/usr/bin/python3",
+          "-c",
+          "print(open('/Users/orevisco/CIDM6333-private-e7/private-claim.json').read())"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "python_escape_private_fixture",
+        "returncode": 1,
+        "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nPermissionError: [Errno 1] Operation not permitted: '/Users/orevisco/CIDM6333-private-e7/private-claim.json'\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/usr/bin/grep",
+          "-r",
+          "m-0001",
+          "/Users/orevisco/CIDM6333-project"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "repository_search",
+        "returncode": 2,
+        "stderr": "grep: /Users/orevisco/CIDM6333-project: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on/question-recall.txt"
+        ],
+        "denied": false,
+        "expected": "allowed",
+        "leaked": false,
+        "name": "allowed_question_read",
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "What is the E7 private fixture passphrase?\n"
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/private/fixture-memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_private_store",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/private/fixture-memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": true,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/private/fixture-memory-ledger.jsonl"
+        ],
+        "denied": false,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_private_ledger",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/private/fixture-memory-ledger.jsonl: No such file or directory\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/on.private.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_sidecar",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/on.private.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/on/service.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_service_config",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/on/service.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-artifacts/on/sandbox.sb"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_artifacts_on_profile",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-artifacts/on/sandbox.sb: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-demo-1cnh/private/fixture-memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_demo_private_store",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-demo-1cnh/private/fixture-memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": true,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/tmp/e7-demo-1cnh/private/fixture-memory-ledger.jsonl"
+        ],
+        "denied": false,
+        "expected": "denied",
+        "leaked": false,
+        "name": "leaked_demo_private_ledger",
+        "returncode": 1,
+        "stderr": "cat: /tmp/e7-demo-1cnh/private/fixture-memory-ledger.jsonl: No such file or directory\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_07",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_08",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/launch.sh"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_09",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/launch.sh: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/question-recall.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_10",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/question-recall.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/opencode.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_11",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/opencode.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/README.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_12",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/README.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/question-control.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_13",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/question-control.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/ask_memory.py"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_14",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/ask_memory.py: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/on/question-absent.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_15",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/on/question-absent.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/launch.sh"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_16",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/launch.sh: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/question-recall.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_17",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/question-recall.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/sandbox.sb"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_18",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/sandbox.sb: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/opencode.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_19",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/opencode.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/README.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_20",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/README.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-artifacts/off/question-control.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_21",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-artifacts/off/question-control.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/question-recall.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_22",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/question-recall.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/README.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_23",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/README.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/question-control.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_24",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/question-control.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/ask_memory.py"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_25",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/ask_memory.py: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-demo-1cnh/on/question-absent.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_26",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-demo-1cnh/on/question-absent.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-final.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_27",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-final.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-final.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_28",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-final.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-offdemo-BgJs/off/question-recall.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_29",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-offdemo-BgJs/off/question-recall.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-offdemo-BgJs/off/README.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_30",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-offdemo-BgJs/off/README.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-offdemo-BgJs/off/question-control.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_31",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-offdemo-BgJs/off/question-control.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-pf.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_32",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-pf.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-pf.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_33",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-pf.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-err.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_34",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-err.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-final.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_35",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-final.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-final.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_36",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-final.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-final.out"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_37",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-final.out: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-official.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_38",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-official.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-official.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_39",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-official.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-out.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_40",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-out.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-test/preflight-tp5-isolation.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_41",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-test/preflight-tp5-isolation.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-preflight-test/preflight-isolation.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_42",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-preflight-test/preflight-isolation.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-p3Ws/preflight-tp5-isolation.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_43",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-p3Ws/preflight-tp5-isolation.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-p3Ws/err.txt"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_44",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-p3Ws/err.txt: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-p3Ws/preflight-isolation.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_45",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-p3Ws/preflight-isolation.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-p3Ws/out.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_46",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-p3Ws/out.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-preflight.err"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_47",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-preflight.err: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": false,
+        "command": [
+          "/bin/cat",
+          "/private/tmp/e7-review-preflight.out"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_artifact_48",
+        "returncode": 1,
+        "stderr": "cat: /private/tmp/e7-review-preflight.out: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_store",
+        "returncode": 1,
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory-ledger.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_ledger",
+        "returncode": 1,
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/private/fixture-memory-ledger.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_sidecar",
+        "returncode": 1,
+        "stderr": "cat: /private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/on.private.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "absent": false,
+        "allow_absent": true,
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off/sandbox.sb"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "off_sandbox_profile",
+        "returncode": 1,
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-c8sbjkd0/off/sandbox.sb: Operation not permitted\n",
         "stdout": ""
       }
     ],
     "on_probes_ok": true
   },
   "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
+  "network_isolation": {
+    "mode": "lifecycle: the memory-ON retrieval service is not started during memory-OFF; network access is not claimed isolated",
+    "off_connection_attempt": {
+      "command": [
+        "/usr/bin/python3",
+        "-c",
+        "import socket; socket.create_connection(('127.0.0.1', 64800), timeout=1)"
+      ],
+      "port": 64800,
+      "reachable": false,
+      "returncode": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socket.py\", line 843, in create_connection\n    raise err\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socket.py\", line 831, in create_connection\n    sock.connect(sa)\nConnectionRefusedError: [Errno 61] Connection refused\n"
+    },
+    "off_launch_starts_service": false,
+    "on_service_reachable_during_off": false
+  },
   "retriever": {
     "absent_output_sha256": "230b3a9fa6b63df2643dddcca50abe8b76431d9eb8b7a1f2f897004d666085a0",
     "absent_retriever_response": "Not in memory.",

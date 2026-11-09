@@ -21,8 +21,74 @@ def require_sandbox():
         )
 
 
+ARTIFACT_ROOT = Path("/tmp/e7-artifacts")
+
+
 def protected_paths():
     return [REPO_ROOT, FIXTURE_PATH.parent, OPENCODE_DATA_DIR]
+
+
+def discovered_private_roots(sandbox):
+    sandbox = Path(sandbox).resolve()
+    candidates = {ARTIFACT_ROOT.resolve()}
+    for base in (Path("/tmp"), Path("/private/tmp")):
+        if base.exists():
+            for path in base.glob("e7-*"):
+                candidates.add(path.resolve())
+    roots = []
+    for candidate in candidates:
+        if candidate == sandbox or sandbox in candidate.parents:
+            continue
+        roots.append(candidate)
+    return sorted(roots)
+
+
+def private_deny_paths(sandbox, extra_paths=()):
+    sandbox = Path(sandbox).resolve()
+    candidates = set(discovered_private_roots(sandbox))
+    for path in extra_paths:
+        if path is None:
+            continue
+        candidates.add(Path(path).resolve())
+
+    denied = set()
+    for candidate in candidates:
+        if candidate == sandbox:
+            continue
+        if candidate in sandbox.parents:
+            if candidate.exists() and candidate.is_dir():
+                for child in candidate.iterdir():
+                    child = child.resolve()
+                    if child == sandbox or child in sandbox.parents:
+                        continue
+                    denied.add(child)
+            else:
+                denied.add(candidate / "private")
+                denied.add(candidate / "on.private.json")
+            continue
+        denied.add(candidate)
+
+    return sorted(
+        path for path in denied
+        if path != sandbox and path not in sandbox.parents
+    )
+
+
+def classify_denied(paths):
+    directories = []
+    files = []
+    for path in paths:
+        path = Path(path)
+        if path.exists():
+            if path.is_file():
+                files.append(path)
+            else:
+                directories.append(path)
+        elif path.suffix:
+            files.append(path)
+        else:
+            directories.append(path)
+    return directories, files
 
 
 def _subpath(path):
@@ -117,11 +183,16 @@ def run_under_sandbox(profile, command, cwd):
     )
 
 
-def probe(profile, cwd, name, command, expected, redact=None):
+def probe(profile, cwd, name, command, expected, redact=None,
+          allow_absent=False):
     result = run_under_sandbox(profile, command, cwd)
     denied = result.returncode != 0 and (
         "Operation not permitted" in result.stderr
         or "Permission denied" in result.stderr
+    )
+    absent = result.returncode != 0 and (
+        "No such file or directory" in result.stdout
+        or "No such file or directory" in result.stderr
     )
     leaked = bool(
         redact
@@ -140,6 +211,8 @@ def probe(profile, cwd, name, command, expected, redact=None):
         "returncode": result.returncode,
         "denied": denied and not leaked,
         "leaked": leaked,
+        "absent": absent,
+        "allow_absent": allow_absent,
         "stdout": clean(result.stdout),
         "stderr": clean(result.stderr),
     }

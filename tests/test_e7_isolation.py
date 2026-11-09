@@ -19,21 +19,28 @@ from src.e7_memory.conditions import (
     QUESTION_ABSENT,
     QUESTION_CONTROL,
     QUESTION_RECALL,
+    SANDBOX_PROFILE,
+    SERVICE_CONFIG,
+    THIRD_REVIEW_LEAKED_PATHS,
     build_off_sandbox,
     build_on_sandbox,
+    connection_probe,
     isolation_probes,
     opencode_config,
     probes_ok,
     run_wrapper,
+    service_port,
+    service_reachable,
     sha256_file,
     sha256_text,
+    sidecar_path,
     snapshot,
     tp5_isolation,
     verify_on_event,
 )
 from src.e7_memory.fixture import FIXTURE_PATH, claim_text, load_fixture
 from src.e7_memory.preflight import run_preflight
-from src.e7_memory.sandbox import sandbox_available
+from src.e7_memory.sandbox import probe, sandbox_available
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXCLUDED_DIR_NAMES = {
@@ -106,6 +113,142 @@ def test_off_sandbox_excludes_answer_and_sources(tmp_path):
         text = path.read_text(encoding="utf-8", errors="ignore")
         assert claim not in text
         assert "PASS after corrective Session B2" not in text
+
+
+def test_off_sandbox_denies_synthetic_private_artifact(tmp_path):
+    private = tmp_path / "run" / "private"
+    private.mkdir(parents=True)
+    store = private / "fixture-memory.jsonl"
+    store.write_text(
+        json.dumps({"text": claim_text()}) + "\n",
+        encoding="utf-8",
+    )
+
+    sandbox = tmp_path / "off"
+    manifest = build_off_sandbox(sandbox, private_paths=[private])
+
+    denied = {
+        str(Path(path).resolve())
+        for path in manifest["denied_private_artifacts"]
+    }
+    assert any(
+        str(path) == str(store.resolve())
+        or store.resolve().is_relative_to(path)
+        for path in denied
+    )
+
+    result = probe(
+        sandbox / SANDBOX_PROFILE,
+        sandbox,
+        "synthetic_private_store",
+        ["/bin/cat", str(store)],
+        "denied",
+        redact=claim_text(),
+    )
+    assert result["denied"] is True
+    assert result["leaked"] is False
+
+
+def test_on_sandbox_denies_unrelated_private_artifact(tmp_path):
+    unrelated = tmp_path / "other" / "private"
+    unrelated.mkdir(parents=True)
+    store = unrelated / "fixture-memory.jsonl"
+    store.write_text(
+        json.dumps({"text": claim_text()}) + "\n",
+        encoding="utf-8",
+    )
+
+    sandbox = tmp_path / "on"
+    private = tmp_path / "private"
+    manifest = build_on_sandbox(
+        sandbox,
+        private,
+        private_paths=[unrelated],
+    )
+
+    denied = {
+        str(Path(path).resolve())
+        for path in manifest["denied_private_artifacts"]
+    }
+    assert any(
+        str(path) == str(store.resolve())
+        or store.resolve().is_relative_to(path)
+        for path in denied
+    )
+
+    result = probe(
+        sandbox / SANDBOX_PROFILE,
+        sandbox,
+        "unrelated_private_store",
+        ["/bin/cat", str(store)],
+        "denied",
+        redact=claim_text(),
+    )
+    assert result["denied"] is True
+    assert result["leaked"] is False
+
+
+def test_readable_file_fails_denied_probe(tmp_path):
+    sandbox = tmp_path / "off"
+    build_off_sandbox(sandbox)
+    readable = sandbox / "question-recall.txt"
+
+    result = probe(
+        sandbox / SANDBOX_PROFILE,
+        sandbox,
+        "readable_control",
+        ["/bin/cat", str(readable)],
+        "denied",
+        redact=claim_text(),
+    )
+    assert result["denied"] is False
+    assert result["leaked"] is False
+    assert probes_ok([result]) is False
+
+
+def test_off_sandbox_denies_third_review_leaked_paths(tmp_path):
+    sandbox = tmp_path / "off"
+    build_off_sandbox(sandbox)
+    claim = claim_text()
+
+    for name, path in THIRD_REVIEW_LEAKED_PATHS:
+        if not path.is_file():
+            continue
+        result = probe(
+            sandbox / SANDBOX_PROFILE,
+            sandbox,
+            name,
+            ["/bin/cat", str(path)],
+            "denied",
+            redact=claim,
+        )
+        assert result["denied"] is True, name
+        assert result["leaked"] is False, name
+
+    assert probes_ok(
+        isolation_probes(sandbox, sandbox / SANDBOX_PROFILE)
+    ) is True
+
+
+@pytest.mark.skipif(
+    not sandbox_available(),
+    reason="sandbox-exec is not available on this host",
+)
+def test_off_cannot_reach_on_service_when_not_running(tmp_path):
+    on = tmp_path / "on"
+    private = tmp_path / "private"
+    build_on_sandbox(on, private)
+
+    off = tmp_path / "off"
+    build_off_sandbox(
+        off,
+        private_paths=[on, private, sidecar_path(on)],
+    )
+
+    port = service_port(on)
+    assert service_reachable(port) is False
+    attempt = connection_probe(off / SANDBOX_PROFILE, off, port)
+    assert attempt["reachable"] is False
 
 
 def test_on_sandbox_retriever_event_matches_fixture(tmp_path):
@@ -239,6 +382,35 @@ def test_preflight_evidence_records_isolation_without_plaintext(tmp_path):
     assert data["fixture"]["source"].endswith("#text")
     assert tp5["official_unchanged"] is True
     assert tp5["recall_returns_not_in_memory"] is True
+
+    network = data["network_isolation"]
+    assert network["on_service_reachable_during_off"] is False
+    assert network["off_connection_attempt"]["reachable"] is False
+    assert network["off_launch_starts_service"] is False
+    assert data["conditions"]["memory-off"]["denied_private_artifacts"]
+    assert data["conditions"]["memory-on"]["denied_private_artifacts"]
+
+    for item in (
+        data["isolation"]["off_negative_probes"]
+        + data["isolation"]["on_negative_probes"]
+    ):
+        if item["expected"] == "denied":
+            assert (
+                item["denied"]
+                or (item["absent"] and item["allow_absent"])
+            ), item["name"]
+
+    leaked = [
+        item
+        for item in data["isolation"]["off_negative_probes"]
+        if item["name"].startswith("leaked_")
+    ]
+    assert leaked
+    for item in leaked:
+        assert (
+            item["denied"]
+            or (item["absent"] and item["allow_absent"])
+        ), item["name"]
 
     off_probe_names = {
         probe["name"]

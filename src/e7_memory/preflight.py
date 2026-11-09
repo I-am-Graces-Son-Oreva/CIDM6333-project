@@ -6,12 +6,18 @@ from .conditions import (
     QUESTION_ABSENT,
     QUESTION_CONTROL,
     QUESTION_RECALL,
+    SANDBOX_PROFILE,
+    SERVICE_CONFIG,
     build_off_sandbox,
     build_on_sandbox,
+    connection_probe,
     isolation_probes,
     probes_ok,
     run_wrapper,
+    service_port,
+    service_reachable,
     sha256_text,
+    sidecar_path,
     tp5_isolation,
     verify_on_event,
     write_json,
@@ -30,24 +36,53 @@ def run_preflight(evidence_dir=EVIDENCE_DIR):
 
     with tempfile.TemporaryDirectory(prefix="e7-preflight-") as temp:
         temp = Path(temp)
-        off_manifest = build_off_sandbox(temp / "off")
-        on_manifest = build_on_sandbox(temp / "on", temp / "private")
+        off_sandbox = temp / "off"
+        on_sandbox = temp / "on"
+        private_dir = temp / "private"
+        on_sidecar = sidecar_path(on_sandbox)
+
+        off_manifest = build_off_sandbox(
+            off_sandbox,
+            private_paths=[on_sandbox, private_dir, on_sidecar],
+        )
+        on_manifest = build_on_sandbox(
+            on_sandbox,
+            private_dir,
+            private_paths=[off_sandbox],
+        )
 
         off_probes = isolation_probes(
-            temp / "off",
-            temp / "off" / "sandbox.sb",
+            off_sandbox,
+            off_sandbox / SANDBOX_PROFILE,
+            extra_denied=[
+                ("on_sandbox_service_config", on_sandbox / SERVICE_CONFIG),
+                ("on_sandbox_profile", on_sandbox / SANDBOX_PROFILE),
+                ("private_store", on_manifest["fixture_store"]),
+                ("private_ledger", on_manifest["fixture_ledger"]),
+                ("private_sidecar", on_manifest["sidecar"]),
+            ],
         )
-        recall_result = run_wrapper(temp / "on", QUESTION_RECALL)
-        control_result = run_wrapper(temp / "on", QUESTION_CONTROL)
-        absent_result = run_wrapper(temp / "on", QUESTION_ABSENT)
+
+        on_port = service_port(on_sandbox)
+        on_service_reachable_during_off = service_reachable(on_port)
+        off_connection_attempt = connection_probe(
+            off_sandbox / SANDBOX_PROFILE,
+            off_sandbox,
+            on_port,
+        )
+
+        recall_result = run_wrapper(on_sandbox, QUESTION_RECALL)
+        control_result = run_wrapper(on_sandbox, QUESTION_CONTROL)
+        absent_result = run_wrapper(on_sandbox, QUESTION_ABSENT)
 
         on_probes = isolation_probes(
-            temp / "on",
-            temp / "on" / "sandbox.sb",
+            on_sandbox,
+            on_sandbox / SANDBOX_PROFILE,
             extra_denied=[
                 ("private_store", on_manifest["fixture_store"]),
                 ("private_ledger", on_manifest["fixture_ledger"]),
                 ("private_sidecar", on_manifest["sidecar"]),
+                ("off_sandbox_profile", off_sandbox / SANDBOX_PROFILE),
             ],
         )
 
@@ -107,6 +142,29 @@ def run_preflight(evidence_dir=EVIDENCE_DIR):
                 "on_negative_probes": on_probes,
                 "off_probes_ok": probes_ok(off_probes),
                 "on_probes_ok": probes_ok(on_probes),
+                "off_denied_private_artifacts": off_manifest[
+                    "denied_private_artifacts"
+                ],
+                "on_denied_private_artifacts": on_manifest[
+                    "denied_private_artifacts"
+                ],
+            },
+            "network_isolation": {
+                "mode": (
+                    "lifecycle: the memory-ON retrieval service is not "
+                    "started during memory-OFF; network access is not "
+                    "claimed isolated"
+                ),
+                "on_service_reachable_during_off": (
+                    on_service_reachable_during_off
+                ),
+                "off_connection_attempt": off_connection_attempt,
+                "off_launch_starts_service": (
+                    "serve-on"
+                    in (off_sandbox / "launch.sh").read_text(
+                        encoding="utf-8"
+                    )
+                ),
             },
         }
 

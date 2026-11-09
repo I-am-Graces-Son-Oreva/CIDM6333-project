@@ -26,12 +26,14 @@ def main(argv=None):
     off = subparsers.add_parser("build-off")
     off.add_argument("--sandbox", required=True)
     off.add_argument("--manifest")
+    off.add_argument("--deny", action="append", default=[])
 
     on = subparsers.add_parser("build-on")
     on.add_argument("--sandbox", required=True)
     on.add_argument("--private", required=True)
     on.add_argument("--manifest")
     on.add_argument("--today", default="2026-11-08")
+    on.add_argument("--deny", action="append", default=[])
 
     ask = subparsers.add_parser("ask")
     ask.add_argument("--sandbox", required=True)
@@ -61,7 +63,11 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if args.command == "build-off":
-        manifest = build_off_sandbox(args.sandbox, args.manifest)
+        manifest = build_off_sandbox(
+            args.sandbox,
+            args.manifest,
+            private_paths=args.deny,
+        )
         print(json.dumps(manifest, indent=2, sort_keys=True))
         return 0
 
@@ -71,6 +77,7 @@ def main(argv=None):
             args.private,
             args.manifest,
             args.today,
+            private_paths=args.deny,
         )
         print(json.dumps(manifest, indent=2, sort_keys=True))
         return 0
@@ -149,6 +156,15 @@ def main(argv=None):
             and data["same_generation"]
             and data["isolation"]["off_probes_ok"]
             and data["isolation"]["on_probes_ok"]
+            and data["network_isolation"][
+                "on_service_reachable_during_off"
+            ] is False
+            and data["network_isolation"]["off_connection_attempt"][
+                "reachable"
+            ] is False
+            and data["network_isolation"][
+                "off_launch_starts_service"
+            ] is False
             and tp5_data["official_unchanged"]
             and tp5_data["recall_returns_not_in_memory"]
         )

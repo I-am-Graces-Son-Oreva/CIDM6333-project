@@ -19,6 +19,9 @@ from .fixture import (
 from .sandbox import (
     MODEL_ID,
     OPENCODE_DATA_DIR,
+    classify_denied,
+    discovered_private_roots,
+    private_deny_paths,
     probe,
     protected_paths,
     require_sandbox,
@@ -57,6 +60,36 @@ GENERATION = {
     "temperature": "provider-default",
     "variant": "default",
 }
+THIRD_REVIEW_LEAKED_PATHS = [
+    (
+        "leaked_artifacts_private_store",
+        Path("/tmp/e7-artifacts/private/fixture-memory.jsonl"),
+    ),
+    (
+        "leaked_artifacts_private_ledger",
+        Path("/tmp/e7-artifacts/private/fixture-memory-ledger.jsonl"),
+    ),
+    (
+        "leaked_artifacts_sidecar",
+        Path("/tmp/e7-artifacts/on.private.json"),
+    ),
+    (
+        "leaked_artifacts_service_config",
+        Path("/tmp/e7-artifacts/on/service.json"),
+    ),
+    (
+        "leaked_artifacts_on_profile",
+        Path("/tmp/e7-artifacts/on/sandbox.sb"),
+    ),
+    (
+        "leaked_demo_private_store",
+        Path("/tmp/e7-demo-1cnh/private/fixture-memory.jsonl"),
+    ),
+    (
+        "leaked_demo_private_ledger",
+        Path("/tmp/e7-demo-1cnh/private/fixture-memory-ledger.jsonl"),
+    ),
+]
 
 
 def sha256_file(path):
@@ -226,6 +259,78 @@ if __name__ == "__main__":
 '''
 
 
+def artifact_probe_targets(sandbox):
+    sandbox = Path(sandbox).resolve()
+    targets = []
+    seen = set()
+
+    for name, path in THIRD_REVIEW_LEAKED_PATHS:
+        key = str(Path(path).resolve())
+        if key in seen:
+            continue
+        seen.add(key)
+        targets.append((name, Path(path), True))
+
+    for root in discovered_private_roots(sandbox):
+        if root == sandbox or sandbox in root.parents:
+            continue
+        if root.exists() and root.is_file():
+            files = [root]
+        elif root.exists() and root.is_dir():
+            files = [path for path in root.rglob("*") if path.is_file()]
+        else:
+            files = []
+        for path in files:
+            key = str(path.resolve())
+            if key in seen:
+                continue
+            seen.add(key)
+            targets.append(
+                (f"private_artifact_{len(targets):02d}", path, False)
+            )
+
+    return targets
+
+
+def service_port(sandbox):
+    config = json.loads(
+        (Path(sandbox) / SERVICE_CONFIG).read_text(encoding="utf-8")
+    )
+    return config["port"]
+
+
+def service_reachable(port, host="127.0.0.1", timeout=0.2):
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def connection_probe(profile, cwd, port):
+    python = (
+        "/usr/bin/python3"
+        if Path("/usr/bin/python3").exists()
+        else sys.executable
+    )
+    command = [
+        python,
+        "-c",
+        (
+            "import socket; "
+            f"socket.create_connection(('127.0.0.1', {port}), timeout=1)"
+        ),
+    ]
+    result = run_under_sandbox(profile, command, cwd)
+    return {
+        "command": [str(part) for part in command],
+        "port": port,
+        "reachable": result.returncode == 0,
+        "returncode": result.returncode,
+        "stderr": result.stderr[:1000],
+    }
+
+
 def isolation_probes(sandbox, profile, extra_denied=()):
     sandbox = Path(sandbox)
     claim = claim_text()
@@ -298,6 +403,19 @@ def isolation_probes(sandbox, profile, extra_denied=()):
         )
     )
 
+    for name, path, allow_absent in artifact_probe_targets(sandbox):
+        probes.append(
+            probe(
+                profile,
+                sandbox,
+                name,
+                ["/bin/cat", str(path)],
+                "denied",
+                redact=claim,
+                allow_absent=allow_absent,
+            )
+        )
+
     for name, path in extra_denied:
         probes.append(
             probe(
@@ -307,34 +425,30 @@ def isolation_probes(sandbox, profile, extra_denied=()):
                 ["/bin/cat", str(path)],
                 "denied",
                 redact=claim,
+                allow_absent=True,
             )
         )
 
     return probes
 
 
-def probes_ok(probes):
-    denied = [
-        item for item in probes if item["expected"] == "denied"
-    ]
-    allowed = [
-        item for item in probes if item["expected"] == "allowed"
-    ]
-    return (
-        all(
-            item["denied"] and not item.get("leaked", False)
-            for item in denied
-        )
-        and all(
+def probe_ok(item):
+    if item["expected"] == "allowed":
+        return (
             not item["denied"]
             and not item.get("leaked", False)
             and item["returncode"] == 0
-            for item in allowed
         )
-    )
+    if item["denied"] and not item.get("leaked", False):
+        return True
+    return bool(item.get("absent")) and bool(item.get("allow_absent"))
 
 
-def build_off_sandbox(sandbox, manifest_path=None):
+def probes_ok(probes):
+    return all(probe_ok(item) for item in probes)
+
+
+def build_off_sandbox(sandbox, manifest_path=None, private_paths=()):
     require_sandbox()
     sandbox = Path(sandbox)
     sandbox.mkdir(parents=True, exist_ok=True)
@@ -358,9 +472,12 @@ def build_off_sandbox(sandbox, manifest_path=None):
     )
 
     config_path = write_opencode_config(sandbox, "off")
+    denied = private_deny_paths(sandbox, private_paths)
+    denied_dirs, denied_files = classify_denied(denied)
     profile_path = write_profile(
         sandbox / SANDBOX_PROFILE,
-        protected_paths(),
+        [*protected_paths(), *denied_dirs],
+        denied_files=denied_files,
     )
     launch_path = write_launch_script(
         sandbox / LAUNCH_SCRIPT,
@@ -385,6 +502,9 @@ def build_off_sandbox(sandbox, manifest_path=None):
         "data_dir": str((sandbox / "data").resolve()),
         "protected_paths": [
             str(path.resolve()) for path in protected_paths()
+        ],
+        "denied_private_artifacts": [
+            str(path.resolve()) for path in denied
         ],
         "question_recall": QUESTION_RECALL,
         "question_control": QUESTION_CONTROL,
@@ -423,7 +543,7 @@ def build_off_sandbox(sandbox, manifest_path=None):
 
 
 def build_on_sandbox(sandbox, private_dir, manifest_path=None,
-                     today="2026-11-08"):
+                     today="2026-11-08", private_paths=()):
     require_sandbox()
     sandbox = Path(sandbox)
     private_dir = Path(private_dir)
@@ -471,10 +591,15 @@ def build_on_sandbox(sandbox, private_dir, manifest_path=None,
     )
 
     config_path = write_opencode_config(sandbox, "on")
+    denied = private_deny_paths(
+        sandbox,
+        [private_dir, sidecar, *private_paths],
+    )
+    denied_dirs, denied_files = classify_denied(denied)
     profile_path = write_profile(
         sandbox / SANDBOX_PROFILE,
-        [*protected_paths(), private_dir],
-        denied_files=[sidecar],
+        [*protected_paths(), *denied_dirs],
+        denied_files=denied_files,
     )
     launch_path = write_launch_script(
         sandbox / LAUNCH_SCRIPT,
@@ -506,6 +631,9 @@ def build_on_sandbox(sandbox, private_dir, manifest_path=None,
         "protected_paths": [
             str(path.resolve())
             for path in [*protected_paths(), private_dir]
+        ],
+        "denied_private_artifacts": [
+            str(path.resolve()) for path in denied
         ],
         "question_recall": QUESTION_RECALL,
         "question_control": QUESTION_CONTROL,

@@ -119,6 +119,24 @@ operating-system profile enforces the filesystem boundary. The
 condition uses a retrieval threshold of 0.30 so the control and absent
 questions return `Not in memory.`
 
+Both profiles deny E7 private artifacts, not just the current
+condition's private directory. The profile builder discovers existing
+`/tmp/e7-*` artifact roots and always denies `/tmp/e7-artifacts`, then
+denies any explicit private directory, store, ledger, sidecar, or
+sibling condition path passed to the builder. The OFF profile is built
+with the ON sandbox, private directory, and sidecar as denied future
+paths. The ON profile is built with the OFF sandbox as a denied sibling
+path. This closes the cross-condition leak where memory-OFF could read
+the memory-ON private store, sidecar, service configuration, or sandbox
+profile from `/tmp/e7-artifacts` or `/tmp/e7-demo-*`.
+
+Retriever isolation during memory-OFF is lifecycle-based, not network
+based. The ON launch script starts the localhost service; the OFF launch
+script never starts it. Preflight records whether the ON port is
+reachable while the OFF profile is active and whether the OFF launch
+script contains `serve-on`. Network access is not claimed as isolated;
+the OFF condition must not run while the ON service is running.
+
 The private fixture is `~/CIDM6333-private-e7/private-claim.json`. Its
 plaintext claim is not stored in this ADR, the Flight Card, source
 code, tests, or historical transcripts. The fixture is the only
@@ -130,10 +148,18 @@ Preflight runs real negative probes under each generated profile. Each
 probe attempts to read the private fixture, official store, official
 ledger, Evolution 6 flight log, Evolution 6 evidence, the real OpenCode
 log and database, and the repository, plus shell and Python escape
-attempts. The ON probes also attempt to read the private store, private
-ledger, and sidecar. A probe passes only when the read is actually
-denied and the private claim did not appear on standard output. The same
-preflight records `same_model`, `same_question`, and `same_generation`.
+attempts. Both profiles also probe every discovered E7 private artifact
+root and the exact third-review leaked paths: the
+`/tmp/e7-artifacts/private` store and ledger, the
+`/tmp/e7-demo-*/private` store and ledger, the sidecar, and the ON
+`service.json` and `sandbox.sb`. The OFF probes also attempt to read the
+ON private store, ledger, and sidecar; the ON probes also attempt to
+read the private store, private ledger, and sidecar. A probe passes only
+when the read is actually denied and the private claim did not appear on
+standard output. A path that does not exist is recorded as absent and
+may pass only when absence is explicitly allowed; a readable file never
+passes. The same preflight records `same_model`, `same_question`, and
+`same_generation`.
 
 The model-call permission behavior probe timed out on this host and is
 not claimed as passed. The enforcement evidence is the operating-system
@@ -180,12 +206,14 @@ Local pytest results for the memory implementation:
 - `tests/test_e7_memory.py`: 8 tests passed, including the structured
   `query()` result path used by the localhost service.
 - `tests/test_e7_isolation.py`: 19 tests passed, including real
-  sandbox-denial probes, ON private-store and sidecar denial,
+  sandbox-denial probes, cross-condition private-artifact denial,
+  absence-aware probe handling, ON private-store and sidecar denial,
   threshold rejection, generated-config compatibility with the
   installed OpenCode binary, launch-script contents, the `serve-on`
-  CLI path used by `launch.sh`, fixture-source consistency, TP5, and
-  historical-ledger preservation.
-- Full suite: 27 tests passed.
+  CLI path used by `launch.sh`, lifecycle reachability, fixture-source
+  consistency, TP5, and historical-ledger preservation.
+- Full suite: 32 tests passed = 19 E7 isolation + 8 E7 memory + 5 E6
+  context tests.
 
 Preflight isolation evidence:
 

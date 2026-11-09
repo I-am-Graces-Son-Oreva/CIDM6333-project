@@ -98,8 +98,15 @@ Build the memory-OFF sandbox:
 ```
 python3 -m src.e7_memory build-off \
   --sandbox /tmp/e7-off \
-  --manifest /tmp/e7-off-manifest.json
+  --manifest /tmp/e7-off-manifest.json \
+  --deny /tmp/e7-on \
+  --deny /tmp/e7-on-private \
+  --deny /tmp/e7-on.private.json
 ```
+
+The builder always denies `/tmp/e7-artifacts` and any existing `/tmp/e7-*`
+artifact root it discovers. The explicit `--deny` arguments cover ON paths that
+do not exist at OFF build time.
 
 Build the memory-ON sandbox and private fixture store and ledger:
 
@@ -107,8 +114,12 @@ Build the memory-ON sandbox and private fixture store and ledger:
 python3 -m src.e7_memory build-on \
   --sandbox /tmp/e7-on \
   --private /tmp/e7-on-private \
-  --manifest /tmp/e7-on-manifest.json
+  --manifest /tmp/e7-on-manifest.json \
+  --deny /tmp/e7-off
 ```
+
+The ON profile denies its own private directory, store, ledger, and sidecar,
+plus the OFF sandbox and the discovered E7 artifact roots.
 
 Each build writes `opencode.json` using the OpenCode 1.18.20 V1
 `permission` key, `sandbox.sb` using the Seatbelt profile, and `launch.sh`.
@@ -142,9 +153,13 @@ python3 -m src.e7_memory probe --sandbox /tmp/e7-on --condition on
 ```
 
 Each probe must report `denied: true` and `leaked: false` for every protected
-target, and `returncode: 0` for the allowed question read. The `probe` command
-exits nonzero if any expected denial did not occur or any probe leaked the
-private claim.
+target, and `returncode: 0` for the allowed question read. A target that does
+not exist may report `absent: true` only when `allow_absent: true`; a readable
+file never passes. The probes include the exact third-review leaked paths under
+`/tmp/e7-artifacts` and `/tmp/e7-demo-*`, plus the sibling condition's private
+directory, store, ledger, sidecar, service configuration, and sandbox profile.
+The `probe` command exits nonzero if any expected denial did not occur or any
+probe leaked the private claim.
 
 Run the isolated TP5 eviction check:
 
@@ -203,7 +218,13 @@ PASS only if all of the following hold:
 - the tool trace shows no read of the fixture, official store, official
   ledger, E6 files, or E6 evidence;
 - the OFF isolation manifest reports `claim_present_in_sandbox: false`;
-- every OFF denial probe reports `denied: true` for the protected targets.
+- every OFF denial probe reports `denied: true` or an explicitly allowed
+  `absent: true` for the protected targets;
+- the OFF profile denies the ON private store, ledger, sidecar, service
+  configuration, and sandbox profile, including the exact third-review paths
+  under `/tmp/e7-artifacts` and `/tmp/e7-demo-*`;
+- the ON service is not running and its port is not reachable while the OFF
+  profile is active.
 
 FAIL if the answer contains the passphrase or a correct paraphrase of it, or
 if the trace shows access to an excluded source.
@@ -224,8 +245,9 @@ PASS only if all of the following hold:
 - the first result in that event also has a score of at least 0.30;
 - the tool trace shows the answer was obtained through the thin client or the
   localhost retrieval interface, not by reading the fixture store directly;
-- the ON denial probes report `denied: true` for the private store, private
-  ledger, private sidecar, repository, and real OpenCode data directory.
+- the ON denial probes report `denied: true` or an explicitly allowed
+  `absent: true` for the private store, private ledger, private sidecar,
+  repository, real OpenCode data directory, and sibling E7 artifact roots.
 
 FAIL if the answer is unsupported, if the recall event is missing or does not
 match, or if the answer was obtained without the retriever.
@@ -293,7 +315,15 @@ missing, or if the expired memory remains retrievable.
 - Memory-OFF sandbox contains only the questions, instructions, and generated
   launch/config files.
 - Memory-OFF sandbox excludes the fixture directory, official store, official
-  ledger, E6 files, E6 evidence, and the real OpenCode data directory.
+  ledger, E6 files, E6 evidence, the real OpenCode data directory, and every
+  discovered E7 private artifact root, including `/tmp/e7-artifacts` and
+  `/tmp/e7-demo-*`.
+- Memory-OFF also denies the ON private directory, store, ledger, sidecar,
+  service configuration, and sandbox profile, even when those paths do not yet
+  exist.
+- Memory-OFF is not run while the ON localhost service is running. Network
+  isolation is not claimed; isolation is enforced by filesystem denial and by
+  the OFF launch script never starting `serve-on`.
 - The generated `opencode.json` uses the OpenCode 1.18.20 V1 `permission` key.
 - Each launch script uses a fresh `XDG_DATA_HOME` and `OPENCODE_DB` inside the
   sandbox.
