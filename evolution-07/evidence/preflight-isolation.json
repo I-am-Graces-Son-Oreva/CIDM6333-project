@@ -5,78 +5,500 @@
       "claim_sha256": "c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8",
       "condition": "memory-off",
       "control_expected_agent_answer": "4",
+      "data_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/data",
       "excluded_sources": [
-        "/Users/orevisco/CIDM6333-project/evolution-07/fixtures/private-claim.json",
+        "/Users/orevisco/CIDM6333-private-e7/private-claim.json",
         "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl",
         "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl",
         "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md",
         "/Users/orevisco/CIDM6333-project/evolution-06/flight-card.md",
         "/Users/orevisco/CIDM6333-project/evolution-06/handoff.md",
-        "/Users/orevisco/CIDM6333-project/evolution-06/evidence"
+        "/Users/orevisco/CIDM6333-project/evolution-06/evidence",
+        "/Users/orevisco/.local/share/opencode"
       ],
       "expected": {
         "control": "The agent must answer 4.",
         "recall": "The agent must not state the fixture passphrase; it must answer Not in memory or state that it cannot determine it."
       },
+      "generation": {
+        "temperature": "provider-default",
+        "variant": "default"
+      },
+      "isolation_mode": "macos-seatbelt + opencode-v1-permission-deny",
       "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
+      "launch_script": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/launch.sh",
       "model": "OpenCode Big Pickle",
+      "model_id": "opencode/big-pickle",
+      "opencode_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/opencode.json",
+      "opencode_permission": {
+        "bash": "deny",
+        "doom_loop": "deny",
+        "edit": "deny",
+        "external_directory": {
+          "*": "deny"
+        },
+        "glob": "deny",
+        "grep": "deny",
+        "list": "deny",
+        "lsp": "deny",
+        "read": "deny",
+        "skill": "deny",
+        "task": "deny",
+        "todowrite": "deny",
+        "webfetch": "deny",
+        "websearch": "deny"
+      },
+      "protected_paths": [
+        "/Users/orevisco/CIDM6333-project",
+        "/Users/orevisco/CIDM6333-private-e7",
+        "/Users/orevisco/.local/share/opencode"
+      ],
       "question_control": "What is 2 + 2?",
       "question_recall": "What is the E7 private fixture passphrase?",
       "sandbox_files": [
         "README.txt",
+        "launch.sh",
+        "opencode.json",
         "question-control.txt",
-        "question-recall.txt"
+        "question-recall.txt",
+        "sandbox.sb"
       ],
-      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/off"
+      "sandbox_profile": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/sandbox.sb",
+      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off"
     },
     "memory-on": {
       "claim_present_in_sandbox": false,
       "claim_sha256": "c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8",
       "condition": "memory-on",
       "control_expected_agent_answer": "4",
+      "data_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/data",
       "excluded_sources": [
-        "/Users/orevisco/CIDM6333-project/evolution-07/fixtures/private-claim.json",
+        "/Users/orevisco/CIDM6333-private-e7/private-claim.json",
         "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl",
         "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl",
         "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md",
         "/Users/orevisco/CIDM6333-project/evolution-06/flight-card.md",
-        "/Users/orevisco/CIDM6333-project/evolution-06/handoff.md"
+        "/Users/orevisco/CIDM6333-project/evolution-06/handoff.md",
+        "/Users/orevisco/CIDM6333-project/evolution-06/evidence",
+        "/Users/orevisco/.local/share/opencode"
       ],
       "expected": {
         "absent": "The agent must answer Not in memory and must not fabricate a launch code.",
         "control": "The agent must answer 4.",
         "recall": "The agent must answer with the fixture passphrase and cite the retriever's memory ID, source, and score."
       },
-      "fixture_ledger": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/private/fixture-memory-ledger.jsonl",
-      "fixture_store": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/private/fixture-memory.jsonl",
+      "fixture_ledger": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory-ledger.jsonl",
+      "fixture_store": "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory.jsonl",
       "fixture_store_outside_sandbox": true,
+      "generation": {
+        "temperature": "provider-default",
+        "variant": "default"
+      },
+      "isolation_mode": "macos-seatbelt + localhost-retriever + opencode-v1-permission-deny-read",
       "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
+      "launch_script": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/launch.sh",
       "model": "OpenCode Big Pickle",
-      "private_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/private",
+      "model_id": "opencode/big-pickle",
+      "opencode_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/opencode.json",
+      "opencode_permission": {
+        "bash": "allow",
+        "doom_loop": "deny",
+        "edit": "deny",
+        "external_directory": {
+          "*": "deny"
+        },
+        "glob": "deny",
+        "grep": "deny",
+        "list": "deny",
+        "lsp": "deny",
+        "read": "deny",
+        "skill": "deny",
+        "task": "deny",
+        "todowrite": "deny",
+        "webfetch": "deny",
+        "websearch": "deny"
+      },
+      "private_dir": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private",
+      "protected_paths": [
+        "/Users/orevisco/CIDM6333-project",
+        "/Users/orevisco/CIDM6333-private-e7",
+        "/Users/orevisco/.local/share/opencode",
+        "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private"
+      ],
       "question_absent": "What is the secret launch code for Project Orion?",
       "question_control": "What is 2 + 2?",
       "question_recall": "What is the E7 private fixture passphrase?",
+      "retrieval_interface": "http://127.0.0.1:64541/recall",
+      "retrieval_service_outside_sandbox": true,
       "retrieval_threshold": 0.3,
       "sandbox_files": [
         "README.txt",
         "ask_memory.py",
+        "launch.sh",
+        "opencode.json",
         "question-absent.txt",
         "question-control.txt",
-        "question-recall.txt"
+        "question-recall.txt",
+        "sandbox.sb",
+        "service.json"
       ],
-      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-7a11w3n9/on"
+      "sandbox_profile": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/sandbox.sb",
+      "sandbox_root": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on",
+      "service_config": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/service.json",
+      "sidecar": "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on.private.json",
+      "sidecar_denied": true
     }
   },
   "fixture": {
     "claim_sha256": "c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8",
     "expected_answer_sha256": "cd30b5080e2ac746c2a01ade91d0d8b2faf18bf4f38825ceb0f5acf792bac33e",
-    "path": "/Users/orevisco/CIDM6333-project/evolution-07/fixtures/private-claim.json",
-    "question": "What is the E7 private fixture passphrase?"
+    "path": "/Users/orevisco/CIDM6333-private-e7/private-claim.json",
+    "question": "What is the E7 private fixture passphrase?",
+    "source": "~/CIDM6333-private-e7/private-claim.json#text"
   },
   "isolation": {
     "off_claim_present": false,
+    "off_negative_probes": [
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-private-e7/private-claim.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_fixture",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-private-e7/private-claim.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "official_store",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "official_ledger",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "e6_flight_log",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-06/flight-log.md: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "e6_evidence",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/.local/share/opencode/log/opencode.log"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "opencode_real_log",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/.local/share/opencode/log/opencode.log: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/.local/share/opencode/opencode.db"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "opencode_real_db",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/.local/share/opencode/opencode.db: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/sh",
+          "-c",
+          "cat /Users/orevisco/CIDM6333-private-e7/private-claim.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "shell_escape_private_fixture",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-private-e7/private-claim.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-c",
+          "print(open('/Users/orevisco/CIDM6333-private-e7/private-claim.json').read())"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "python_escape_private_fixture",
+        "returncode": 1,
+        "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nPermissionError: [Errno 1] Operation not permitted: '/Users/orevisco/CIDM6333-private-e7/private-claim.json'\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/usr/bin/grep",
+          "-r",
+          "m-0001",
+          "/Users/orevisco/CIDM6333-project"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "repository_search",
+        "returncode": 2,
+        "stderr": "grep: /Users/orevisco/CIDM6333-project: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/off/question-recall.txt"
+        ],
+        "denied": false,
+        "expected": "allowed",
+        "leaked": false,
+        "name": "allowed_question_read",
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "What is the E7 private fixture passphrase?\n"
+      }
+    ],
+    "off_probes_ok": true,
     "on_claim_present_in_sandbox": false,
-    "on_fixture_store_outside_sandbox": true
+    "on_fixture_store_outside_sandbox": true,
+    "on_negative_probes": [
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-private-e7/private-claim.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_fixture",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-private-e7/private-claim.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "official_store",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-07/lab/memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "official_ledger",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-07/lab/memory-ledger.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-06/flight-log.md"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "e6_flight_log",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-06/flight-log.md: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "e6_evidence",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-project/evolution-06/evidence/session-b2-export.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/.local/share/opencode/log/opencode.log"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "opencode_real_log",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/.local/share/opencode/log/opencode.log: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/Users/orevisco/.local/share/opencode/opencode.db"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "opencode_real_db",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/.local/share/opencode/opencode.db: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/sh",
+          "-c",
+          "cat /Users/orevisco/CIDM6333-private-e7/private-claim.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "shell_escape_private_fixture",
+        "returncode": 1,
+        "stderr": "cat: /Users/orevisco/CIDM6333-private-e7/private-claim.json: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-c",
+          "print(open('/Users/orevisco/CIDM6333-private-e7/private-claim.json').read())"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "python_escape_private_fixture",
+        "returncode": 1,
+        "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nPermissionError: [Errno 1] Operation not permitted: '/Users/orevisco/CIDM6333-private-e7/private-claim.json'\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/usr/bin/grep",
+          "-r",
+          "m-0001",
+          "/Users/orevisco/CIDM6333-project"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "repository_search",
+        "returncode": 2,
+        "stderr": "grep: /Users/orevisco/CIDM6333-project: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on/question-recall.txt"
+        ],
+        "denied": false,
+        "expected": "allowed",
+        "leaked": false,
+        "name": "allowed_question_read",
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "What is the E7 private fixture passphrase?\n"
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_store",
+        "returncode": 1,
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory-ledger.jsonl"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_ledger",
+        "returncode": 1,
+        "stderr": "cat: /var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/private/fixture-memory-ledger.jsonl: Operation not permitted\n",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/bin/cat",
+          "/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on.private.json"
+        ],
+        "denied": true,
+        "expected": "denied",
+        "leaked": false,
+        "name": "private_sidecar",
+        "returncode": 1,
+        "stderr": "cat: /private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/e7-preflight-mvgzdypf/on.private.json: Operation not permitted\n",
+        "stdout": ""
+      }
+    ],
+    "on_probes_ok": true
   },
   "label": "PREFLIGHT \u2014 NOT OFFICIAL SORTIE EVIDENCE",
   "retriever": {
@@ -93,17 +515,18 @@
         {
           "id": "m-9001",
           "score": 0.6717,
-          "source": "evolution-07/fixtures/private-claim.json#text"
+          "source": "~/CIDM6333-private-e7/private-claim.json#text"
         }
       ],
       "schema": "e7-memory-v2",
       "top_id": "m-9001",
       "top_score": 0.6717,
-      "top_source": "evolution-07/fixtures/private-claim.json#text"
+      "top_source": "~/CIDM6333-private-e7/private-claim.json#text"
     },
     "recall_event_matches_fixture": true,
-    "recall_output_sha256": "97c793d3129f186aa48942de8c3d7653a0be1eab754e86005b4fff617ea4f967"
+    "recall_output_sha256": "42440f9af1c9ef621f1aa667baf7b83a2dcad2892dfd2a8326bd2c746103a526"
   },
+  "same_generation": true,
   "same_model": true,
   "same_question": true
 }

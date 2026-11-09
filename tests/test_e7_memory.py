@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import subprocess
 import sys
@@ -190,3 +191,38 @@ def test_top_k_and_threshold(tmp_path):
     )
 
     assert "Not in memory." in blocked.stdout
+
+
+def load_recall_module():
+    spec = importlib.util.spec_from_file_location("recall_under_test", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_query_returns_structured_results_without_printing(tmp_path, capsys):
+    recall = load_recall_module()
+    store = tmp_path / "memory.jsonl"
+    ledger = tmp_path / "memory-ledger.jsonl"
+
+    recall.remember(
+        "The sky is blue",
+        "test",
+        "2026-12-15",
+        store_path=store,
+        ledger_path=ledger,
+    )
+    capsys.readouterr()
+
+    data = recall.query(
+        "sky color",
+        store_path=store,
+        ledger_path=ledger,
+        today="2026-11-08",
+    )
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert data["question"] == "sky color"
+    assert data["results"][0]["text"] == "The sky is blue"
+    assert data["top_score"] > 0

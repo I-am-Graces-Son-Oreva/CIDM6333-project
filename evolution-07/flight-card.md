@@ -37,6 +37,8 @@ No official sortie begins until Chase records GO.
 
 Path: `~/CIDM6333-private-e7/private-claim.json`
 
+Source: `~/CIDM6333-private-e7/private-claim.json#text`
+
 Claim SHA-256:
 `c4e5344190f2be0b001ace246933351347493ef818c4ff93ef0f937203d425d8`
 
@@ -76,9 +78,15 @@ The fixture store and ledger are generated in a private directory outside the
 sandbox by the condition builder. The retriever is
 `evolution-07/lab/recall.py` using local TF-IDF cosine similarity.
 
+A localhost-only service, started outside the sandbox, owns the private store
+and ledger. The ON sandbox contains a thin `ask_memory.py` client that calls
+that service. The service writes recall events to the private ledger. The
+private directory and the sidecar file are denied by the OS sandbox profile.
+
 The memory-ON wrapper uses a retrieval threshold of 0.30. The recall question
 scores above 0.30; the control and absent questions score below it and return
-`Not in memory.`
+`Not in memory.` The verifier requires both `top_score` and the first result
+score to be at least 0.30.
 
 Historical events in the official ledger use the earlier prototype schema and
 must not be represented as official sortie evidence.
@@ -102,6 +110,12 @@ python3 -m src.e7_memory build-on \
   --manifest /tmp/e7-on-manifest.json
 ```
 
+Each build writes `opencode.json` using the OpenCode 1.18.20 V1
+`permission` key, `sandbox.sb` using the Seatbelt profile, and `launch.sh`.
+The launch script sets a fresh `XDG_DATA_HOME` and `OPENCODE_DB` inside the
+sandbox, starts the ON service when needed, and runs OpenCode under
+`/usr/bin/sandbox-exec`.
+
 Run the retriever for a question in the memory-ON sandbox:
 
 ```
@@ -110,12 +124,27 @@ python3 -m src.e7_memory ask \
   --question "What is the E7 private fixture passphrase?"
 ```
 
+The `ask` command starts the localhost service, runs the thin client under the
+generated sandbox profile, and shuts the service down.
+
 Verify the matching recall event:
 
 ```
 python3 -m src.e7_memory verify-on \
   --ledger /tmp/e7-on-private/fixture-memory-ledger.jsonl
 ```
+
+Run the real denial probes:
+
+```
+python3 -m src.e7_memory probe --sandbox /tmp/e7-off --condition off
+python3 -m src.e7_memory probe --sandbox /tmp/e7-on --condition on
+```
+
+Each probe must report `denied: true` and `leaked: false` for every protected
+target, and `returncode: 0` for the allowed question read. The `probe` command
+exits nonzero if any expected denial did not occur or any probe leaked the
+private claim.
 
 Run the isolated TP5 eviction check:
 
@@ -135,19 +164,28 @@ python3 -m src.e7_memory preflight \
 
 Memory-OFF session:
 
-1. Set the working directory to the OFF sandbox.
-2. Deny Read, Glob, Grep, Bash, and any other tool that can access paths
-   outside the sandbox. Allow only the two question files inside it.
-3. Do not provide the repository, the fixture, the memory store, the ledger,
-   E6 files, or E6 evidence.
+1. Run `/tmp/e7-off/launch.sh` from a fresh shell. The script changes to the
+   OFF sandbox, uses a fresh OpenCode data directory, and runs OpenCode under
+   the Seatbelt profile.
+2. The generated config denies Read, Glob, Grep, List, Bash, Task, and the
+   other file-reading tools. The OS profile denies the repository, the
+   fixture directory, and the real OpenCode data directory.
+3. Provide the three questions in the prompt. The agent does not need to read
+   files.
 4. Capture the tool-call trace and the verbatim answers.
 
 Memory-ON session:
 
-1. Set the working directory to the ON sandbox.
-2. Deny Read, Glob, Grep, and any other tool that can read the private
-   directory or the repository. Allow running `ask_memory.py`.
-3. The agent must obtain the recall answer through `ask_memory.py`.
+1. Run `/tmp/e7-on/launch.sh` from a fresh shell. The script starts the
+   localhost service outside the sandbox, changes to the ON sandbox, uses a
+   fresh OpenCode data directory, and runs OpenCode under the Seatbelt profile.
+2. The generated config denies Read, Glob, Grep, List, Task, and the other
+   file-reading tools, but allows Bash so the thin client can run. The OS
+   profile denies the repository, the fixture directory, the private
+   store/ledger/sidecar, and the real OpenCode data directory.
+3. Provide the exact command `python3 ask_memory.py "<question>"` in the
+   prompt. The agent must obtain the answer through `ask_memory.py` or the
+   same localhost retrieval interface, not by reading the store.
 4. Capture the wrapper output, the recall event, the tool-call trace, and the
    verbatim answers.
 
@@ -164,14 +202,16 @@ PASS only if all of the following hold:
   statement that the information is unavailable;
 - the tool trace shows no read of the fixture, official store, official
   ledger, E6 files, or E6 evidence;
-- the OFF isolation manifest reports `claim_present_in_sandbox: false`.
+- the OFF isolation manifest reports `claim_present_in_sandbox: false`;
+- every OFF denial probe reports `denied: true` for the protected targets.
 
 FAIL if the answer contains the passphrase or a correct paraphrase of it, or
 if the trace shows access to an excluded source.
 
 ### TP2 — Memory ON
 
-Ask Q-Recall in the ON sandbox and obtain the answer through `ask_memory.py`.
+Ask Q-Recall in the ON sandbox and obtain the answer through the retriever
+interface, normally `ask_memory.py`.
 
 PASS only if all of the following hold:
 
@@ -180,9 +220,12 @@ PASS only if all of the following hold:
   `~/CIDM6333-private-e7/private-claim.json#text`;
 - the private ledger contains a recall event for the exact Q-Recall wording
   with `schema: e7-memory-v2`, `top_id: m-9001`, the same `top_source`, and
-  `top_score` greater than 0.30;
-- the tool trace shows the answer was obtained through the retriever wrapper,
-  not by reading the fixture store directly.
+  `top_score` at least 0.30;
+- the first result in that event also has a score of at least 0.30;
+- the tool trace shows the answer was obtained through the thin client or the
+  localhost retrieval interface, not by reading the fixture store directly;
+- the ON denial probes report `denied: true` for the private store, private
+  ledger, private sidecar, repository, and real OpenCode data directory.
 
 FAIL if the answer is unsupported, if the recall event is missing or does not
 match, or if the answer was obtained without the retriever.
@@ -201,7 +244,8 @@ conditions.
 
 ### TP4 — Absent Question
 
-Ask Q-Absent in the ON sandbox through `ask_memory.py`.
+Ask Q-Absent in the ON sandbox through the retriever interface, normally
+`ask_memory.py`.
 
 PASS only if:
 
@@ -244,33 +288,53 @@ missing, or if the expired memory remains retrievable.
 ## Isolation Requirements
 
 - Fresh sessions for memory OFF and ON.
-- Same model (`OpenCode Big Pickle`) and exact question wording in both
-  conditions.
-- Memory-OFF sandbox contains only the questions and instructions.
+- Same model (`OpenCode Big Pickle`), exact question wording, and same
+  generation in both conditions.
+- Memory-OFF sandbox contains only the questions, instructions, and generated
+  launch/config files.
 - Memory-OFF sandbox excludes the fixture directory, official store, official
-  ledger, E6 files, and E6 evidence.
-- Memory-ON sandbox contains only the questions, instructions, and
-  `ask_memory.py`. The private fixture store and ledger live outside it.
-- Deny tools that can read outside the sandbox.
+  ledger, E6 files, E6 evidence, and the real OpenCode data directory.
+- The generated `opencode.json` uses the OpenCode 1.18.20 V1 `permission` key.
+- Each launch script uses a fresh `XDG_DATA_HOME` and `OPENCODE_DB` inside the
+  sandbox.
+- The OS `sandbox-exec` profile, not prose instructions, enforces the
+  filesystem boundary.
+- Memory-ON sandbox contains only the questions, instructions, the thin
+  `ask_memory.py` client, and generated launch/config files. The private
+  fixture store, ledger, and sidecar live outside it and are denied by the OS
+  profile.
+- The ON agent may run Bash, but the OS profile denies the repository, the
+  fixture directory, the private store/ledger/sidecar, and the real OpenCode
+  data directory.
 - No previous answers or transcripts supplied to either session.
 - Record answers verbatim and capture the tool-call trace.
 - The private fixture is not in ordinary source files or prior transcripts.
+- The model-call permission behavior probe is not claimed as passed; the
+  enforcement evidence is the OS denial output and the generated-config
+  compatibility test.
 
 ## Evidence to Capture
 
 - `evolution-07/evidence/preflight-isolation.json`
 - `evolution-07/evidence/preflight-tp5-isolation.json`
 - `evolution-07/evidence/tp5-isolation.json`
-- OFF sandbox manifest and tool-call trace
+- OFF sandbox manifest, `opencode.json`, `sandbox.sb`, `launch.sh`, and
+  tool-call trace
+- OFF denial probe output
 - OFF verbatim answer to Q-Recall
 - OFF verbatim answer to Q-Control
-- ON sandbox manifest and tool-call trace
+- ON sandbox manifest, `opencode.json`, `sandbox.sb`, `launch.sh`, and
+  tool-call trace
+- ON denial probe output for the private store, ledger, and sidecar
+- ON service log
 - ON verbatim answer to Q-Recall
 - ON verbatim answer to Q-Control
 - ON verbatim answer to Q-Absent
 - ON retriever output for Q-Recall
 - Matching recall event from the private ledger
 - Store and ledger before and after snapshots for TP5
+- Fresh-session data-directory path showing the real OpenCode log/DB was not
+  reused
 - Chase verdict and any falsifiers
 
 Preflight evidence is not official sortie evidence. The official evidence
@@ -305,12 +369,23 @@ Any one of these means FAIL:
 19. The ledger is not append-only, or new events do not use the
     `e7-memory-v2` schema.
 20. Answers or evidence are edited after capture.
+21. Isolation is enforced only by prose instructions; the real denial probes
+    are missing or any expected denial did not occur.
+22. Either condition reuses the real OpenCode data directory or its log/DB.
+23. The generated config uses V2 `permissions` instead of the V1 `permission`
+    key, or the installed OpenCode binary rejects the generated config.
+24. The ON sandbox can read the private store, private ledger, or sidecar.
+25. The recall event has `top_score` below 0.30 or a first-result score below
+    0.30.
 
 ## ABORT Conditions
 
 ABORT rather than FAIL if:
 
 - the harness cannot enforce the memory-OFF sandbox or deny reads outside it;
+- `/usr/bin/sandbox-exec` is unavailable or any required denial probe fails;
+- the installed OpenCode binary rejects the generated V1 `permission` config;
+- the real OpenCode data directory cannot be excluded from a condition;
 - the fixture hash does not match the declared claim SHA-256;
 - the required model is unavailable;
 - the harness cannot provide the tool-call trace or verbatim answers needed

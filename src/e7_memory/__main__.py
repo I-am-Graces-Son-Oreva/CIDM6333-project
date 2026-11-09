@@ -1,12 +1,17 @@
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from .conditions import (
     QUESTION_RECALL,
     build_off_sandbox,
     build_on_sandbox,
+    isolation_probes,
+    probes_ok,
     run_wrapper,
+    serve_on,
+    sidecar_path,
     tp5_isolation,
     verify_on_event,
 )
@@ -31,6 +36,17 @@ def main(argv=None):
     ask = subparsers.add_parser("ask")
     ask.add_argument("--sandbox", required=True)
     ask.add_argument("--question", required=True)
+
+    serve = subparsers.add_parser("serve-on")
+    serve.add_argument("--sandbox", required=True)
+
+    probe_parser = subparsers.add_parser("probe")
+    probe_parser.add_argument("--sandbox", required=True)
+    probe_parser.add_argument(
+        "--condition",
+        choices=["off", "on"],
+        default="off",
+    )
 
     verify = subparsers.add_parser("verify-on")
     verify.add_argument("--ledger", required=True)
@@ -64,6 +80,30 @@ def main(argv=None):
         sys.stdout.write(result.stdout)
         sys.stderr.write(result.stderr)
         return result.returncode
+
+    if args.command == "serve-on":
+        serve_on(args.sandbox)
+        return 0
+
+    if args.command == "probe":
+        sandbox = Path(args.sandbox)
+        extra_denied = []
+        if args.condition == "on":
+            sidecar = json.loads(
+                sidecar_path(sandbox).read_text(encoding="utf-8")
+            )
+            extra_denied = [
+                ("private_store", sidecar["store"]),
+                ("private_ledger", sidecar["ledger"]),
+                ("private_sidecar", str(sidecar_path(sandbox))),
+            ]
+        probes = isolation_probes(
+            sandbox,
+            sandbox / "sandbox.sb",
+            extra_denied=extra_denied,
+        )
+        print(json.dumps(probes, indent=2, sort_keys=True))
+        return 0 if probes_ok(probes) else 1
 
     if args.command == "verify-on":
         fixture = load_fixture()
@@ -106,6 +146,9 @@ def main(argv=None):
             and data["retriever"]["recall_event_matches_fixture"]
             and data["same_model"]
             and data["same_question"]
+            and data["same_generation"]
+            and data["isolation"]["off_probes_ok"]
+            and data["isolation"]["on_probes_ok"]
             and tp5_data["official_unchanged"]
             and tp5_data["recall_returns_not_in_memory"]
         )

@@ -8,6 +8,8 @@ from .conditions import (
     QUESTION_RECALL,
     build_off_sandbox,
     build_on_sandbox,
+    isolation_probes,
+    probes_ok,
     run_wrapper,
     sha256_text,
     tp5_isolation,
@@ -31,9 +33,23 @@ def run_preflight(evidence_dir=EVIDENCE_DIR):
         off_manifest = build_off_sandbox(temp / "off")
         on_manifest = build_on_sandbox(temp / "on", temp / "private")
 
+        off_probes = isolation_probes(
+            temp / "off",
+            temp / "off" / "sandbox.sb",
+        )
         recall_result = run_wrapper(temp / "on", QUESTION_RECALL)
         control_result = run_wrapper(temp / "on", QUESTION_CONTROL)
         absent_result = run_wrapper(temp / "on", QUESTION_ABSENT)
+
+        on_probes = isolation_probes(
+            temp / "on",
+            temp / "on" / "sandbox.sb",
+            extra_denied=[
+                ("private_store", on_manifest["fixture_store"]),
+                ("private_ledger", on_manifest["fixture_ledger"]),
+                ("private_sidecar", on_manifest["sidecar"]),
+            ],
+        )
 
         event_matches, recall_event = verify_on_event(
             temp / "private" / "fixture-memory-ledger.jsonl",
@@ -46,6 +62,7 @@ def run_preflight(evidence_dir=EVIDENCE_DIR):
             "label": EVIDENCE_LABEL,
             "fixture": {
                 "path": str(FIXTURE_PATH),
+                "source": fixture["source"],
                 "claim_sha256": claim_hash(),
                 "question": QUESTION_RECALL,
                 "expected_answer_sha256": sha256_text(
@@ -61,6 +78,10 @@ def run_preflight(evidence_dir=EVIDENCE_DIR):
                 off_manifest["question_recall"]
                 == on_manifest["question_recall"]
                 == QUESTION_RECALL
+            ),
+            "same_generation": (
+                off_manifest["generation"]
+                == on_manifest["generation"]
             ),
             "retriever": {
                 "recall_output_sha256": sha256_text(recall_result.stdout),
@@ -82,6 +103,10 @@ def run_preflight(evidence_dir=EVIDENCE_DIR):
                 "on_fixture_store_outside_sandbox": on_manifest[
                     "fixture_store_outside_sandbox"
                 ],
+                "off_negative_probes": off_probes,
+                "on_negative_probes": on_probes,
+                "off_probes_ok": probes_ok(off_probes),
+                "on_probes_ok": probes_ok(on_probes),
             },
         }
 

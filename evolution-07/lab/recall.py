@@ -96,9 +96,9 @@ def tokenize(text):
     return re.findall(r"[a-z0-9]+", text.lower())
 
 
-def recall(question, top_k=3, threshold=0.05,
-           today=None, store_path=STORE,
-           ledger_path=LEDGER):
+def query(question, top_k=3, threshold=0.05,
+          today=None, store_path=STORE,
+          ledger_path=LEDGER):
     today = today or date.today().isoformat()
     records = read_jsonl(store_path)
 
@@ -114,10 +114,10 @@ def recall(question, top_k=3, threshold=0.05,
         and r["id"] not in superseded_ids
     ]
 
-    query = Counter(tokenize(question))
+    query_tokens = Counter(tokenize(question))
     documents = [Counter(tokenize(r["text"])) for r in active]
 
-    if not query or not documents:
+    if not query_tokens or not documents:
         log_event(
             ledger_path,
             "recall",
@@ -127,8 +127,13 @@ def recall(question, top_k=3, threshold=0.05,
             top_source=None,
             top_score=None
         )
-        print("Not in memory.")
-        return
+        return {
+            "question": question,
+            "results": [],
+            "top_id": None,
+            "top_source": None,
+            "top_score": None,
+        }
 
     # Local TF-IDF cosine similarity.
     n = len(documents)
@@ -159,7 +164,7 @@ def recall(question, top_k=3, threshold=0.05,
 
         return numerator / (norm_a * norm_b)
 
-    q_vector = vector(query)
+    q_vector = vector(query_tokens)
     scored = []
 
     for record, doc in zip(active, documents):
@@ -194,16 +199,46 @@ def recall(question, top_k=3, threshold=0.05,
         top_score=top["score"]
     )
 
-    if not results:
+    return {
+        "question": question,
+        "results": [
+            {
+                "id": record["id"],
+                "source": record["source"],
+                "date": record["written"],
+                "score": round(score, 4),
+                "text": record["text"],
+            }
+            for score, record in results
+        ],
+        "top_id": top["id"],
+        "top_source": top["source"],
+        "top_score": top["score"],
+    }
+
+
+def recall(question, top_k=3, threshold=0.05,
+           today=None, store_path=STORE,
+           ledger_path=LEDGER):
+    data = query(
+        question,
+        top_k,
+        threshold,
+        today,
+        store_path,
+        ledger_path,
+    )
+
+    if not data["results"]:
         print("Not in memory.")
         return
 
-    for score, record in results:
-        print(f"Memory ID: {record['id']}")
-        print(f"Source: {record['source']}")
-        print(f"Date: {record['written']}")
-        print(f"Score: {score:.4f}")
-        print(f"Memory: {record['text']}")
+    for item in data["results"]:
+        print(f"Memory ID: {item['id']}")
+        print(f"Source: {item['source']}")
+        print(f"Date: {item['date']}")
+        print(f"Score: {item['score']:.4f}")
+        print(f"Memory: {item['text']}")
         print()
 
 

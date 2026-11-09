@@ -1,9 +1,12 @@
 import hashlib
 import json
+import shlex
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
+import threading
 from pathlib import Path
 
 from .fixture import (
@@ -13,6 +16,17 @@ from .fixture import (
     claim_text,
     load_fixture,
 )
+from .sandbox import (
+    MODEL_ID,
+    OPENCODE_DATA_DIR,
+    probe,
+    protected_paths,
+    require_sandbox,
+    run_under_sandbox,
+    write_launch_script,
+    write_profile,
+)
+from .service import start_service
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RECALL = REPO_ROOT / "evolution-07" / "lab" / "recall.py"
@@ -24,6 +38,7 @@ E6_FILES = [
     REPO_ROOT / "evolution-06" / "handoff.md",
 ]
 E6_EVIDENCE_DIR = REPO_ROOT / "evolution-06" / "evidence"
+E6_EVIDENCE_FILE = E6_EVIDENCE_DIR / "session-b2-export.json"
 
 QUESTION_RECALL = "What is the E7 private fixture passphrase?"
 QUESTION_CONTROL = "What is 2 + 2?"
@@ -33,6 +48,15 @@ CONTROL_AGENT_ANSWER = "4"
 ON_THRESHOLD = 0.30
 LEDGER_SCHEMA = "e7-memory-v2"
 EVIDENCE_LABEL = "PREFLIGHT — NOT OFFICIAL SORTIE EVIDENCE"
+OPENCODE_CONFIG = "opencode.json"
+SANDBOX_PROFILE = "sandbox.sb"
+SERVICE_CONFIG = "service.json"
+LAUNCH_SCRIPT = "launch.sh"
+SIDECAR_SUFFIX = ".private.json"
+GENERATION = {
+    "temperature": "provider-default",
+    "variant": "default",
+}
 
 
 def sha256_file(path):
@@ -85,7 +109,233 @@ def scan_for_text(root, text):
     return hits
 
 
+def opencode_config(condition):
+    permission = {
+        "read": "deny",
+        "edit": "deny",
+        "glob": "deny",
+        "grep": "deny",
+        "list": "deny",
+        "bash": "deny" if condition == "off" else "allow",
+        "task": "deny",
+        "skill": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "external_directory": {"*": "deny"},
+        "lsp": "deny",
+        "todowrite": "deny",
+        "doom_loop": "deny",
+    }
+    return {
+        "$schema": "https://opencode.ai/config.json",
+        "permission": permission,
+    }
+
+
+def write_opencode_config(sandbox, condition):
+    path = Path(sandbox) / OPENCODE_CONFIG
+    write_json(path, opencode_config(condition))
+    return path
+
+
+def sidecar_path(sandbox):
+    sandbox = Path(sandbox)
+    return sandbox.parent / f"{sandbox.name}{SIDECAR_SUFFIX}"
+
+
+def write_sidecar(sandbox, private_dir, store, ledger):
+    path = sidecar_path(sandbox)
+    write_json(
+        path,
+        {
+            "private": str(Path(private_dir).resolve()),
+            "store": str(Path(store).resolve()),
+            "ledger": str(Path(ledger).resolve()),
+        },
+    )
+    return path
+
+
+def write_service_config(sandbox, port, today):
+    path = Path(sandbox) / SERVICE_CONFIG
+    write_json(
+        path,
+        {
+            "port": port,
+            "threshold": ON_THRESHOLD,
+            "today": today,
+        },
+    )
+    return path
+
+
+def free_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+CLIENT_SOURCE = '''#!/usr/bin/python3
+import json
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+
+def main():
+    config = json.loads(
+        Path(__file__).with_name("service.json").read_text(encoding="utf-8")
+    )
+    question = sys.argv[1] if len(sys.argv) > 1 else sys.stdin.read().strip()
+    url = "http://127.0.0.1:%d/recall?question=%s" % (
+        config["port"],
+        urllib.parse.quote(question),
+    )
+    last_error = None
+    for _ in range(30):
+        try:
+            with urllib.request.urlopen(url, timeout=5) as response:
+                data = json.loads(response.read().decode("utf-8"))
+            break
+        except (urllib.error.URLError, ConnectionError) as exc:
+            last_error = exc
+            time.sleep(0.1)
+    else:
+        print("Retriever unavailable: %s" % last_error)
+        return 2
+
+    if not data.get("results"):
+        print("Not in memory.")
+        return 0
+
+    for item in data["results"]:
+        print("Memory ID: %s" % item["id"])
+        print("Source: %s" % item["source"])
+        print("Date: %s" % item["date"])
+        print("Score: %.4f" % item["score"])
+        print("Memory: %s" % item["text"])
+        print()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+'''
+
+
+def isolation_probes(sandbox, profile, extra_denied=()):
+    sandbox = Path(sandbox)
+    claim = claim_text()
+    probes = []
+    targets = [
+        ("private_fixture", FIXTURE_PATH),
+        ("official_store", OFFICIAL_STORE),
+        ("official_ledger", OFFICIAL_LEDGER),
+        ("e6_flight_log", E6_FILES[0]),
+        ("e6_evidence", E6_EVIDENCE_FILE),
+        ("opencode_real_log", OPENCODE_DATA_DIR / "log" / "opencode.log"),
+        ("opencode_real_db", OPENCODE_DATA_DIR / "opencode.db"),
+    ]
+
+    for name, path in targets:
+        if Path(path).is_file():
+            probes.append(
+                probe(
+                    profile,
+                    sandbox,
+                    name,
+                    ["/bin/cat", str(path)],
+                    "denied",
+                    redact=claim,
+                )
+            )
+
+    probes.append(
+        probe(
+            profile,
+            sandbox,
+            "shell_escape_private_fixture",
+            ["/bin/sh", "-c", f"cat {shlex.quote(str(FIXTURE_PATH))}"],
+            "denied",
+            redact=claim,
+        )
+    )
+    probes.append(
+        probe(
+            profile,
+            sandbox,
+            "python_escape_private_fixture",
+            [
+                "/usr/bin/python3",
+                "-c",
+                f"print(open({str(FIXTURE_PATH)!r}).read())",
+            ],
+            "denied",
+            redact=claim,
+        )
+    )
+    probes.append(
+        probe(
+            profile,
+            sandbox,
+            "repository_search",
+            ["/usr/bin/grep", "-r", "m-0001", str(REPO_ROOT)],
+            "denied",
+            redact=claim,
+        )
+    )
+    probes.append(
+        probe(
+            profile,
+            sandbox,
+            "allowed_question_read",
+            ["/bin/cat", str(sandbox / "question-recall.txt")],
+            "allowed",
+            redact=claim,
+        )
+    )
+
+    for name, path in extra_denied:
+        probes.append(
+            probe(
+                profile,
+                sandbox,
+                name,
+                ["/bin/cat", str(path)],
+                "denied",
+                redact=claim,
+            )
+        )
+
+    return probes
+
+
+def probes_ok(probes):
+    denied = [
+        item for item in probes if item["expected"] == "denied"
+    ]
+    allowed = [
+        item for item in probes if item["expected"] == "allowed"
+    ]
+    return (
+        all(
+            item["denied"] and not item.get("leaked", False)
+            for item in denied
+        )
+        and all(
+            not item["denied"]
+            and not item.get("leaked", False)
+            and item["returncode"] == 0
+            for item in allowed
+        )
+    )
+
+
 def build_off_sandbox(sandbox, manifest_path=None):
+    require_sandbox()
     sandbox = Path(sandbox)
     sandbox.mkdir(parents=True, exist_ok=True)
 
@@ -100,10 +350,22 @@ def build_off_sandbox(sandbox, manifest_path=None):
     (sandbox / "README.txt").write_text(
         "MEMORY-OFF CONDITION\n"
         "Answer the questions from general knowledge only.\n"
-        "You must not read files outside this sandbox.\n"
-        "Do not search the repository, memory store, ledger, or E6 evidence.\n"
+        "This session runs under a macOS seatbelt sandbox that denies reads "
+        "of the repository, the private fixture, and OpenCode's real data "
+        "directory.\n"
         "If you cannot establish an answer, say: Not in memory.\n",
         encoding="utf-8",
+    )
+
+    config_path = write_opencode_config(sandbox, "off")
+    profile_path = write_profile(
+        sandbox / SANDBOX_PROFILE,
+        protected_paths(),
+    )
+    launch_path = write_launch_script(
+        sandbox / LAUNCH_SCRIPT,
+        sandbox,
+        serve=False,
     )
 
     claim = claim_text()
@@ -111,6 +373,19 @@ def build_off_sandbox(sandbox, manifest_path=None):
         "label": EVIDENCE_LABEL,
         "condition": "memory-off",
         "model": MODEL,
+        "model_id": MODEL_ID,
+        "generation": GENERATION,
+        "isolation_mode": (
+            "macos-seatbelt + opencode-v1-permission-deny"
+        ),
+        "sandbox_profile": str(profile_path.resolve()),
+        "opencode_config": str(config_path.resolve()),
+        "opencode_permission": opencode_config("off")["permission"],
+        "launch_script": str(launch_path.resolve()),
+        "data_dir": str((sandbox / "data").resolve()),
+        "protected_paths": [
+            str(path.resolve()) for path in protected_paths()
+        ],
         "question_recall": QUESTION_RECALL,
         "question_control": QUESTION_CONTROL,
         "control_expected_agent_answer": CONTROL_AGENT_ANSWER,
@@ -137,6 +412,7 @@ def build_off_sandbox(sandbox, manifest_path=None):
                 OFFICIAL_LEDGER,
                 *E6_FILES,
                 E6_EVIDENCE_DIR,
+                OPENCODE_DATA_DIR,
             ]
         ],
     }
@@ -148,6 +424,7 @@ def build_off_sandbox(sandbox, manifest_path=None):
 
 def build_on_sandbox(sandbox, private_dir, manifest_path=None,
                      today="2026-11-08"):
+    require_sandbox()
     sandbox = Path(sandbox)
     private_dir = Path(private_dir)
     sandbox.mkdir(parents=True, exist_ok=True)
@@ -161,27 +438,15 @@ def build_on_sandbox(sandbox, private_dir, manifest_path=None,
         ledger.unlink()
     build_fixture_store(store, fixture)
 
-    wrapper_lines = [
-        "#!/usr/bin/env python3",
-        "import subprocess",
-        "import sys",
-        f"RECALL = {str(RECALL)!r}",
-        f"STORE = {str(store)!r}",
-        f"LEDGER = {str(ledger)!r}",
-        f"TODAY = {today!r}",
-        f"THRESHOLD = {str(ON_THRESHOLD)!r}",
-        "question = sys.argv[1] if len(sys.argv) > 1 else sys.stdin.read().strip()",
-        (
-            "raise SystemExit(subprocess.run([sys.executable, RECALL, "
-            "'recall', '--question', question, '--store', STORE, "
-            "'--ledger', LEDGER, '--today', TODAY, "
-            "'--threshold', THRESHOLD]).returncode)"
-        ),
-    ]
+    port = free_port()
+    service_path = write_service_config(sandbox, port, today)
+    sidecar = write_sidecar(sandbox, private_dir, store, ledger)
+
     (sandbox / "ask_memory.py").write_text(
-        "\n".join(wrapper_lines) + "\n",
+        CLIENT_SOURCE,
         encoding="utf-8",
     )
+    (sandbox / "ask_memory.py").chmod(0o755)
 
     (sandbox / "question-recall.txt").write_text(
         QUESTION_RECALL + "\n",
@@ -197,10 +462,24 @@ def build_on_sandbox(sandbox, private_dir, manifest_path=None,
     )
     (sandbox / "README.txt").write_text(
         "MEMORY-ON CONDITION\n"
-        "Use only ask_memory.py to retrieve stored memory.\n"
-        "You must not read files outside this sandbox.\n"
+        "Use only ask_memory.py to retrieve stored memory. The retrieval "
+        "service runs outside this sandbox on localhost.\n"
+        "The private fixture store, ledger, and repository are outside the "
+        "sandbox and are denied by the seatbelt profile.\n"
         "The retriever writes a recall event to the private ledger.\n",
         encoding="utf-8",
+    )
+
+    config_path = write_opencode_config(sandbox, "on")
+    profile_path = write_profile(
+        sandbox / SANDBOX_PROFILE,
+        [*protected_paths(), private_dir],
+        denied_files=[sidecar],
+    )
+    launch_path = write_launch_script(
+        sandbox / LAUNCH_SCRIPT,
+        sandbox,
+        serve=True,
     )
 
     claim = claim_text()
@@ -208,6 +487,26 @@ def build_on_sandbox(sandbox, private_dir, manifest_path=None,
         "label": EVIDENCE_LABEL,
         "condition": "memory-on",
         "model": MODEL,
+        "model_id": MODEL_ID,
+        "generation": GENERATION,
+        "isolation_mode": (
+            "macos-seatbelt + localhost-retriever + "
+            "opencode-v1-permission-deny-read"
+        ),
+        "sandbox_profile": str(profile_path.resolve()),
+        "opencode_config": str(config_path.resolve()),
+        "opencode_permission": opencode_config("on")["permission"],
+        "service_config": str(service_path.resolve()),
+        "launch_script": str(launch_path.resolve()),
+        "data_dir": str((sandbox / "data").resolve()),
+        "retrieval_interface": f"http://127.0.0.1:{port}/recall",
+        "retrieval_service_outside_sandbox": True,
+        "sidecar": str(sidecar.resolve()),
+        "sidecar_denied": True,
+        "protected_paths": [
+            str(path.resolve())
+            for path in [*protected_paths(), private_dir]
+        ],
         "question_recall": QUESTION_RECALL,
         "question_control": QUESTION_CONTROL,
         "question_absent": QUESTION_ABSENT,
@@ -246,6 +545,8 @@ def build_on_sandbox(sandbox, private_dir, manifest_path=None,
                 OFFICIAL_STORE,
                 OFFICIAL_LEDGER,
                 *E6_FILES,
+                E6_EVIDENCE_DIR,
+                OPENCODE_DATA_DIR,
             ]
         ],
     }
@@ -256,13 +557,68 @@ def build_on_sandbox(sandbox, private_dir, manifest_path=None,
 
 
 def run_wrapper(sandbox, question):
-    wrapper = Path(sandbox) / "ask_memory.py"
-    return subprocess.run(
-        [sys.executable, str(wrapper), question],
-        capture_output=True,
-        text=True,
-        check=False,
+    require_sandbox()
+    sandbox = Path(sandbox)
+    service_config = json.loads(
+        (sandbox / SERVICE_CONFIG).read_text(encoding="utf-8")
     )
+    sidecar = json.loads(
+        sidecar_path(sandbox).read_text(encoding="utf-8")
+    )
+    server = start_service(
+        sidecar["private"],
+        port=service_config["port"],
+        threshold=service_config.get("threshold", ON_THRESHOLD),
+        today=service_config.get("today"),
+    )
+    thread = threading.Thread(
+        target=server.serve_forever,
+        daemon=True,
+    )
+    thread.start()
+    try:
+        wrapper = sandbox / "ask_memory.py"
+        python = (
+            "/usr/bin/python3"
+            if Path("/usr/bin/python3").exists()
+            else sys.executable
+        )
+        return run_under_sandbox(
+            sandbox / SANDBOX_PROFILE,
+            [python, str(wrapper), question],
+            sandbox,
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def serve_on(sandbox):
+    require_sandbox()
+    sandbox = Path(sandbox)
+    service_config = json.loads(
+        (sandbox / SERVICE_CONFIG).read_text(encoding="utf-8")
+    )
+    sidecar = json.loads(
+        sidecar_path(sandbox).read_text(encoding="utf-8")
+    )
+    server = start_service(
+        sidecar["private"],
+        port=service_config["port"],
+        threshold=service_config.get("threshold", ON_THRESHOLD),
+        today=service_config.get("today"),
+    )
+    print(
+        f"Serving on http://127.0.0.1:{server.server_address[1]}/recall",
+        flush=True,
+    )
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
 
 def verify_on_event(ledger_path, expected_id, expected_source,
@@ -286,9 +642,11 @@ def verify_on_event(ledger_path, expected_id, expected_source,
         and event.get("top_id") == expected_id
         and event.get("top_source") == expected_source
         and isinstance(event.get("top_score"), (int, float))
-        and event["top_score"] > 0
+        and event["top_score"] >= ON_THRESHOLD
         and first.get("id") == expected_id
         and first.get("source") == expected_source
+        and isinstance(first.get("score"), (int, float))
+        and first["score"] >= ON_THRESHOLD
     )
     return matches, event
 

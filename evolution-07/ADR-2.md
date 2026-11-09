@@ -92,22 +92,53 @@ the new schema.
 ### 8. Preflight Isolation and Evidence
 
 The memory-OFF condition runs in a sandbox that contains only the
-questions and instructions. The sandbox excludes the private fixture,
-the official memory store, the official ledger, Evolution 6 files, and
-Evolution 6 evidence. A manifest records the sandbox contents and
-whether the fixture claim appears anywhere inside it.
+questions, instructions, and generated launch and configuration files.
+Enforcement is not prose: the generated
+`sandbox.sb` Seatbelt profile runs under `/usr/bin/sandbox-exec` and
+denies reads and writes to the repository, the private fixture
+directory, and the real OpenCode data directory. The generated
+`opencode.json` uses the OpenCode 1.18.20 V1 `permission` key (not the
+V2 `permissions` key) to deny `read`, `glob`, `grep`, `list`, `bash`,
+`task`, `skill`, `webfetch`, `websearch`, `edit`, and `todowrite`.
+Every launch script also sets a fresh `XDG_DATA_HOME` and
+`OPENCODE_DB` inside the sandbox so the session does not reuse the real
+OpenCode log or database. The real data directory is denied because
+its log file contains a copy of the private passphrase from an earlier
+interactive session.
 
-The memory-ON condition uses a private fixture store and ledger outside
-the sandbox. The agent obtains the answer by running `ask_memory.py`,
-which calls the retriever. A matching recall event must record the
-memory ID, source, and score. The condition uses a retrieval threshold
-of 0.30 so the control and absent questions return `Not in memory.`
+The memory-ON condition uses a private fixture store, ledger, and
+sidecar outside the sandbox. The sidecar is denied by exact path, and
+the private directory is denied by subpath. A localhost-only service
+started outside the sandbox owns the private store. The sandbox
+contains a thin `ask_memory.py` client that calls that service. The
+agent obtains the answer through the retrieval interface, not by
+reading the store. The ON profile also denies the repository, the
+fixture directory, and the real OpenCode data directory. The ON
+`opencode.json` allows `bash` so the client can run, while the
+operating-system profile enforces the filesystem boundary. The
+condition uses a retrieval threshold of 0.30 so the control and absent
+questions return `Not in memory.`
 
-The private fixture is `evolution-07/fixtures/private-claim.json`. Its
+The private fixture is `~/CIDM6333-private-e7/private-claim.json`. Its
 plaintext claim is not stored in this ADR, the Flight Card, source
 code, tests, or historical transcripts. The fixture is the only
-ordinary repository data file that contains the claim, and the
-memory-OFF sandbox excludes it.
+ordinary repository data file that contains the claim, and both
+sandbox profiles exclude it. The fixture's declared source is
+`~/CIDM6333-private-e7/private-claim.json#text`.
+
+Preflight runs real negative probes under each generated profile. Each
+probe attempts to read the private fixture, official store, official
+ledger, Evolution 6 flight log, Evolution 6 evidence, the real OpenCode
+log and database, and the repository, plus shell and Python escape
+attempts. The ON probes also attempt to read the private store, private
+ledger, and sidecar. A probe passes only when the read is actually
+denied and the private claim did not appear on standard output. The same
+preflight records `same_model`, `same_question`, and `same_generation`.
+
+The model-call permission behavior probe timed out on this host and is
+not claimed as passed. The enforcement evidence is the operating-system
+sandbox denial output plus a test that the installed OpenCode binary
+accepts and preserves the generated V1 `permission` configuration.
 
 TP5 eviction uses a temporary copy of the store and ledger. Before and
 after snapshots verify that eviction does not modify the official
@@ -146,9 +177,15 @@ Consequence: expiration and eviction are required.
 
 Local pytest results for the memory implementation:
 
-- `tests/test_e7_memory.py`: 7 tests passed.
-- `tests/test_e7_isolation.py`: isolation, fixture, retriever,
-  TP5, and historical-ledger tests added during preflight correction.
+- `tests/test_e7_memory.py`: 8 tests passed, including the structured
+  `query()` result path used by the localhost service.
+- `tests/test_e7_isolation.py`: 19 tests passed, including real
+  sandbox-denial probes, ON private-store and sidecar denial,
+  threshold rejection, generated-config compatibility with the
+  installed OpenCode binary, launch-script contents, the `serve-on`
+  CLI path used by `launch.sh`, fixture-source consistency, TP5, and
+  historical-ledger preservation.
+- Full suite: 27 tests passed.
 
 Preflight isolation evidence:
 
