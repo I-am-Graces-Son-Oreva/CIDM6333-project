@@ -484,3 +484,23 @@ ABORT rather than FAIL if:
 
 NOT RUN — Preflight corrections applied; awaiting Chase re-review.
 No Chase GO or sortie PASS is claimed.
+
+## Independent Chase Preflight Verdict — 2026-11-09
+
+Verdict: CHASE GO
+
+Reviewed commit: ac217fa0c290aee4d908078d874ecb26b4014394
+
+Independent Chase re-review confirmed:
+- All three previous NO-GO blockers corrected.
+- 37 automated tests passed.
+- Fresh sandbox and OpenCode data isolation enforced.
+- Existing private ledgers preserved.
+- JSON evidence capture and overwrite protection verified.
+- Real macOS sandbox denial verified.
+- Fixture hashes, retrieval scores, and TP5 isolation verified.
+- All 25 falsifiers and 7 ABORT conditions reviewed.
+
+Decision: GO for the official Evolution 7 sortie.
+
+This is preflight approval only, not a sortie PASS.
