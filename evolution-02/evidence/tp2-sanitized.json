@@ -1,0 +1,265 @@
+{
+  "info": {
+    "id": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+    "slug": "proud-pixel",
+    "projectID": "6b7bca8b15afb47deb8e6e35d382f69d8a7e7050",
+    "directory": "[redacted:session-directory:ses_e3d10cf63ffeeZKfy9r94EwrVV]",
+    "path": "",
+    "title": "[redacted:session-title:ses_e3d10cf63ffeeZKfy9r94EwrVV]",
+    "agent": "grad-triage",
+    "model": {
+      "id": "big-pickle",
+      "providerID": "opencode",
+      "variant": "default"
+    },
+    "version": "1.18.20",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 1372,
+      "output": 481,
+      "reasoning": 1161,
+      "cache": {
+        "read": 14912,
+        "write": 0
+      }
+    },
+    "permission": [
+      {
+        "permission": "question",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_enter",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_exit",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1794271817884,
+      "updated": 1794271838704
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1794271817980
+        },
+        "agent": "grad-triage",
+        "model": {
+          "providerID": "opencode",
+          "modelID": "big-pickle"
+        },
+        "summary": {
+          "diffs": []
+        },
+        "id": "msg_1c2ef30fc0014IzQO27EcrLSla",
+        "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c2ef3108001v0wQrtkXH4Xlsx]",
+          "id": "prt_1c2ef3108001v0wQrtkXH4Xlsx",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef30fc0014IzQO27EcrLSla"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c2ef30fc0014IzQO27EcrLSla",
+        "role": "assistant",
+        "mode": "grad-triage",
+        "agent": "grad-triage",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c2ef337b001A3Pazy4Al344Qx]",
+          "root": "[redacted:root:msg_1c2ef337b001A3Pazy4Al344Qx]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 8600,
+          "input": 176,
+          "output": 96,
+          "reasoning": 904,
+          "cache": {
+            "write": 0,
+            "read": 7424
+          }
+        },
+        "modelID": "big-pickle",
+        "providerID": "opencode",
+        "time": {
+          "created": 1794271818619,
+          "completed": 1794271829774
+        },
+        "finish": "tool-calls",
+        "id": "msg_1c2ef337b001A3Pazy4Al344Qx",
+        "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c2ef4353001jhnXeRhrfqq5qe]",
+          "type": "step-start",
+          "id": "prt_1c2ef4353001jhnXeRhrfqq5qe",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef337b001A3Pazy4Al344Qx"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c2ef4356001imi3A3diJYsDd4]",
+          "time": {
+            "start": 1794271822678,
+            "end": 1794271828980
+          },
+          "id": "prt_1c2ef4356001imi3A3diJYsDd4",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef337b001A3Pazy4Al344Qx"
+        },
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c2ef5bf8001F3MPzcyMNtwe2J]",
+          "time": {
+            "start": 1794271828984,
+            "end": 1794271829538
+          },
+          "id": "prt_1c2ef5bf8001F3MPzcyMNtwe2J",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef337b001A3Pazy4Al344Qx"
+        },
+        {
+          "type": "tool",
+          "tool": "task",
+          "callID": "call_39c53533fee0427c9948ab4c",
+          "state": {
+            "status": "error",
+            "input": {
+              "redacted": "tool-input:prt_1c2ef5e0c001Zy2j9gh95A7bXO"
+            },
+            "error": "The user has specified a rule which prevents you from using this specific tool call. Here are some of the relevant rules [{\"permission\":\"*\",\"action\":\"allow\",\"pattern\":\"*\"},{\"permission\":\"task\",\"pattern\":\"*\",\"action\":\"deny\"},{\"permission\":\"task\",\"pattern\":\"evidence-reviewer\",\"action\":\"allow\"},{\"permission\":\"task\",\"pattern\":\"triage-summarizer\",\"action\":\"allow\"}]",
+            "time": {
+              "start": 1794271829530,
+              "end": 1794271829535
+            }
+          },
+          "id": "prt_1c2ef5e0c001Zy2j9gh95A7bXO",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef337b001A3Pazy4Al344Qx"
+        },
+        {
+          "reason": "tool-calls",
+          "snapshot": "[redacted:snapshot:prt_1c2ef5ea1001PynZDzlLlVz2Sd]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 8600,
+            "input": 176,
+            "output": 96,
+            "reasoning": 904,
+            "cache": {
+              "write": 0,
+              "read": 7424
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c2ef5ea1001PynZDzlLlVz2Sd",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef337b001A3Pazy4Al344Qx"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c2ef30fc0014IzQO27EcrLSla",
+        "role": "assistant",
+        "mode": "grad-triage",
+        "agent": "grad-triage",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c2ef5f12001iK3c00aP1mQ3GF]",
+          "root": "[redacted:root:msg_1c2ef5f12001iK3c00aP1mQ3GF]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 9326,
+          "input": 1196,
+          "output": 385,
+          "reasoning": 257,
+          "cache": {
+            "write": 0,
+            "read": 7488
+          }
+        },
+        "modelID": "big-pickle",
+        "providerID": "opencode",
+        "time": {
+          "created": 1794271829778,
+          "completed": 1794271838694
+        },
+        "finish": "stop",
+        "id": "msg_1c2ef5f12001iK3c00aP1mQ3GF",
+        "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c2ef6e54001kH2tZHgVWZcCCt]",
+          "type": "step-start",
+          "id": "prt_1c2ef6e54001kH2tZHgVWZcCCt",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef5f12001iK3c00aP1mQ3GF"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c2ef6e570019U0pv4lMr8h62Z]",
+          "time": {
+            "start": 1794271833687,
+            "end": 1794271835446
+          },
+          "id": "prt_1c2ef6e570019U0pv4lMr8h62Z",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef5f12001iK3c00aP1mQ3GF"
+        },
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c2ef75390011MAlHgmHET5xoz]",
+          "time": {
+            "start": 1794271835449,
+            "end": 1794271838447
+          },
+          "id": "prt_1c2ef75390011MAlHgmHET5xoz",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef5f12001iK3c00aP1mQ3GF"
+        },
+        {
+          "reason": "stop",
+          "snapshot": "[redacted:snapshot:prt_1c2ef817b001mP8rsY3ZXwDwGF]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 9326,
+            "input": 1196,
+            "output": 385,
+            "reasoning": 257,
+            "cache": {
+              "write": 0,
+              "read": 7488
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c2ef817b001mP8rsY3ZXwDwGF",
+          "sessionID": "ses_e3d10cf63ffeeZKfy9r94EwrVV",
+          "messageID": "msg_1c2ef5f12001iK3c00aP1mQ3GF"
+        }
+      ]
+    }
+  ]
+}
