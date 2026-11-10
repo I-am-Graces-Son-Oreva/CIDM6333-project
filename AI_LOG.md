@@ -393,3 +393,19 @@ the handoff and runtime ledger.
 **Evidence:** `evolution-02/evidence/tp1-sanitized.json`, `evolution-02/evidence/tp2-sanitized.json`, and `evolution-02/flight-log.md`.
 
 **Reflection:** E2 showed me that orchestration needs both workflow instructions and an enforceable boundary. The primary agent knew the required worker order, but the permission gate separately prevented it from delegating to a worker outside the approved set. I also learned that sanitized evidence can hide worker identities, so limitations in the evidence should be recorded instead of overstated.
+
+## 2026-11-09 — Evolution 3
+
+**Evolution:** E3 — The Gate Holds
+
+**AI/model used:** `ollama/qwen3:1.7b` through Ollama and OpenCode 1.18.20. `opencode/big-pickle` was used separately as Chase for preflight and post-flight review.
+
+**Use:** I used the local Qwen3 1.7B model to exercise the E3 permission gate. TP1 tested an allowed read. TP2 tested an edit configured as `ask` during non-interactive `opencode run`. TP3 tested a planted instruction inside untrusted file content. TP4 tested a Bash command outside the configured allowlist.
+
+**Model/harness claim checked against source:** I checked the OpenCode Permissions documentation for permission behavior. OpenCode supports permission rules that can allow, ask, or deny tool actions, including pattern-based Bash rules. This matched the E3 evidence: the permitted read completed, protected writes were rejected when approval was unavailable, and the non-allowlisted Bash command was denied.
+
+**Source checked:** OpenCode documentation, Permissions — https://opencode.ai/docs/permissions
+
+**Evidence:** `evolution-03/evidence/tp1-attempt1-sanitized.json`, `evolution-03/evidence/tp1-sanitized.json`, `evolution-03/evidence/tp2-sanitized.json`, `evolution-03/evidence/tp3-sanitized.json`, `evolution-03/evidence/tp4-sanitized.json`, and `evolution-03/flight-log.md`.
+
+**Reflection:** E3 showed me why a harness permission gate matters even when the model has been told what not to do. During TP3, the local model read an untrusted instruction and still attempted the requested write. I did not treat that as model-level prompt-injection resistance. The important result was that OpenCode rejected the write and repository state remained unchanged. I also kept the malformed TP1 attempt instead of deleting it, because failed model behavior is part of honest evidence.
