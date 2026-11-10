@@ -361,3 +361,19 @@ temporary context window.
 The fresh-session test made this clear: Session B could continue the work
 without Session A's transcript because the important state had been written to
 the handoff and runtime ledger.
+
+## 2026-11-09 — Evolution 1
+
+**Evolution:** E1 — The Loop That Halts
+
+**AI/model used:** `opencode/big-pickle` through OpenCode 1.18.20.
+
+**Use:** I used the model as the `grad-triage` primary agent for the E1 sortie. TP1 tested bounded completion. TP2 tested whether the configured step limit stopped further tool use and forced a final text response.
+
+**Model/harness claim checked against source:** I checked the OpenCode Agents documentation for the behavior of the `steps` setting. The documentation states that `steps` sets a maximum number of model steps and that on the final step OpenCode removes tools and asks the model to summarize in text. This matched the behavior observed in my sanitized TP2 export.
+
+**Source checked:** OpenCode documentation, Agents — https://opencode.ai/docs/agents
+
+**Evidence:** `evolution-01/evidence/tp1-sanitized.json` and `evolution-01/evidence/tp2-sanitized.json`.
+
+**Reflection:** The preliminary flight taught me that configuring an agent is not enough; I also have to verify that the intended agent is actually running. The successful re-flight explicitly used `grad-triage` and produced evidence for both bounded completion and the halt condition.
