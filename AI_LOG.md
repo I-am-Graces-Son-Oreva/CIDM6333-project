@@ -409,3 +409,19 @@ the handoff and runtime ledger.
 **Evidence:** `evolution-03/evidence/tp1-attempt1-sanitized.json`, `evolution-03/evidence/tp1-sanitized.json`, `evolution-03/evidence/tp2-sanitized.json`, `evolution-03/evidence/tp3-sanitized.json`, `evolution-03/evidence/tp4-sanitized.json`, and `evolution-03/flight-log.md`.
 
 **Reflection:** E3 showed me why a harness permission gate matters even when the model has been told what not to do. During TP3, the local model read an untrusted instruction and still attempted the requested write. I did not treat that as model-level prompt-injection resistance. The important result was that OpenCode rejected the write and repository state remained unchanged. I also kept the malformed TP1 attempt instead of deleting it, because failed model behavior is part of honest evidence.
+
+## 2026-11-09 — Evolution 4
+
+**Evolution:** E4 — N×M Becomes N+M
+
+**AI/model used:** `opencode/big-pickle` through OpenCode 1.18.20. The independent second client was a Python MCP client using MCP Python SDK 1.30.0.
+
+**Use:** I used OpenCode as one MCP client and a short Python program as a second MCP client. TP1 tested whether the Python client could discover the E4 tools and call `read_triage_note`. TP2 tested the same read-tool contract through OpenCode. TP3 tested whether OpenCode's `ask` permission protected the MCP write tool.
+
+**Model/harness claim checked against source:** I checked the Model Context Protocol documentation for the client-server architecture and tool model. MCP uses a client-server architecture in which servers expose capabilities such as tools to clients. This supports the E4 design of exposing one graduate-triage MCP server contract to different MCP clients.
+
+**Source checked:** Model Context Protocol documentation — https://modelcontextprotocol.io/docs/learn/architecture
+
+**Evidence:** `evolution-04/evidence/tp1-python-client.txt`, `evolution-04/evidence/tp2-sanitized.json`, `evolution-04/evidence/tp3-sanitized.json`, `evolution-04/server.log`, and `evolution-04/flight-log.md`.
+
+**Reflection:** E4 showed me why a shared protocol reduces integration duplication. I did not need to create one graduate-triage implementation for the Python client and another implementation for OpenCode. Both could reach the same MCP tool contract. I also learned that MCP itself is not the permission system. OpenCode's separate `ask` rule stopped the attempted write before it reached the server, while the server log provided evidence of the calls that actually executed.
