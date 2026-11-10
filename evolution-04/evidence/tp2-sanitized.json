@@ -1,0 +1,276 @@
+{
+  "info": {
+    "id": "ses_e3cb461a8ffezemx61YA76m4MQ",
+    "slug": "misty-wizard",
+    "projectID": "6b7bca8b15afb47deb8e6e35d382f69d8a7e7050",
+    "directory": "[redacted:session-directory:ses_e3cb461a8ffezemx61YA76m4MQ]",
+    "path": "",
+    "title": "[redacted:session-title:ses_e3cb461a8ffezemx61YA76m4MQ]",
+    "agent": "build",
+    "model": {
+      "id": "big-pickle",
+      "providerID": "opencode",
+      "variant": "default"
+    },
+    "version": "1.18.20",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 9993,
+      "output": 45,
+      "reasoning": 77,
+      "cache": {
+        "read": 9792,
+        "write": 0
+      }
+    },
+    "permission": [
+      {
+        "permission": "question",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_enter",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_exit",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1794277875288,
+      "updated": 1794277892598
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1794277875370
+        },
+        "agent": "build",
+        "model": {
+          "providerID": "opencode",
+          "modelID": "big-pickle"
+        },
+        "summary": {
+          "diffs": [
+            {
+              "file": "[redacted:message-diff-file:0]",
+              "patch": "[redacted:message-diff-patch:0]",
+              "additions": 1,
+              "deletions": 0,
+              "status": "modified"
+            }
+          ]
+        },
+        "id": "msg_1c34b9eaa001IOH9AfFDhw0a4E",
+        "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c34b9eb6001Jjd9BCqwg9H17i]",
+          "id": "prt_1c34b9eb6001Jjd9BCqwg9H17i",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34b9eaa001IOH9AfFDhw0a4E"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c34b9eaa001IOH9AfFDhw0a4E",
+        "role": "assistant",
+        "mode": "build",
+        "agent": "build",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c34ba150001NC5xtrHSsB4KNq]",
+          "root": "[redacted:root:msg_1c34ba150001NC5xtrHSsB4KNq]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 9928,
+          "input": 9777,
+          "output": 26,
+          "reasoning": 61,
+          "cache": {
+            "write": 0,
+            "read": 64
+          }
+        },
+        "modelID": "big-pickle",
+        "providerID": "opencode",
+        "time": {
+          "created": 1794277876048,
+          "completed": 1794277887361
+        },
+        "finish": "tool-calls",
+        "id": "msg_1c34ba150001NC5xtrHSsB4KNq",
+        "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c34bcadf001X9UzBZB7usJWA2]",
+          "type": "step-start",
+          "id": "prt_1c34bcadf001X9UzBZB7usJWA2",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34ba150001NC5xtrHSsB4KNq"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c34bcae3001QH4c9Zg9Au3WgN]",
+          "time": {
+            "start": 1794277886691,
+            "end": 1794277886964
+          },
+          "id": "prt_1c34bcae3001QH4c9Zg9Au3WgN",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34ba150001NC5xtrHSsB4KNq"
+        },
+        {
+          "type": "tool",
+          "tool": "grad-triage-e4_read_triage_note",
+          "callID": "call_8e0442e989344d039b8dc994",
+          "state": {
+            "status": "completed",
+            "input": {
+              "redacted": "tool-input:prt_1c34bcbf8001NsyN5Nui7V1pya"
+            },
+            "output": "[redacted:tool-output:prt_1c34bcbf8001NsyN5Nui7V1pya]",
+            "metadata": {
+              "redacted": "tool-state-metadata:prt_1c34bcbf8001NsyN5Nui7V1pya"
+            },
+            "title": "",
+            "time": {
+              "start": 1794277886980,
+              "end": 1794277886992
+            }
+          },
+          "id": "prt_1c34bcbf8001NsyN5Nui7V1pya",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34ba150001NC5xtrHSsB4KNq"
+        },
+        {
+          "reason": "tool-calls",
+          "snapshot": "[redacted:snapshot:prt_1c34bccee001At8ZRfQFIyOptj]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 9928,
+            "input": 9777,
+            "output": 26,
+            "reasoning": 61,
+            "cache": {
+              "write": 0,
+              "read": 64
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c34bccee001At8ZRfQFIyOptj",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34ba150001NC5xtrHSsB4KNq"
+        },
+        {
+          "type": "patch",
+          "hash": "[redacted:patch:prt_1c34bcd7c001RjEJx1ATKFNHYm]",
+          "files": [
+            "[redacted:patch-file:prt_1c34bcd7c001RjEJx1ATKFNHYm-0]"
+          ],
+          "id": "prt_1c34bcd7c001RjEJx1ATKFNHYm",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34ba150001NC5xtrHSsB4KNq"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c34b9eaa001IOH9AfFDhw0a4E",
+        "role": "assistant",
+        "mode": "build",
+        "agent": "build",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c34bcd8500109sReyLaudOTi2]",
+          "root": "[redacted:root:msg_1c34bcd8500109sReyLaudOTi2]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 9979,
+          "input": 216,
+          "output": 19,
+          "reasoning": 16,
+          "cache": {
+            "write": 0,
+            "read": 9728
+          }
+        },
+        "modelID": "big-pickle",
+        "providerID": "opencode",
+        "time": {
+          "created": 1794277887365,
+          "completed": 1794277892588
+        },
+        "finish": "stop",
+        "id": "msg_1c34bcd8500109sReyLaudOTi2",
+        "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c34be075001dRdgTY44F1suRr]",
+          "type": "step-start",
+          "id": "prt_1c34be075001dRdgTY44F1suRr",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34bcd8500109sReyLaudOTi2"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c34be079001qZsgAPQkQteoc1]",
+          "time": {
+            "start": 1794277892217,
+            "end": 1794277892263
+          },
+          "id": "prt_1c34be079001qZsgAPQkQteoc1",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34bcd8500109sReyLaudOTi2"
+        },
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c34be0aa001R6ZDpYtQtDucIA]",
+          "time": {
+            "start": 1794277892266,
+            "end": 1794277892345
+          },
+          "id": "prt_1c34be0aa001R6ZDpYtQtDucIA",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34bcd8500109sReyLaudOTi2"
+        },
+        {
+          "reason": "stop",
+          "snapshot": "[redacted:snapshot:prt_1c34be177001xHLqlAF01TPwPm]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 9979,
+            "input": 216,
+            "output": 19,
+            "reasoning": 16,
+            "cache": {
+              "write": 0,
+              "read": 9728
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c34be177001xHLqlAF01TPwPm",
+          "sessionID": "ses_e3cb461a8ffezemx61YA76m4MQ",
+          "messageID": "msg_1c34bcd8500109sReyLaudOTi2"
+        }
+      ]
+    }
+  ]
+}

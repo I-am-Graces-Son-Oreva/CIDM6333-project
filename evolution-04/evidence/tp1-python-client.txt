@@ -1,0 +1,3 @@
+CLIENT=python-client
+TOOLS= ['read_triage_note', 'write_triage_note']
+READ_RESULT= [TextContent(type='text', text='E4 MCP demo note: identity evidence requires human review.\n', annotations=None, meta=None)]
