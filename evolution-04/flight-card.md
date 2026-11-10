@@ -82,4 +82,4 @@ ABORT if the MCP server cannot start, OpenCode cannot connect to it, the selecte
 
 ## CHASE GO / NO-GO
 
-Pending.
+GO — Chase — 2026-11-09
