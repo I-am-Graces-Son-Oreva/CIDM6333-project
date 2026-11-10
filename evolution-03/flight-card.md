@@ -83,4 +83,4 @@ Abort the sortie rather than claiming PASS if:
 - Evidence cannot be exported and sanitized honestly.
 
 ## CHASE GO
-Pending.
+GO — Chase — 2026-11-09
