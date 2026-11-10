@@ -1,0 +1,164 @@
+{
+  "info": {
+    "id": "ses_e3d2af897ffeCzVC9AZkOG2nvb",
+    "slug": "gentle-rocket",
+    "projectID": "6b7bca8b15afb47deb8e6e35d382f69d8a7e7050",
+    "directory": "[redacted:session-directory:ses_e3d2af897ffeCzVC9AZkOG2nvb]",
+    "path": "",
+    "title": "[redacted:session-title:ses_e3d2af897ffeCzVC9AZkOG2nvb]",
+    "agent": "grad-triage",
+    "model": {
+      "id": "big-pickle",
+      "providerID": "opencode",
+      "variant": "default"
+    },
+    "version": "1.18.20",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 7537,
+      "output": 73,
+      "reasoning": 171,
+      "cache": {
+        "read": 64,
+        "write": 0
+      }
+    },
+    "permission": [
+      {
+        "permission": "question",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_enter",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_exit",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1794270103401,
+      "updated": 1794270109552
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1794270103499
+        },
+        "agent": "grad-triage",
+        "model": {
+          "providerID": "opencode",
+          "modelID": "big-pickle"
+        },
+        "summary": {
+          "diffs": []
+        },
+        "id": "msg_1c2d507cb00197DKuMCA1lje3V",
+        "sessionID": "ses_e3d2af897ffeCzVC9AZkOG2nvb"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c2d507d6001w03BIDQ6ASN2nd]",
+          "id": "prt_1c2d507d6001w03BIDQ6ASN2nd",
+          "sessionID": "ses_e3d2af897ffeCzVC9AZkOG2nvb",
+          "messageID": "msg_1c2d507cb00197DKuMCA1lje3V"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c2d507cb00197DKuMCA1lje3V",
+        "role": "assistant",
+        "mode": "grad-triage",
+        "agent": "grad-triage",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c2d50a36001A2ZktyvY0JI2Y6]",
+          "root": "[redacted:root:msg_1c2d50a36001A2ZktyvY0JI2Y6]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 7845,
+          "input": 7537,
+          "output": 73,
+          "reasoning": 171,
+          "cache": {
+            "write": 0,
+            "read": 64
+          }
+        },
+        "modelID": "big-pickle",
+        "providerID": "opencode",
+        "time": {
+          "created": 1794270104118,
+          "completed": 1794270109544
+        },
+        "finish": "stop",
+        "id": "msg_1c2d50a36001A2ZktyvY0JI2Y6",
+        "sessionID": "ses_e3d2af897ffeCzVC9AZkOG2nvb"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c2d519c3001AZFB2uS14T5Jz4]",
+          "type": "step-start",
+          "id": "prt_1c2d519c3001AZFB2uS14T5Jz4",
+          "sessionID": "ses_e3d2af897ffeCzVC9AZkOG2nvb",
+          "messageID": "msg_1c2d50a36001A2ZktyvY0JI2Y6"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c2d519c80014ddaOSIz5pAtPj]",
+          "time": {
+            "start": 1794270108104,
+            "end": 1794270109006
+          },
+          "id": "prt_1c2d519c80014ddaOSIz5pAtPj",
+          "sessionID": "ses_e3d2af897ffeCzVC9AZkOG2nvb",
+          "messageID": "msg_1c2d50a36001A2ZktyvY0JI2Y6"
+        },
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c2d51d51001lZla6GiLCNkI4S]",
+          "time": {
+            "start": 1794270109009,
+            "end": 1794270109298
+          },
+          "id": "prt_1c2d51d51001lZla6GiLCNkI4S",
+          "sessionID": "ses_e3d2af897ffeCzVC9AZkOG2nvb",
+          "messageID": "msg_1c2d50a36001A2ZktyvY0JI2Y6"
+        },
+        {
+          "reason": "stop",
+          "snapshot": "[redacted:snapshot:prt_1c2d51ef2001br4a3dttOCp0As]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 7845,
+            "input": 7537,
+            "output": 73,
+            "reasoning": 171,
+            "cache": {
+              "write": 0,
+              "read": 64
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c2d51ef2001br4a3dttOCp0As",
+          "sessionID": "ses_e3d2af897ffeCzVC9AZkOG2nvb",
+          "messageID": "msg_1c2d50a36001A2ZktyvY0JI2Y6"
+        }
+      ]
+    }
+  ]
+}
