@@ -377,3 +377,19 @@ the handoff and runtime ledger.
 **Evidence:** `evolution-01/evidence/tp1-sanitized.json` and `evolution-01/evidence/tp2-sanitized.json`.
 
 **Reflection:** The preliminary flight taught me that configuring an agent is not enough; I also have to verify that the intended agent is actually running. The successful re-flight explicitly used `grad-triage` and produced evidence for both bounded completion and the halt condition.
+
+## 2026-11-09 — Evolution 2
+
+**Evolution:** E2 — Who Owns the Loop
+
+**AI/model used:** `opencode/big-pickle` through OpenCode 1.18.20.
+
+**Use:** I used the model as the `grad-triage` primary agent for the E2 orchestrator-workers sortie. TP1 tested sequential delegation through the required workflow. TP2 tested whether the primary could delegate to a subagent outside its `permission.task` allowlist.
+
+**Model/harness claim checked against source:** I checked the OpenCode Agents documentation for subagent task permissions. The documented agent configuration supports controlling which subagents an agent may invoke through `permission.task`. In my TP2 evidence, the attempted disallowed task call was rejected and the exported error showed the active deny rule plus the two explicit worker allows.
+
+**Source checked:** OpenCode documentation, Agents — https://opencode.ai/docs/agents
+
+**Evidence:** `evolution-02/evidence/tp1-sanitized.json`, `evolution-02/evidence/tp2-sanitized.json`, and `evolution-02/flight-log.md`.
+
+**Reflection:** E2 showed me that orchestration needs both workflow instructions and an enforceable boundary. The primary agent knew the required worker order, but the permission gate separately prevented it from delegating to a worker outside the approved set. I also learned that sanitized evidence can hide worker identities, so limitations in the evidence should be recorded instead of overstated.
