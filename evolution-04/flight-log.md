@@ -86,4 +86,4 @@ The sortie supports the design claim. The independent Python client and OpenCode
 
 ## CHASE POST-FLIGHT
 
-Pending.
+CHASE — Chase — 2026-11-09 — PASS
