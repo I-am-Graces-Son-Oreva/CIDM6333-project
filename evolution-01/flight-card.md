@@ -25,7 +25,7 @@ The primary OpenCode agent can answer a bounded question and stop before its con
 
 Repository: CIDM6333-project
 
-Pre-flight commit: TO BE RECORDED AFTER THIS CARD IS COMMITTED
+Pre-flight commit: e873524
 
 OpenCode version: 1.18.20
 
