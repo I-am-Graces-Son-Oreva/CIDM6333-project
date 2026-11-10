@@ -85,4 +85,4 @@ If aborted, record the error and model identifier honestly.
 
 ## CHASE GO / NO-GO
 
-Pending.
+GO — Chase — 2026-11-09
