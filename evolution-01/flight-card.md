@@ -77,4 +77,4 @@ ABORT if the configured model is unavailable, OpenCode cannot load the primary a
 
 ## CHASE GO / NO-GO
 
-Pending Chase review.
+GO — Chase — 2026-11-09
