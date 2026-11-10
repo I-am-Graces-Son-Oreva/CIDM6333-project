@@ -1,0 +1,24 @@
+timestamp=2026-11-10T03:15:04.018Z level=INFO run=f427dfac message="creating instance" directory=/private/tmp/e7-sortie.0fA2FV/off
+timestamp=2026-11-10T03:15:04.020Z level=INFO run=f427dfac message=fromDirectory directory=/private/tmp/e7-sortie.0fA2FV/off
+timestamp=2026-11-10T03:15:04.042Z level=INFO run=f427dfac message=bootstrapping directory=/private/tmp/e7-sortie.0fA2FV/off
+timestamp=2026-11-10T03:15:04.064Z level=INFO run=f427dfac message=loading path=/Users/orevisco/.config/opencode/config.json
+timestamp=2026-11-10T03:15:04.065Z level=INFO run=f427dfac message=loading path=/Users/orevisco/.config/opencode/opencode.json
+timestamp=2026-11-10T03:15:04.066Z level=INFO run=f427dfac message=loading path=/Users/orevisco/.config/opencode/opencode.jsonc
+timestamp=2026-11-10T03:15:04.084Z level=INFO run=f427dfac message=loading path=/private/tmp/e7-sortie.0fA2FV/off/opencode.json
+timestamp=2026-11-10T03:15:04.184Z level=INFO run=f427dfac message="all LSPs are disabled"
+timestamp=2026-11-10T03:15:04.185Z level=INFO run=f427dfac message="all formatters are disabled"
+timestamp=2026-11-10T03:15:04.186Z level=INFO run=f427dfac message=init
+timestamp=2026-11-10T03:15:04.375Z level=INFO run=f427dfac message=created id=ses_e3c8c43c9ffeXqwJWEl4dX2qX0 slug=happy-forest version=1.18.20 projectID=global directory=/private/tmp/e7-sortie.0fA2FV/off path=private/tmp/e7-sortie.0fA2FV/off workspaceID=undefined parentID=undefined title="New session - 2026-11-10T03:15:04.375Z" agent=undefined model=undefined metadata=undefined permission="[{\"permission\":\"question\",\"pattern\":\"*\",\"action\":\"deny\"},{\"permission\":\"plan_enter\",\"pattern\":\"*\",\"action\":\"deny\"},{\"permission\":\"plan_exit\",\"pattern\":\"*\",\"action\":\"deny\"}]" cost=0 tokens.input=0 tokens.output=0 tokens.reasoning=0 tokens.cache.read=0 tokens.cache.write=0 time.created=1794280504375 time.updated=1794280504375
+timestamp=2026-11-10T03:15:04.394Z level=INFO run=f427dfac message="event connected"
+timestamp=2026-11-10T03:15:05.125Z level=INFO run=f427dfac message=loop session.id=ses_e3c8c43c9ffeXqwJWEl4dX2qX0 step=0
+timestamp=2026-11-10T03:15:05.142Z level=INFO run=f427dfac message="shell tool using shell" shell=/bin/zsh
+timestamp=2026-11-10T03:15:05.181Z level=INFO run=f427dfac message=stream providerID=opencode modelID=big-pickle session.id=ses_e3c8c43c9ffeXqwJWEl4dX2qX0 small=true agent=title mode=primary
+timestamp=2026-11-10T03:15:05.196Z level=INFO run=f427dfac message="llm runtime selected" llm.runtime=ai-sdk llm.provider=opencode llm.model=big-pickle
+timestamp=2026-11-10T03:15:06.198Z level=INFO run=f427dfac message="watcher backend" directory=/private/tmp/e7-sortie.0fA2FV/off platform=darwin backend=fs-events
+timestamp=2026-11-10T03:15:06.209Z level=INFO run=f427dfac message="project copy refresh started" projectID=global
+timestamp=2026-11-10T03:15:06.211Z level=INFO run=f427dfac message="project copy refresh done" projectID=global updated=[] removed=[]
+timestamp=2026-11-10T03:15:06.246Z level=INFO run=f427dfac message="booting location services" directory=/private/tmp/e7-sortie.0fA2FV/off workspaceID=undefined
+timestamp=2026-11-10T03:15:06.728Z level=INFO run=f427dfac message=process session.id=ses_e3c8c43c9ffeXqwJWEl4dX2qX0 messageID=msg_1c373bf2a0019dBpWCH1FNaZMl
+timestamp=2026-11-10T03:15:06.739Z level=INFO run=f427dfac message=stream providerID=opencode modelID=big-pickle session.id=ses_e3c8c43c9ffeXqwJWEl4dX2qX0 small=false agent=build mode=primary
+timestamp=2026-11-10T03:15:06.741Z level=INFO run=f427dfac message="llm runtime selected" llm.runtime=ai-sdk llm.provider=opencode llm.model=big-pickle
+timestamp=2026-11-10T03:15:06.933Z level=ERROR run=f427dfac message="stream error" providerID=opencode modelID=big-pickle session.id=ses_e3c8c43c9ffeXqwJWEl4dX2qX0 small=false agent=build mode=primary error.error="AI_APICallError: Free usage limit reached. Free models work in OpenCode (https://opencode.ai); subscribe to OpenCode Go to keep going: https://opencode.ai/go"
