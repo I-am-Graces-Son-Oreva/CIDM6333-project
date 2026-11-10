@@ -22,6 +22,18 @@
       "git status *": "allow",
       "git diff *": "allow",
       "pwd": "allow"
+    },
+    "grad-triage-e4_write_triage_note": "ask"
+  },
+  "mcp": {
+    "grad-triage-e4": {
+      "type": "local",
+      "command": [
+        "/Users/orevisco/CIDM6333-project/.venv/bin/python",
+        "-m",
+        "src.grad_mcp.server"
+      ],
+      "enabled": true
     }
   }
 }
