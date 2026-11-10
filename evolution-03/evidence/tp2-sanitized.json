@@ -1,0 +1,172 @@
+{
+  "info": {
+    "id": "ses_e3cd87494ffeSskMI3ftfTQetz",
+    "slug": "happy-forest",
+    "projectID": "6b7bca8b15afb47deb8e6e35d382f69d8a7e7050",
+    "directory": "[redacted:session-directory:ses_e3cd87494ffeSskMI3ftfTQetz]",
+    "path": "",
+    "title": "[redacted:session-title:ses_e3cd87494ffeSskMI3ftfTQetz]",
+    "agent": "build",
+    "model": {
+      "id": "qwen3:1.7b",
+      "providerID": "ollama",
+      "variant": "default"
+    },
+    "version": "1.18.20",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 2050,
+      "output": 402,
+      "reasoning": 0,
+      "cache": {
+        "read": 0,
+        "write": 0
+      }
+    },
+    "permission": [
+      {
+        "permission": "question",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_enter",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_exit",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1794275511148,
+      "updated": 1794275605742
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1794275511265
+        },
+        "agent": "build",
+        "model": {
+          "providerID": "ollama",
+          "modelID": "qwen3:1.7b"
+        },
+        "summary": {
+          "diffs": []
+        },
+        "id": "msg_1c3278be1001NZE7vKXvJQJ37o",
+        "sessionID": "ses_e3cd87494ffeSskMI3ftfTQetz"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c3278bf0001pShN6Skaex4lRE]",
+          "id": "prt_1c3278bf0001pShN6Skaex4lRE",
+          "sessionID": "ses_e3cd87494ffeSskMI3ftfTQetz",
+          "messageID": "msg_1c3278be1001NZE7vKXvJQJ37o"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c3278be1001NZE7vKXvJQJ37o",
+        "role": "assistant",
+        "mode": "build",
+        "agent": "build",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c3278e5e001d7Gxpqk892Tk4L]",
+          "root": "[redacted:root:msg_1c3278e5e001d7Gxpqk892Tk4L]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 2452,
+          "input": 2050,
+          "output": 402,
+          "reasoning": 0,
+          "cache": {
+            "write": 0,
+            "read": 0
+          }
+        },
+        "modelID": "qwen3:1.7b",
+        "providerID": "ollama",
+        "time": {
+          "created": 1794275511902,
+          "completed": 1794275605730
+        },
+        "finish": "tool-calls",
+        "id": "msg_1c3278e5e001d7Gxpqk892Tk4L",
+        "sessionID": "ses_e3cd87494ffeSskMI3ftfTQetz"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c32873e1001CNGQ2D7CNZvS6A]",
+          "type": "step-start",
+          "id": "prt_1c32873e1001CNGQ2D7CNZvS6A",
+          "sessionID": "ses_e3cd87494ffeSskMI3ftfTQetz",
+          "messageID": "msg_1c3278e5e001d7Gxpqk892Tk4L"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c32873e6001JG2t3vrTVnGm4K]",
+          "time": {
+            "start": 1794275570662,
+            "end": 1794275605134
+          },
+          "id": "prt_1c32873e6001JG2t3vrTVnGm4K",
+          "sessionID": "ses_e3cd87494ffeSskMI3ftfTQetz",
+          "messageID": "msg_1c3278e5e001d7Gxpqk892Tk4L"
+        },
+        {
+          "type": "tool",
+          "tool": "write",
+          "callID": "call_2a4wr41f",
+          "state": {
+            "status": "error",
+            "input": {
+              "redacted": "tool-input:prt_1c328fa98001AKzHzzb4J6seXc"
+            },
+            "error": "The user rejected permission to use this specific tool call.",
+            "time": {
+              "start": 1794275605162,
+              "end": 1794275605184
+            }
+          },
+          "id": "prt_1c328fa98001AKzHzzb4J6seXc",
+          "sessionID": "ses_e3cd87494ffeSskMI3ftfTQetz",
+          "messageID": "msg_1c3278e5e001d7Gxpqk892Tk4L"
+        },
+        {
+          "reason": "tool-calls",
+          "snapshot": "[redacted:snapshot:prt_1c328fc24001NQEm4QD3as0A7s]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 2452,
+            "input": 2050,
+            "output": 402,
+            "reasoning": 0,
+            "cache": {
+              "write": 0,
+              "read": 0
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c328fc24001NQEm4QD3as0A7s",
+          "sessionID": "ses_e3cd87494ffeSskMI3ftfTQetz",
+          "messageID": "msg_1c3278e5e001d7Gxpqk892Tk4L"
+        }
+      ]
+    }
+  ]
+}

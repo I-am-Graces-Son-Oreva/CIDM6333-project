@@ -1,0 +1,254 @@
+{
+  "info": {
+    "id": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+    "slug": "kind-forest",
+    "projectID": "6b7bca8b15afb47deb8e6e35d382f69d8a7e7050",
+    "directory": "[redacted:session-directory:ses_e3ccfc4b2ffeo2qrdeDYNsgaes]",
+    "path": "",
+    "title": "[redacted:session-title:ses_e3ccfc4b2ffeo2qrdeDYNsgaes]",
+    "agent": "build",
+    "model": {
+      "id": "qwen3:1.7b",
+      "providerID": "ollama",
+      "variant": "default"
+    },
+    "version": "1.18.20",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 4100,
+      "output": 935,
+      "reasoning": 0,
+      "cache": {
+        "read": 0,
+        "write": 0
+      }
+    },
+    "permission": [
+      {
+        "permission": "question",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_enter",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_exit",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1794276080461,
+      "updated": 1794276252023
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1794276080590
+        },
+        "agent": "build",
+        "model": {
+          "providerID": "ollama",
+          "modelID": "qwen3:1.7b"
+        },
+        "summary": {
+          "diffs": []
+        },
+        "id": "msg_1c3303bce001V9gTyef2u99jq1",
+        "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c3303bdc001psqR8PKuWxR1wk]",
+          "id": "prt_1c3303bdc001psqR8PKuWxR1wk",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c3303bce001V9gTyef2u99jq1"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c3303bce001V9gTyef2u99jq1",
+        "role": "assistant",
+        "mode": "build",
+        "agent": "build",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c3303e39001FxWoXqAepiFNqj]",
+          "root": "[redacted:root:msg_1c3303e39001FxWoXqAepiFNqj]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 2488,
+          "input": 2050,
+          "output": 438,
+          "reasoning": 0,
+          "cache": {
+            "write": 0,
+            "read": 0
+          }
+        },
+        "modelID": "qwen3:1.7b",
+        "providerID": "ollama",
+        "time": {
+          "created": 1794276081209,
+          "completed": 1794276177407
+        },
+        "finish": "tool-calls",
+        "id": "msg_1c3303e39001FxWoXqAepiFNqj",
+        "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c3311ca0001dt8TjZq4fZNFcM]",
+          "type": "step-start",
+          "id": "prt_1c3311ca0001dt8TjZq4fZNFcM",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c3303e39001FxWoXqAepiFNqj"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c3311ca5001nOR2ENJUKrtVsQ]",
+          "time": {
+            "start": 1794276138149,
+            "end": 1794276176775
+          },
+          "id": "prt_1c3311ca5001nOR2ENJUKrtVsQ",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c3303e39001FxWoXqAepiFNqj"
+        },
+        {
+          "type": "tool",
+          "tool": "bash",
+          "callID": "call_tksne6g3",
+          "state": {
+            "status": "error",
+            "input": {
+              "redacted": "tool-input:prt_1c331b392001AojunTLQeZbRW5"
+            },
+            "error": "The user has specified a rule which prevents you from using this specific tool call. Here are some of the relevant rules [{\"permission\":\"*\",\"action\":\"allow\",\"pattern\":\"*\"},{\"permission\":\"bash\",\"pattern\":\"*\",\"action\":\"deny\"},{\"permission\":\"bash\",\"pattern\":\"git status *\",\"action\":\"allow\"},{\"permission\":\"bash\",\"pattern\":\"git diff *\",\"action\":\"allow\"},{\"permission\":\"bash\",\"pattern\":\"pwd\",\"action\":\"allow\"}]",
+            "time": {
+              "start": 1794276176804,
+              "end": 1794276176939
+            }
+          },
+          "id": "prt_1c331b392001AojunTLQeZbRW5",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c3303e39001FxWoXqAepiFNqj"
+        },
+        {
+          "reason": "tool-calls",
+          "snapshot": "[redacted:snapshot:prt_1c331b543001fkGVpIFWAxWThD]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 2488,
+            "input": 2050,
+            "output": 438,
+            "reasoning": 0,
+            "cache": {
+              "write": 0,
+              "read": 0
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c331b543001fkGVpIFWAxWThD",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c3303e39001FxWoXqAepiFNqj"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c3303bce001V9gTyef2u99jq1",
+        "role": "assistant",
+        "mode": "build",
+        "agent": "build",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c331b606001VVLFtf5t2F3FJ6]",
+          "root": "[redacted:root:msg_1c331b606001VVLFtf5t2F3FJ6]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 2547,
+          "input": 2050,
+          "output": 497,
+          "reasoning": 0,
+          "cache": {
+            "write": 0,
+            "read": 0
+          }
+        },
+        "modelID": "qwen3:1.7b",
+        "providerID": "ollama",
+        "time": {
+          "created": 1794276177414,
+          "completed": 1794276252010
+        },
+        "finish": "stop",
+        "id": "msg_1c331b606001VVLFtf5t2F3FJ6",
+        "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c3321d580017D0mmjrBNTKwMr]",
+          "type": "step-start",
+          "id": "prt_1c3321d580017D0mmjrBNTKwMr",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c331b606001VVLFtf5t2F3FJ6"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c3321d5c001dS5eau5JwgkMFr]",
+          "time": {
+            "start": 1794276203868,
+            "end": 1794276242858
+          },
+          "id": "prt_1c3321d5c001dS5eau5JwgkMFr",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c331b606001VVLFtf5t2F3FJ6"
+        },
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c332b5b4001xgpxxBbft34hzO]",
+          "time": {
+            "start": 1794276242868,
+            "end": 1794276251615
+          },
+          "id": "prt_1c332b5b4001xgpxxBbft34hzO",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c331b606001VVLFtf5t2F3FJ6"
+        },
+        {
+          "reason": "stop",
+          "snapshot": "[redacted:snapshot:prt_1c332d8a5001r7pxle9tJyWKTZ]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 2547,
+            "input": 2050,
+            "output": 497,
+            "reasoning": 0,
+            "cache": {
+              "write": 0,
+              "read": 0
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c332d8a5001r7pxle9tJyWKTZ",
+          "sessionID": "ses_e3ccfc4b2ffeo2qrdeDYNsgaes",
+          "messageID": "msg_1c331b606001VVLFtf5t2F3FJ6"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,262 @@
+{
+  "info": {
+    "id": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+    "slug": "proud-mountain",
+    "projectID": "6b7bca8b15afb47deb8e6e35d382f69d8a7e7050",
+    "directory": "[redacted:session-directory:ses_e3cdfdf33ffeCr8VwqdwsNIcG8]",
+    "path": "",
+    "title": "[redacted:session-title:ses_e3cdfdf33ffeCr8VwqdwsNIcG8]",
+    "agent": "build",
+    "model": {
+      "id": "qwen3:1.7b",
+      "providerID": "ollama",
+      "variant": "default"
+    },
+    "version": "1.18.20",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 4100,
+      "output": 1080,
+      "reasoning": 0,
+      "cache": {
+        "read": 0,
+        "write": 0
+      }
+    },
+    "permission": [
+      {
+        "permission": "question",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_enter",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_exit",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1794275025100,
+      "updated": 1794275187552
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1794275025217
+        },
+        "agent": "build",
+        "model": {
+          "providerID": "ollama",
+          "modelID": "qwen3:1.7b"
+        },
+        "summary": {
+          "diffs": []
+        },
+        "id": "msg_1c3202141001D1uMBYS5LHTn2s",
+        "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "[redacted:text:prt_1c3202153001YNpycvIGA1OLDB]",
+          "id": "prt_1c3202153001YNpycvIGA1OLDB",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c3202141001D1uMBYS5LHTn2s"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c3202141001D1uMBYS5LHTn2s",
+        "role": "assistant",
+        "mode": "build",
+        "agent": "build",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c3202484001cKBOqwooJlpQZt]",
+          "root": "[redacted:root:msg_1c3202484001cKBOqwooJlpQZt]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 2816,
+          "input": 2050,
+          "output": 766,
+          "reasoning": 0,
+          "cache": {
+            "write": 0,
+            "read": 0
+          }
+        },
+        "modelID": "qwen3:1.7b",
+        "providerID": "ollama",
+        "time": {
+          "created": 1794275026052,
+          "completed": 1794275130627
+        },
+        "finish": "tool-calls",
+        "id": "msg_1c3202484001cKBOqwooJlpQZt",
+        "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c320cd14001e46pW16xTgCpzw]",
+          "type": "step-start",
+          "id": "prt_1c320cd14001e46pW16xTgCpzw",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c3202484001cKBOqwooJlpQZt"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c320cd1a001vVViOechhZSBn2]",
+          "time": {
+            "start": 1794275069210,
+            "end": 1794275129930
+          },
+          "id": "prt_1c320cd1a001vVViOechhZSBn2",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c3202484001cKBOqwooJlpQZt"
+        },
+        {
+          "type": "tool",
+          "tool": "read",
+          "callID": "call_qoz1ciwt",
+          "state": {
+            "status": "error",
+            "input": {
+              "redacted": "tool-input:prt_1c321ba54001qoFx0ro0ZMVTBG"
+            },
+            "error": "The read tool was called with invalid arguments: SchemaError(Missing key\n  at [\"filePath\"]).\nPlease rewrite the input so it satisfies the expected schema.",
+            "time": {
+              "start": 1794275129955,
+              "end": 1794275129962
+            }
+          },
+          "id": "prt_1c321ba54001qoFx0ro0ZMVTBG",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c3202484001cKBOqwooJlpQZt"
+        },
+        {
+          "reason": "tool-calls",
+          "snapshot": "[redacted:snapshot:prt_1c321bc5d001IatMw5TYbmXEeE]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 2816,
+            "input": 2050,
+            "output": 766,
+            "reasoning": 0,
+            "cache": {
+              "write": 0,
+              "read": 0
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c321bc5d001IatMw5TYbmXEeE",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c3202484001cKBOqwooJlpQZt"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_1c3202141001D1uMBYS5LHTn2s",
+        "role": "assistant",
+        "mode": "build",
+        "agent": "build",
+        "path": {
+          "cwd": "[redacted:cwd:msg_1c321bd09001NITZn5pCNIvFCE]",
+          "root": "[redacted:root:msg_1c321bd09001NITZn5pCNIvFCE]"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 2364,
+          "input": 2050,
+          "output": 314,
+          "reasoning": 0,
+          "cache": {
+            "write": 0,
+            "read": 0
+          }
+        },
+        "modelID": "qwen3:1.7b",
+        "providerID": "ollama",
+        "time": {
+          "created": 1794275130633,
+          "completed": 1794275187538
+        },
+        "finish": "tool-calls",
+        "id": "msg_1c321bd09001NITZn5pCNIvFCE",
+        "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8"
+      },
+      "parts": [
+        {
+          "snapshot": "[redacted:snapshot:prt_1c32222b0001yCK0AVrKBU1Slp]",
+          "type": "step-start",
+          "id": "prt_1c32222b0001yCK0AVrKBU1Slp",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c321bd09001NITZn5pCNIvFCE"
+        },
+        {
+          "type": "reasoning",
+          "text": "[redacted:reasoning:prt_1c32222b7001sCu2piLqGUQ3F0]",
+          "time": {
+            "start": 1794275156663,
+            "end": 1794275186930
+          },
+          "id": "prt_1c32222b7001sCu2piLqGUQ3F0",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c321bd09001NITZn5pCNIvFCE"
+        },
+        {
+          "type": "tool",
+          "tool": "read",
+          "callID": "call_n0sumzu0",
+          "state": {
+            "status": "error",
+            "input": {
+              "redacted": "tool-input:prt_1c32298fb001PtAAdAgVmVhWJ0"
+            },
+            "error": "The user rejected permission to use this specific tool call.",
+            "time": {
+              "start": 1794275186952,
+              "end": 1794275186978
+            }
+          },
+          "id": "prt_1c32298fb001PtAAdAgVmVhWJ0",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c321bd09001NITZn5pCNIvFCE"
+        },
+        {
+          "reason": "tool-calls",
+          "snapshot": "[redacted:snapshot:prt_1c3229a95001ychOZIPrct7MOk]",
+          "type": "step-finish",
+          "tokens": {
+            "total": 2364,
+            "input": 2050,
+            "output": 314,
+            "reasoning": 0,
+            "cache": {
+              "write": 0,
+              "read": 0
+            }
+          },
+          "cost": 0,
+          "id": "prt_1c3229a95001ychOZIPrct7MOk",
+          "sessionID": "ses_e3cdfdf33ffeCr8VwqdwsNIcG8",
+          "messageID": "msg_1c321bd09001NITZn5pCNIvFCE"
+        }
+      ]
+    }
+  ]
+}
