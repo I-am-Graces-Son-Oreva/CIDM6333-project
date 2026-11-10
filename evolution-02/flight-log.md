@@ -79,3 +79,5 @@ The `permission.task` boundary prevented the primary agent from successfully del
 ## SORTIE VERDICT
 
 PASS — pending independent Chase post-flight review of the committed evidence.
+
+CHASE — Chase — 2026-11-09 — PASS
