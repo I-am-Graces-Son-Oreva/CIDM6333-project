@@ -441,3 +441,11 @@ the handoff and runtime ledger.
 **Evidence:** `evolution-07/evidence/preflight-isolation.json`, `evolution-07/evidence/preflight-tp5-isolation.json`, `evolution-07/evidence/aborted-sortie-opencode-limit.log`, `evolution-07/flight-card.md`, and `evolution-07/flight-log.md`.
 
 **Reflection:** E7 taught me that memory is more than saving information. A useful memory system needs provenance, retrieval rules, retention, deletion or eviction behavior, and evidence showing why a memory was returned. I also learned that isolation is part of the claim. If the answering model can obtain the private fixture through another path, a correct recall does not prove that the memory system worked. When the required model became unavailable during the approved sortie, I kept the isolation boundary intact and recorded the abort rather than manufacturing a PASS.
+
+## 2026-11-11 — Final Project Direction Update
+
+After completing the early Evolutions, I reconsidered the original graduate application project before beginning the final project. I decided to change the project to **The Fifth Pick**, an NBA fantasy selection and discipline experiment. The original graduate admissions idea remains in this log because it accurately records my earlier project direction.
+
+The new project will test whether an agent can consistently apply my NBA fantasy-selection strategy while helping me stay disciplined about how many selections I make. The project will focus on consistency, human control, and knowing when to stop rather than simply producing more selections.
+
+The final project has not been built yet. This change was made during the planning stage before beginning the final implementation.
