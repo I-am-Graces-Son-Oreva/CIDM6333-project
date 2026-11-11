@@ -425,3 +425,19 @@ the handoff and runtime ledger.
 **Evidence:** `evolution-04/evidence/tp1-python-client.txt`, `evolution-04/evidence/tp2-sanitized.json`, `evolution-04/evidence/tp3-sanitized.json`, `evolution-04/server.log`, and `evolution-04/flight-log.md`.
 
 **Reflection:** E4 showed me why a shared protocol reduces integration duplication. I did not need to create one graduate-triage implementation for the Python client and another implementation for OpenCode. Both could reach the same MCP tool contract. I also learned that MCP itself is not the permission system. OpenCode's separate `ask` rule stopped the attempted write before it reached the server, while the server log provided evidence of the calls that actually executed.
+
+## 2026-11-10 — Evolution 7
+
+**Evolution:** E7 — Memory With a Receipt
+
+**AI/model used:** `opencode/big-pickle` through OpenCode 1.18.20 for independent Chase preflight review and attempted official sortie execution. Python and pytest were used to verify the deterministic memory and isolation implementation.
+
+**Use:** I implemented an explicit memory store and retrieval service with stable memory IDs, source provenance, retrieval thresholds, retention metadata, eviction behavior, and an audit ledger. The E7 test suite also exercised isolation between Memory-OFF and Memory-ON conditions. After Chase issued GO, I attempted the official sortie with fresh isolated OpenCode execution. The required Big Pickle model returned a free-usage-limit error before TP1 could produce a valid answer, so I recorded an ABORT instead of weakening the approved isolation boundary.
+
+**Model/harness claim checked against source:** I checked the OpenCode documentation while developing the isolated harness behavior and used the installed OpenCode 1.18.20 behavior as part of the implementation tests. The E7 automated tests verify the generated configuration and launch paths used by the installed harness.
+
+**Source checked:** OpenCode documentation — https://opencode.ai/docs
+
+**Evidence:** `evolution-07/evidence/preflight-isolation.json`, `evolution-07/evidence/preflight-tp5-isolation.json`, `evolution-07/evidence/aborted-sortie-opencode-limit.log`, `evolution-07/flight-card.md`, and `evolution-07/flight-log.md`.
+
+**Reflection:** E7 taught me that memory is more than saving information. A useful memory system needs provenance, retrieval rules, retention, deletion or eviction behavior, and evidence showing why a memory was returned. I also learned that isolation is part of the claim. If the answering model can obtain the private fixture through another path, a correct recall does not prove that the memory system worked. When the required model became unavailable during the approved sortie, I kept the isolation boundary intact and recorded the abort rather than manufacturing a PASS.
