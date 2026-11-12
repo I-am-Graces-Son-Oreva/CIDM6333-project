@@ -229,3 +229,21 @@ Required decision:
 A GO authorizes the sortie. It does not mean the sortie passed.
 
 **CHASE DECISION: PENDING**
+
+## Chase Preflight Decision — 2026-11-12
+
+CHASE — Chase — 2026-11-12 — GO
+
+Independent preflight review cleared the committed E8 substrate for TP1–TP5.
+
+Chase confirmed:
+- the runnable OpenCode persona → fail-closed parser → workflow driver path;
+- bounded reviewer-FAIL routing with no automatic infinite loop;
+- durable checkpoint reload and resume support;
+- separate read-only reviewer enforcement;
+- implementer edit capability;
+- the committed TP2 sealed planted-defect note;
+- the 34-test automated preflight baseline;
+- and the E7 dependency through its re-fly-on-record branch without claiming E7 PASS.
+
+Automated tests remain supporting preflight evidence and do not replace official sortie observations.
