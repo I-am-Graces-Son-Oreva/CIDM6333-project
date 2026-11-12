@@ -281,3 +281,17 @@ Known flight-specific review paths:
 - A reviewer timeout or missing verdict after TP4 denial is an honest TP4 failure, not a PASS.
 
 CHASE — Chase — 2026-11-12 — GO
+
+## TP2 Preflight — Planted Defect — 2026-11-12
+
+Baseline:
+- E8 automated suite observed locally: 38 passed.
+- `evolution-08/evidence/planted.md` was sealed before TP2 flight.
+- Committed TP2 fixture intentionally accepts negative applicant scores.
+- Committed requirement states negative applicant scores must be rejected.
+- `start_tp2` uses the real `e8-implementer` and separate read-only `e8-reviewer`.
+- TP2 reviewer receives the committed requirement and implementation as bounded evidence.
+- Strict ReviewResult parsing remains fail-closed.
+- Expected FAIL route: `review` checkpoint -> `current_node: implement` -> no human approval -> `merge_count: 0`.
+
+CHASE — Chase — 2026-11-12 — GO
