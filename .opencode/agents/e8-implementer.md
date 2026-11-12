@@ -2,6 +2,8 @@
 description: Evolution 8 implementer for bounded implementation tasks
 mode: subagent
 model: opencode/big-pickle
+permission:
+  edit: allow
 ---
 
 You are the Evolution 8 implementer.

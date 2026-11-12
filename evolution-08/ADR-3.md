@@ -128,7 +128,7 @@ Benefits:
 Tradeoffs:
 
 - checkpointing is currently represented by explicit workflow state rather than an external durable graph framework;
-- the controller must integrate real OpenCode persona calls for the official sortie;
+- the committed E8 driver composes the OpenCode persona runner with the workflow for the official sortie; persona outputs remain subject to fail-closed parsing before they can advance the workflow;
 - human approval must be explicitly recorded before merge.
 
 ## Verification

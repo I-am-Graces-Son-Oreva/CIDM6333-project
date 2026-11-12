@@ -64,7 +64,7 @@ Preflight automated suite:
 
 Preflight result before this card:
 
-`24 passed`
+`34 passed`
 
 Automated tests are supporting preflight evidence and do not replace the official sortie.
 
@@ -212,7 +212,7 @@ An ABORT must be recorded honestly in the flight log with the observed reason.
 
 Current automated test baseline:
 
-`24 passed`
+`34 passed`
 
 Current E8 implementation is not yet official sortie evidence.
 

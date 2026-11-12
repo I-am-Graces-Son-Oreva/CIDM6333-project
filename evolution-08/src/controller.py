@@ -55,7 +55,10 @@ class E8Controller:
 
     def start(self, task: str) -> WorkflowState:
         state = WorkflowState(task=task)
-        return self.workflow.run_until_interrupt(state)
+        return self.workflow.run_until_interrupt(
+            state,
+            stop_on_review_fail=True,
+        )
 
     def resume(
         self,

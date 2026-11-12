@@ -1,0 +1,128 @@
+from __future__ import annotations
+
+import argparse
+import json
+from dataclasses import asdict
+from pathlib import Path
+
+from runner import OpenCodePersonaRunner
+from workflow import E8Workflow, WorkflowState, load_checkpoint
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_CHECKPOINT_DIR = REPO_ROOT / "evolution-08" / "evidence" / "checkpoints"
+
+
+def build_workflow(
+    checkpoint_dir: Path,
+    *,
+    persona_runner: OpenCodePersonaRunner | None = None,
+    merger=None,
+) -> E8Workflow:
+    runner = persona_runner or OpenCodePersonaRunner(
+        repo_root=REPO_ROOT,
+        timeout_seconds=120,
+    )
+
+    if merger is None:
+        merger = lambda: None
+
+    return E8Workflow(
+        implementer=runner.implement,
+        reviewer=runner.review,
+        merger=merger,
+        checkpoint_dir=checkpoint_dir,
+    )
+
+
+def start_task(
+    task: str,
+    checkpoint_dir: Path = DEFAULT_CHECKPOINT_DIR,
+    *,
+    persona_runner: OpenCodePersonaRunner | None = None,
+    merger=None,
+) -> WorkflowState:
+    workflow = build_workflow(
+        checkpoint_dir,
+        persona_runner=persona_runner,
+        merger=merger,
+    )
+
+    state = WorkflowState(task=task)
+
+    return workflow.run_until_interrupt(
+        state,
+        stop_on_review_fail=True,
+    )
+
+
+def resume_task(
+    checkpoint: Path,
+    *,
+    approved: bool,
+    checkpoint_dir: Path | None = None,
+    persona_runner: OpenCodePersonaRunner | None = None,
+    merger=None,
+) -> WorkflowState:
+    state = load_checkpoint(checkpoint)
+
+    destination = checkpoint_dir or checkpoint.parent
+
+    workflow = build_workflow(
+        destination,
+        persona_runner=persona_runner,
+        merger=merger,
+    )
+
+    return workflow.resume_after_approval(
+        state,
+        approved=approved,
+    )
+
+
+def print_state(state: WorkflowState) -> None:
+    print(json.dumps(asdict(state), indent=2, sort_keys=True))
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Evolution 8 Plan-Do-Check driver"
+    )
+
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    start_parser = subparsers.add_parser("start")
+    start_parser.add_argument("task")
+    start_parser.add_argument(
+        "--checkpoint-dir",
+        type=Path,
+        default=DEFAULT_CHECKPOINT_DIR,
+    )
+
+    resume_parser = subparsers.add_parser("resume")
+    resume_parser.add_argument("checkpoint", type=Path)
+
+    approval = resume_parser.add_mutually_exclusive_group(required=True)
+    approval.add_argument("--approve", action="store_true")
+    approval.add_argument("--reject", action="store_true")
+
+    args = parser.parse_args()
+
+    if args.command == "start":
+        state = start_task(
+            args.task,
+            checkpoint_dir=args.checkpoint_dir,
+        )
+        print_state(state)
+        return 0
+
+    state = resume_task(
+        args.checkpoint,
+        approved=args.approve,
+    )
+    print_state(state)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

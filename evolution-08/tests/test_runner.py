@@ -2,6 +2,8 @@ import json
 
 import pytest
 
+from contracts import HandoffResult
+
 from runner import OpenCodeRunnerError, extract_text_events
 
 
@@ -66,3 +68,52 @@ def test_extract_rejects_empty_text():
 
     with pytest.raises(OpenCodeRunnerError):
         extract_text_events(raw)
+
+
+def test_persona_runner_run_command_and_review_parsing(monkeypatch, tmp_path):
+    import subprocess
+
+    from runner import OpenCodePersonaRunner
+
+    review_json = (
+        '{"status":"PASS","summary":"independent review passed",'
+        '"findings":[]}'
+    )
+
+    stdout = event_stream(review_json)
+
+    def fake_run(command, **kwargs):
+        assert command[:5] == [
+            "opencode",
+            "run",
+            "--format",
+            "json",
+            "--command",
+        ]
+        assert command[5] == "e8-review"
+
+        return subprocess.CompletedProcess(
+            args=command,
+            returncode=0,
+            stdout=stdout,
+            stderr="",
+        )
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    runner = OpenCodePersonaRunner(
+        repo_root=tmp_path,
+        timeout_seconds=5,
+    )
+
+    handoff = HandoffResult(
+        status="DONE",
+        summary="implementation complete",
+        evidence=["tests passed"],
+    )
+
+    result = runner.review(handoff)
+
+    assert result.status == "PASS"
+    assert result.summary == "independent review passed"
+    assert result.findings == []
