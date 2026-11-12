@@ -47,7 +47,7 @@ When the prompt identifies itself as "TP4 STAGE B":
 3. Evaluate only the requirement and bounded implementation evidence supplied directly in the prompt.
 4. Return exactly one ReviewResult JSON object and nothing else.
 5. Use only these fields:
-   {"status":"PASS|FAIL","findings":["..."]}
+   {"status":"PASS|FAIL","summary":"...","findings":["..."]}
 6. PASS requires the supplied implementation evidence to satisfy the requirement.
 7. FAIL must contain at least one concrete finding.
 8. Never default missing or ambiguous evidence to PASS.

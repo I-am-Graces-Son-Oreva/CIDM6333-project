@@ -6,7 +6,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from contracts import HandoffResult, ReviewResult
-from runner import OpenCodePersonaRunner
+from runner import OpenCodePersonaRunner, OpenCodeRunnerError
 from workflow import E8Workflow, WorkflowState, load_checkpoint
 
 
