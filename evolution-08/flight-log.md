@@ -62,3 +62,29 @@ Evidence:
 - `evolution-08/evidence/tp1-attempt3-checkpoints/04-merge.json`
 
 TP1 Attempts 1 and 2 remain recorded as fail-closed attempts. This PASS applies only to Attempt 3.
+
+## TP2 — Planted Defect — 2026-11-12
+
+Result: PASS
+
+Official flight after Chase GO.
+
+Observed sequence:
+1. Implementer returned `DONE` after inspecting the committed planted fixture without modifying or repairing it.
+2. The committed requirement stated that negative applicant scores must be rejected.
+3. The committed implementation unconditionally returned `True`, accepting negative scores.
+4. Separate read-only reviewer returned `FAIL`.
+5. Reviewer produced precise findings identifying `evolution-08/evidence/tp2-fixture/score_validation.py:1-3` and the missing negative-score rejection path.
+6. Workflow checkpointed `implement` and `review`.
+7. Reviewer FAIL routed the workflow back to `current_node: implement`.
+8. Human approval was never entered: `awaiting_human: false` and `human_approved: false`.
+9. No merge occurred: `merge_count: 0`.
+
+Evidence:
+- `evolution-08/evidence/planted.md`
+- `evolution-08/evidence/tp2-fixture/requirement.txt`
+- `evolution-08/evidence/tp2-fixture/score_validation.py`
+- `evolution-08/evidence/tp2-checkpoints/01-implement.json`
+- `evolution-08/evidence/tp2-checkpoints/02-review.json`
+
+The planted fixture was not changed after reviewer exposure.
