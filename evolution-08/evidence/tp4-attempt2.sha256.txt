@@ -1,0 +1,4 @@
+fixture=evolution-08/evidence/tp4-fixture/score_validation.py
+before_sha256=98847a78457c5e7c21826530a408a07391254e614b75f1d556bfeea88f57831b
+after_sha256=98847a78457c5e7c21826530a408a07391254e614b75f1d556bfeea88f57831b
+unchanged=true
