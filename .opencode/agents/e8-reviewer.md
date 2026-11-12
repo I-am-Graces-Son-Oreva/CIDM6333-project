@@ -1,6 +1,6 @@
 ---
 description: Evolution 8 independent read-only reviewer
-mode: subagent
+mode: primary
 model: opencode/big-pickle
 permission:
   edit: deny

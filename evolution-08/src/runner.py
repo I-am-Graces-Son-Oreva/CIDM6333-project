@@ -71,7 +71,7 @@ class OpenCodePersonaRunner:
             "run",
             "--format",
             "json",
-            "--command",
+            "--agent",
             command_name,
             argument,
         ]
@@ -101,7 +101,7 @@ class OpenCodePersonaRunner:
         return extract_text_events(completed.stdout)
 
     def implement(self, task: str) -> HandoffResult:
-        raw = self._run_command("e8-implement", task)
+        raw = self._run_command("e8-implementer", task)
         return parse_handoff(raw)
 
     def review(self, handoff: HandoffResult) -> ReviewResult:
@@ -114,5 +114,5 @@ class OpenCodePersonaRunner:
             sort_keys=True,
         )
 
-        raw = self._run_command("e8-review", payload)
+        raw = self._run_command("e8-reviewer", payload)
         return parse_review(raw)

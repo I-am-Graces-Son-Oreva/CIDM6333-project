@@ -88,9 +88,9 @@ def test_persona_runner_run_command_and_review_parsing(monkeypatch, tmp_path):
             "run",
             "--format",
             "json",
-            "--command",
+            "--agent",
         ]
-        assert command[5] == "e8-review"
+        assert command[5] == "e8-reviewer"
 
         return subprocess.CompletedProcess(
             args=command,
