@@ -194,3 +194,22 @@ TP4 Attempt 2 does NOT PASS.
 No denied edit/write event occurred and no valid ReviewResult was returned.
 Attempt 1 and Attempt 2 remain preserved.
 No permission was loosened and no PASS is claimed.
+
+## TP4 Attempt 3 — FAIL / RE-FLIGHT REQUIRED
+
+Stage A executed under the committed two-stage TP4 design.
+
+Observed:
+- Reviewer inspected the sealed defective fixture.
+- Reviewer reported that no edit/write/patch tool was exposed in its available toolset.
+- No edit/write call could therefore be attempted.
+- No permission-denial event was produced.
+- Harness correctly failed closed before Stage B.
+- No ReviewResult was accepted.
+- SHA-256 before and after Stage A matched.
+- Fixture remained unchanged.
+
+Interpretation:
+This attempt did not satisfy TP4. The failure is now localized to OpenCode permission/tool exposure semantics: `edit: deny` removes the edit capability from the reviewer instead of exposing an edit call that can produce a denial event.
+
+No TP4 PASS is claimed.
