@@ -295,3 +295,16 @@ Baseline:
 - Expected FAIL route: `review` checkpoint -> `current_node: implement` -> no human approval -> `merge_count: 0`.
 
 CHASE — Chase — 2026-11-12 — GO
+
+## TP3 Preflight — Malformed Results — 2026-11-12
+
+Baseline:
+- E8 automated suite last observed locally: 38 passed.
+- TP3 exercises the existing committed E8Controller fail-closed contract boundary.
+- Required malformed cases: prose, unknown status, and DONE without evidence.
+- Each malformed implementer result must raise ControllerError before reviewer execution.
+- Expected reviewer calls: 0.
+- Expected merges: 0.
+- No new production architecture is required.
+
+CHASE — Chase — 2026-11-12 — GO
