@@ -1,10 +1,11 @@
+import subprocess
 import json
 
 import pytest
 
 from contracts import HandoffResult
 
-from runner import OpenCodeRunnerError, extract_text_events
+from runner import OpenCodePersonaRunner, OpenCodeRunnerError, extract_text_events
 
 
 def event_stream(text: str) -> str:
@@ -131,3 +132,44 @@ def test_extract_text_events_uses_final_text_result():
     result = extract_text_events(raw)
 
     assert result == '{"status":"DONE","summary":"complete","evidence":["file checked"]}'
+
+
+def test_review_sends_bounded_handoff_without_tool_request(monkeypatch, tmp_path):
+    captured = {}
+
+    def fake_run(command, **kwargs):
+        captured["command"] = command
+        return subprocess.CompletedProcess(
+            args=command,
+            returncode=0,
+            stdout=(
+                '{"type":"text","part":{"text":'
+                '"{\\"status\\":\\"PASS\\",'
+                '\\"summary\\":\\"Evidence supports the handoff.\\",'
+                '\\"findings\\":[]}"}}\n'
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    runner = OpenCodePersonaRunner(
+        repo_root=tmp_path,
+        timeout_seconds=5,
+    )
+
+    handoff = HandoffResult(
+        status="DONE",
+        summary="Implementation complete.",
+        evidence=["file:line evidence", "test passed"],
+    )
+
+    result = runner.review(handoff)
+
+    prompt = captured["command"][-1]
+
+    assert captured["command"][5] == "e8-reviewer"
+    assert "Do not call tools for this ordinary review." in prompt
+    assert "file:line evidence" in prompt
+    assert "test passed" in prompt
+    assert result.status == "PASS"

@@ -105,13 +105,21 @@ class OpenCodePersonaRunner:
         return parse_handoff(raw)
 
     def review(self, handoff: HandoffResult) -> ReviewResult:
-        payload = json.dumps(
-            {
-                "status": handoff.status,
-                "summary": handoff.summary,
-                "evidence": handoff.evidence,
-            },
-            sort_keys=True,
+        handoff_payload = {
+            "status": handoff.status,
+            "summary": handoff.summary,
+            "evidence": handoff.evidence,
+        }
+
+        payload = (
+            "REVIEW TASK:\n"
+            "Independently evaluate the implementer's structured handoff below.\n"
+            "Treat the supplied evidence as the bounded review record.\n"
+            "Do not call tools for this ordinary review.\n"
+            "Do not edit or attempt to fix anything.\n"
+            "Return only the required ReviewResult JSON.\n\n"
+            "HANDOFF:\n"
+            + json.dumps(handoff_payload, sort_keys=True)
         )
 
         raw = self._run_command("e8-reviewer", payload)
