@@ -33,3 +33,24 @@ RULES:
 - Return FAIL when a requirement is violated or required evidence is missing.
 - Never edit implementation files.
 - Return the structured review result requested by the controller.
+
+OUTPUT CONTRACT:
+Return ONLY one valid JSON object. Do not use Markdown, code fences, commentary, or prose outside the JSON.
+
+The exact schema is:
+{
+  "status": "PASS" or "FAIL",
+  "summary": "non-empty string",
+  "findings": ["finding strings"]
+}
+
+PASS may use an empty findings list.
+FAIL requires at least one precise finding.
+Nothing defaults to PASS.
+
+FINAL RESPONSE REQUIREMENT:
+After completing your read-only inspection, you MUST emit exactly one ReviewResult JSON object before ending.
+Do not end after tool use without a verdict.
+Do not announce that you will inspect, read, check, or review anything.
+Your only assistant text response MUST be the required JSON object.
+You MUST return PASS or FAIL even when the available evidence is minimal.

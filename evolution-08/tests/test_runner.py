@@ -117,3 +117,17 @@ def test_persona_runner_run_command_and_review_parsing(monkeypatch, tmp_path):
     assert result.status == "PASS"
     assert result.summary == "independent review passed"
     assert result.findings == []
+
+
+def test_extract_text_events_uses_final_text_result():
+    raw = "\n".join(
+        [
+            '{"type":"text","part":{"text":"I will inspect the file."}}',
+            '{"type":"tool_use","part":{"type":"tool","tool":"read"}}',
+            '{"type":"text","part":{"text":"{\\"status\\":\\"DONE\\",\\"summary\\":\\"complete\\",\\"evidence\\":[\\"file checked\\"]}"}}',
+        ]
+    )
+
+    result = extract_text_events(raw)
+
+    assert result == '{"status":"DONE","summary":"complete","evidence":["file checked"]}'

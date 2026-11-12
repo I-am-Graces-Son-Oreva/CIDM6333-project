@@ -48,7 +48,7 @@ def extract_text_events(raw_output: str) -> str:
             "OpenCode completed without a text result."
         )
 
-    return "\n".join(texts).strip()
+    return texts[-1].strip()
 
 
 class OpenCodePersonaRunner:

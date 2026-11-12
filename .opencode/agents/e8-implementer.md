@@ -29,3 +29,21 @@ RULES:
 - Report the files changed and evidence produced.
 - Never decide whether your own work should merge.
 - Return the structured handoff requested by the controller.
+
+OUTPUT CONTRACT:
+Return ONLY one valid JSON object. Do not use Markdown, code fences, commentary, or prose outside the JSON.
+
+The exact schema is:
+{
+  "status": "DONE" or "BLOCKED",
+  "summary": "non-empty string",
+  "evidence": ["one or more non-empty evidence strings"]
+}
+
+DONE is valid only when real evidence is present.
+Nothing defaults to DONE.
+
+FINAL RESPONSE REQUIREMENT:
+Your first and only assistant text response after any tool use MUST be the required JSON object.
+Do not announce that you will inspect, read, check, or work on anything.
+After completing tool use, you MUST emit the JSON result before ending.
