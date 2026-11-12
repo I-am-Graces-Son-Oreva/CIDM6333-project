@@ -7,7 +7,7 @@ export const Tp4ReadonlyGate: Plugin = async () => {
         return
       }
 
-      const permission = String(input.permission ?? "").toLowerCase()
+      const permission = String(input.type ?? "").toLowerCase()
 
       if (
         permission.includes("edit") ||

@@ -262,3 +262,21 @@ def test_tp4_denial_detector_rejects_mock_success_event():
     )
 
     assert not OpenCodePersonaRunner._tp4_has_denied_edit(raw)
+
+
+def test_tp4_permission_gate_uses_real_hook_type():
+    from pathlib import Path
+
+    plugin_path = (
+        Path(__file__).resolve().parents[2]
+        / ".opencode"
+        / "plugin"
+        / "tp4-readonly-gate.ts"
+    )
+    source = plugin_path.read_text(encoding="utf-8")
+
+    assert '"permission.ask"' in source
+    assert 'process.env.E8_TP4_GATE !== "1"' in source
+    assert "input.type" in source
+    assert "input.permission" not in source
+    assert 'output.status = "deny"' in source
