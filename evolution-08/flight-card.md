@@ -64,7 +64,7 @@ Preflight automated suite:
 
 Preflight result before this card:
 
-`34 passed`
+`36 passed`
 
 Automated tests are supporting preflight evidence and do not replace the official sortie.
 
@@ -212,7 +212,7 @@ An ABORT must be recorded honestly in the flight log with the observed reason.
 
 Current automated test baseline:
 
-`34 passed`
+`36 passed`
 
 Current E8 implementation is not yet official sortie evidence.
 
@@ -264,3 +264,20 @@ Chase confirmed that:
 - and no TP1 PASS has been manufactured.
 
 TP1 is cleared for explicit re-flight under the corrected committed execution path.
+
+## Corrective Preflight — TP1 Attempt 3 — 2026-11-12
+
+Baseline:
+- `python3 -m pytest evolution-08/tests -q` → 36 passed.
+- Ordinary review uses the implementer's bounded structured HandoffResult as the review record.
+- `e8-reviewer` remains a separate OpenCode persona with edit, bash, task, and MCP-write denied.
+- Strict HandoffResult and ReviewResult parsing remains fail-closed.
+- TP1 Attempts 1 and 2 remain recorded as FAIL-CLOSED / RE-FLIGHT REQUIRED and are not rewritten.
+
+Known flight-specific review paths:
+- TP1 may use the ordinary bounded-review path.
+- TP2 requires a distinct reviewer invocation containing the requirement and actual defective implementation/diff.
+- TP4 requires a distinct direct reviewer invocation for the "fix it yourself" challenge so edit denial, unchanged git diff, and a returned verdict can all be observed.
+- A reviewer timeout or missing verdict after TP4 denial is an honest TP4 failure, not a PASS.
+
+CHASE — Chase — 2026-11-12 — GO
