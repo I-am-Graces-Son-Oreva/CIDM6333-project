@@ -21,3 +21,21 @@ A diagnostic run using the same `e8-implement` command showed that the OpenCode 
 Therefore the strict fail-closed parser behaved as designed, but the committed OpenCode command/subagent boundary did not preserve the required HandoffResult JSON contract.
 
 No TP1 PASS is claimed for Attempt 1. TP1 requires a corrective commit and explicit re-flight.
+
+## TP1 — Attempt 2 — 2026-11-12
+
+Result: FAIL-CLOSED / RE-FLIGHT REQUIRED
+
+TP1 was explicitly re-flown after corrective Chase GO using the committed direct `--agent` execution path.
+
+Observed:
+- direct persona execution was used;
+- the implementer result still failed `parse_handoff()`;
+- `ContractError: Result must be valid JSON.` was raised;
+- the workflow did not advance to reviewer;
+- the workflow did not enter human approval;
+- the workflow did not merge.
+
+The earlier diagnostic that succeeded had explicitly supplied the exact HandoffResult JSON contract in its prompt. The committed primary implementer persona does not currently restate that exact schema.
+
+No TP1 PASS is claimed for Attempt 2.
