@@ -195,3 +195,106 @@ def test_json_checkpoint_written_after_each_completed_node(tmp_path):
     assert merge_data["checkpoint_node"] == "merge"
     assert merge_data["merge_count"] == 1
     assert merges == ["merged"]
+
+
+def test_checkpoint_can_reload_and_resume_after_human_interrupt(tmp_path):
+    from workflow import load_checkpoint
+
+    handoff = HandoffResult(
+        status="DONE",
+        summary="Implementation completed.",
+        evidence=["tests passed"],
+    )
+    review = ReviewResult(
+        status="PASS",
+        summary="Independent review passed.",
+        findings=[],
+    )
+
+    first_process_merges = []
+
+    first_workflow = E8Workflow(
+        implementer=lambda task: handoff,
+        reviewer=lambda result: review,
+        merger=lambda: first_process_merges.append("merged"),
+        checkpoint_dir=tmp_path,
+    )
+
+    original_state = WorkflowState(task="durable resume test")
+    first_workflow.run_until_interrupt(original_state)
+
+    assert original_state.current_node == "human_approval"
+    assert original_state.merge_count == 0
+    assert first_process_merges == []
+
+    review_checkpoint = tmp_path / "02-review.json"
+    assert review_checkpoint.exists()
+
+    reloaded_state = load_checkpoint(review_checkpoint)
+
+    assert reloaded_state.task == "durable resume test"
+    assert reloaded_state.current_node == "human_approval"
+    assert reloaded_state.awaiting_human is True
+    assert reloaded_state.human_approved is False
+    assert reloaded_state.merge_count == 0
+    assert reloaded_state.review.status == "PASS"
+
+    resumed_merges = []
+
+    second_workflow = E8Workflow(
+        implementer=lambda task: handoff,
+        reviewer=lambda result: review,
+        merger=lambda: resumed_merges.append("merged"),
+        checkpoint_dir=tmp_path,
+    )
+
+    second_workflow.resume_after_approval(
+        reloaded_state,
+        approved=True,
+    )
+
+    assert reloaded_state.current_node == "complete"
+    assert reloaded_state.merge_count == 1
+    assert resumed_merges == ["merged"]
+    assert (tmp_path / "03-human_approval.json").exists()
+    assert (tmp_path / "04-merge.json").exists()
+
+
+def test_stop_on_review_fail_routes_to_implement_without_merge(tmp_path):
+    handoff = HandoffResult(
+        status="DONE",
+        summary="Implementation completed but contains planted defect.",
+        evidence=["implementation evidence"],
+    )
+
+    failed_review = ReviewResult(
+        status="FAIL",
+        summary="Reviewer detected the planted defect.",
+        findings=["Planted defect is present."],
+    )
+
+    merges = []
+
+    workflow = E8Workflow(
+        implementer=lambda task: handoff,
+        reviewer=lambda result: failed_review,
+        merger=lambda: merges.append("merged"),
+        checkpoint_dir=tmp_path,
+    )
+
+    state = WorkflowState(task="TP2 planted defect")
+
+    workflow.run_until_interrupt(
+        state,
+        stop_on_review_fail=True,
+    )
+
+    assert state.review.status == "FAIL"
+    assert state.current_node == "implement"
+    assert state.awaiting_human is False
+    assert state.human_approved is False
+    assert state.merge_count == 0
+    assert merges == []
+    assert (tmp_path / "01-implement.json").exists()
+    assert (tmp_path / "02-review.json").exists()
+    assert not (tmp_path / "03-merge.json").exists()

@@ -4,6 +4,9 @@ mode: subagent
 model: opencode/big-pickle
 permission:
   edit: deny
+  bash: deny
+  task: deny
+  grad-triage-e4_write_triage_note: deny
 ---
 
 You are the Evolution 8 reviewer.

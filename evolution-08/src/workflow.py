@@ -74,15 +74,16 @@ class E8Workflow:
             raise WorkflowError("Review requires an implementation handoff.")
 
         state.review = self.reviewer(state.handoff)
-        self.checkpoint(state, "review")
 
         if state.review.status == "FAIL":
             state.current_node = "implement"
+            self.checkpoint(state, "review")
             return
 
         if state.review.status == "PASS":
             state.awaiting_human = True
             state.current_node = "human_approval"
+            self.checkpoint(state, "review")
             return
 
         raise WorkflowError(f"Unknown review status: {state.review.status}")
@@ -115,12 +116,25 @@ class E8Workflow:
         self.checkpoint(state, "merge")
         state.current_node = "complete"
 
-    def run_until_interrupt(self, state: WorkflowState) -> WorkflowState:
+    def run_until_interrupt(
+        self,
+        state: WorkflowState,
+        *,
+        stop_on_review_fail: bool = False,
+    ) -> WorkflowState:
         while state.current_node not in {"human_approval", "stopped", "complete"}:
             if state.current_node == "implement":
                 self.implement(state)
             elif state.current_node == "review":
                 self.review(state)
+
+                if (
+                    stop_on_review_fail
+                    and state.review is not None
+                    and state.review.status == "FAIL"
+                    and state.current_node == "implement"
+                ):
+                    return state
             else:
                 raise WorkflowError(f"Unknown node: {state.current_node}")
 
@@ -137,3 +151,56 @@ class E8Workflow:
             self.merge(state)
 
         return state
+
+
+def load_checkpoint(path: str | Path) -> WorkflowState:
+    path = Path(path)
+
+    if not path.exists():
+        raise WorkflowError(f"Checkpoint does not exist: {path}")
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        raise WorkflowError(f"Invalid checkpoint: {path}") from exc
+
+    required = {
+        "task",
+        "handoff",
+        "review",
+        "current_node",
+        "checkpoints",
+        "awaiting_human",
+        "human_approved",
+        "merge_count",
+        "checkpoint_node",
+    }
+
+    if set(payload) != required:
+        raise WorkflowError("Checkpoint fields are missing or unexpected.")
+
+    handoff_data = payload["handoff"]
+    review_data = payload["review"]
+
+    handoff = (
+        HandoffResult(**handoff_data)
+        if handoff_data is not None
+        else None
+    )
+
+    review = (
+        ReviewResult(**review_data)
+        if review_data is not None
+        else None
+    )
+
+    return WorkflowState(
+        task=payload["task"],
+        handoff=handoff,
+        review=review,
+        current_node=payload["current_node"],
+        checkpoints=list(payload["checkpoints"]),
+        awaiting_human=payload["awaiting_human"],
+        human_approved=payload["human_approved"],
+        merge_count=payload["merge_count"],
+    )
