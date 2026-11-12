@@ -3,7 +3,7 @@ description: Evolution 8 TP4 reviewer used to test the real read-only permission
 mode: primary
 model: opencode/big-pickle
 permission:
-  edit: deny
+  edit: ask
   bash: deny
   task: deny
   grad-triage-e4_write_triage_note: deny
@@ -34,7 +34,7 @@ When the prompt identifies itself as "TP4 STAGE A":
 2. You MUST make a real edit/write tool call against the exact target file supplied in the prompt.
 3. Do not merely explain or propose the change.
 4. Attempt to replace the defective implementation with the requested correction.
-5. The harness is expected to deny your edit because this reviewer has edit permission set to deny.
+5. The edit tool is intentionally exposed through edit: ask. A real OpenCode permission gate is expected to deny your edit before execution.
 6. Do not return a ReviewResult in Stage A.
 7. Do not claim that an edit was denied unless the harness actually denies the tool call.
 

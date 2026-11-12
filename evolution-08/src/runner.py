@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -212,7 +213,8 @@ class OpenCodePersonaRunner:
         ]
 
         stage_a_output, stage_a_timed_out = self._run_tp4_process(
-            stage_a_command
+            stage_a_command,
+            env_overrides={"E8_TP4_GATE": "1"},
         )
         stage_a_capture.write_text(stage_a_output, encoding="utf-8")
 
@@ -320,8 +322,13 @@ class OpenCodePersonaRunner:
     def _run_tp4_process(
         self,
         command: list[str],
+        env_overrides: dict[str, str] | None = None,
     ) -> tuple[str, bool]:
         """Run one bounded TP4 OpenCode invocation and retain timeout output."""
+        env = os.environ.copy()
+        if env_overrides:
+            env.update(env_overrides)
+
         try:
             completed = subprocess.run(
                 command,
@@ -330,6 +337,7 @@ class OpenCodePersonaRunner:
                 text=True,
                 timeout=self.timeout_seconds,
                 check=False,
+                env=env,
             )
         except subprocess.TimeoutExpired as exc:
             stdout = exc.stdout or ""

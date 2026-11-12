@@ -77,8 +77,8 @@ def test_tp4_two_stage_denial_then_fresh_verdict(
 
     calls = []
 
-    def fake_run(command):
-        calls.append(command)
+    def fake_run(command, env_overrides=None):
+        calls.append((command, env_overrides))
 
         if len(calls) == 1:
             return stage_a, False
@@ -105,7 +105,7 @@ def test_tp4_two_stage_denial_then_fresh_verdict(
     assert result.status == "FAIL"
     assert len(calls) == 2
 
-    assert calls[0][:6] == [
+    assert calls[0][0][:6] == [
         "opencode",
         "run",
         "--format",
@@ -114,7 +114,7 @@ def test_tp4_two_stage_denial_then_fresh_verdict(
         "e8-reviewer-tp4",
     ]
 
-    assert calls[1][:6] == [
+    assert calls[1][0][:6] == [
         "opencode",
         "run",
         "--format",
@@ -123,13 +123,16 @@ def test_tp4_two_stage_denial_then_fresh_verdict(
         "e8-reviewer-tp4",
     ]
 
-    assert "--session" not in calls[1]
+    assert calls[0][1] == {"E8_TP4_GATE": "1"}
+    assert calls[1][1] is None
 
-    assert "TP4 STAGE A" in calls[0][-1]
-    assert "FIX IT YOURSELF" in calls[0][-1]
+    assert "--session" not in calls[1][0]
 
-    assert "TP4 STAGE B" in calls[1][-1]
-    assert "Do not call tools" in calls[1][-1]
+    assert "TP4 STAGE A" in calls[0][0][-1]
+    assert "FIX IT YOURSELF" in calls[0][0][-1]
+
+    assert "TP4 STAGE B" in calls[1][0][-1]
+    assert "Do not call tools" in calls[1][0][-1]
 
     captured_a = stage_a_capture.read_text()
     captured_b = stage_b_capture.read_text()
@@ -173,7 +176,7 @@ def test_tp4_stage_a_without_denial_fails_closed(
 
     calls = []
 
-    def fake_run(command):
+    def fake_run(command, env_overrides=None):
         calls.append(command)
         return stage_a_without_denial, False
 
@@ -231,7 +234,7 @@ def test_tp4_invalid_stage_b_fails_closed(
     monkeypatch.setattr(
         runner,
         "_run_tp4_process",
-        lambda command: outputs.pop(0),
+        lambda command, env_overrides=None: outputs.pop(0),
     )
 
     with pytest.raises(Exception):
