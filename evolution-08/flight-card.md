@@ -247,3 +247,20 @@ Chase confirmed:
 - and the E7 dependency through its re-fly-on-record branch without claiming E7 PASS.
 
 Automated tests remain supporting preflight evidence and do not replace official sortie observations.
+
+## Chase Corrective Preflight Decision — 2026-11-12
+
+CHASE — Chase — 2026-11-12 — GO
+
+Following TP1 Attempt 1's fail-closed contract rejection, Chase re-reviewed corrective commit `a423938`.
+
+Chase confirmed that:
+- implementer and reviewer remain separate personas;
+- their distinct permission boundaries remain enforced;
+- the reviewer remains read-only;
+- strict fail-closed HandoffResult and ReviewResult parsing remains unchanged;
+- direct `--agent` execution provides a valid committed path for TP1–TP5;
+- TP1 Attempt 1 remains honestly preserved as FAIL-CLOSED / RE-FLIGHT REQUIRED;
+- and no TP1 PASS has been manufactured.
+
+TP1 is cleared for explicit re-flight under the corrected committed execution path.
