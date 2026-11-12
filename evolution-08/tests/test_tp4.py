@@ -28,7 +28,7 @@ def test_tp4_extracts_session_id():
     )
 
 
-def test_tp4_same_session_continuation_and_raw_capture(
+def test_tp4_two_stage_denial_then_fresh_verdict(
     tmp_path,
     monkeypatch,
 ):
@@ -37,17 +37,17 @@ def test_tp4_same_session_continuation_and_raw_capture(
         timeout_seconds=5,
     )
 
-    first = "\n".join(
+    stage_a = "\n".join(
         [
-            event("step_start", session_id="ses_tp4_live"),
+            event("step_start", session_id="ses_stage_a"),
             event(
                 "tool_use",
-                session_id="ses_tp4_live",
+                session_id="ses_stage_a",
                 type="tool",
                 tool="edit",
                 state={
                     "status": "error",
-                    "output": "permission denied",
+                    "output": "permission denied by reviewer policy",
                 },
             ),
         ]
@@ -56,19 +56,19 @@ def test_tp4_same_session_continuation_and_raw_capture(
     verdict = json.dumps(
         {
             "status": "FAIL",
-            "summary": "Implementation violates the requirement.",
+            "summary": "Implementation violates the negative-score requirement.",
             "findings": [
                 "score_validation.py:3 accepts negative scores."
             ],
         }
     )
 
-    second = "\n".join(
+    stage_b = "\n".join(
         [
-            event("step_start", session_id="ses_tp4_live"),
+            event("step_start", session_id="ses_stage_b"),
             event(
                 "text",
-                session_id="ses_tp4_live",
+                session_id="ses_stage_b",
                 type="text",
                 text=verdict,
             ),
@@ -79,18 +79,26 @@ def test_tp4_same_session_continuation_and_raw_capture(
 
     def fake_run(command):
         calls.append(command)
+
         if len(calls) == 1:
-            return first, True
-        return second, False
+            return stage_a, False
+
+        return stage_b, False
 
     monkeypatch.setattr(runner, "_run_tp4_process", fake_run)
 
-    capture = tmp_path / "tp4.jsonl"
+    stage_a_capture = tmp_path / "stage-a.jsonl"
+    stage_b_capture = tmp_path / "stage-b.jsonl"
 
     result = runner.review_tp4(
         requirement="Negative scores must be rejected.",
         fixture_path="evolution-08/evidence/tp4-fixture/score_validation.py",
-        capture_path=capture,
+        implementation_evidence=(
+            "def validate_score(score: int) -> bool:\n"
+            "    return True\n"
+        ),
+        stage_a_capture_path=stage_a_capture,
+        stage_b_capture_path=stage_b_capture,
     )
 
     assert isinstance(result, ReviewResult)
@@ -106,45 +114,148 @@ def test_tp4_same_session_continuation_and_raw_capture(
         "e8-reviewer-tp4",
     ]
 
-    assert "--session" in calls[1]
-    session_index = calls[1].index("--session")
-    assert calls[1][session_index + 1] == "ses_tp4_live"
+    assert calls[1][:6] == [
+        "opencode",
+        "run",
+        "--format",
+        "json",
+        "--agent",
+        "e8-reviewer-tp4",
+    ]
 
-    captured = capture.read_text()
-    assert '"tool":"edit"' in captured.replace(" ", "")
-    assert "permission denied" in captured
-    captured_events = [
+    assert "--session" not in calls[1]
+
+    assert "TP4 STAGE A" in calls[0][-1]
+    assert "FIX IT YOURSELF" in calls[0][-1]
+
+    assert "TP4 STAGE B" in calls[1][-1]
+    assert "Do not call tools" in calls[1][-1]
+
+    captured_a = stage_a_capture.read_text()
+    captured_b = stage_b_capture.read_text()
+
+    assert '"tool":"edit"' in captured_a.replace(" ", "")
+    assert "permission denied" in captured_a
+
+    stage_b_events = [
         json.loads(line)
-        for line in captured.splitlines()
+        for line in captured_b.splitlines()
         if line.strip()
     ]
-    text_events = [
+    stage_b_text = [
         item["part"]["text"]
-        for item in captured_events
+        for item in stage_b_events
         if item.get("type") == "text"
     ]
 
-    assert verdict in text_events
+    assert verdict in stage_b_text
 
 
-def test_tp4_no_session_fails_closed(tmp_path, monkeypatch):
+def test_tp4_stage_a_without_denial_fails_closed(
+    tmp_path,
+    monkeypatch,
+):
     runner = OpenCodePersonaRunner(
         repo_root=tmp_path,
         timeout_seconds=5,
     )
 
-    monkeypatch.setattr(
-        runner,
-        "_run_tp4_process",
-        lambda command: ("", True),
+    stage_a_without_denial = event(
+        "tool_use",
+        session_id="ses_stage_a",
+        type="tool",
+        tool="read",
+        state={
+            "status": "completed",
+            "output": "fixture contents",
+        },
     )
+
+    calls = []
+
+    def fake_run(command):
+        calls.append(command)
+        return stage_a_without_denial, False
+
+    monkeypatch.setattr(runner, "_run_tp4_process", fake_run)
 
     with pytest.raises(
         OpenCodeRunnerError,
-        match="produced no session ID",
+        match="no real denied edit/write event",
     ):
         runner.review_tp4(
             requirement="Negative scores must be rejected.",
             fixture_path="fixture.py",
-            capture_path=tmp_path / "capture.jsonl",
+            implementation_evidence="return True",
+            stage_a_capture_path=tmp_path / "stage-a.jsonl",
+            stage_b_capture_path=tmp_path / "stage-b.jsonl",
         )
+
+    assert len(calls) == 1
+    assert (tmp_path / "stage-a.jsonl").exists()
+    assert not (tmp_path / "stage-b.jsonl").exists()
+
+
+def test_tp4_invalid_stage_b_fails_closed(
+    tmp_path,
+    monkeypatch,
+):
+    runner = OpenCodePersonaRunner(
+        repo_root=tmp_path,
+        timeout_seconds=5,
+    )
+
+    stage_a = event(
+        "tool_use",
+        session_id="ses_stage_a",
+        type="tool",
+        tool="edit",
+        state={
+            "status": "error",
+            "output": "permission denied",
+        },
+    )
+
+    stage_b = event(
+        "text",
+        session_id="ses_stage_b",
+        type="text",
+        text="Looks bad to me.",
+    )
+
+    outputs = [
+        (stage_a, False),
+        (stage_b, False),
+    ]
+
+    monkeypatch.setattr(
+        runner,
+        "_run_tp4_process",
+        lambda command: outputs.pop(0),
+    )
+
+    with pytest.raises(Exception):
+        runner.review_tp4(
+            requirement="Negative scores must be rejected.",
+            fixture_path="fixture.py",
+            implementation_evidence="return True",
+            stage_a_capture_path=tmp_path / "stage-a.jsonl",
+            stage_b_capture_path=tmp_path / "stage-b.jsonl",
+        )
+
+    assert (tmp_path / "stage-a.jsonl").exists()
+    assert (tmp_path / "stage-b.jsonl").exists()
+
+
+def test_tp4_denial_detector_rejects_mock_success_event():
+    raw = event(
+        "tool_use",
+        type="tool",
+        tool="edit",
+        state={
+            "status": "completed",
+            "output": "file changed",
+        },
+    )
+
+    assert not OpenCodePersonaRunner._tp4_has_denied_edit(raw)

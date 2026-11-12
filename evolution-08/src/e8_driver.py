@@ -124,10 +124,12 @@ def start_tp2(
 
 def start_tp4(
     *,
-    capture_path: Path,
+    stage_a_capture_path: Path,
+    stage_b_capture_path: Path,
+    hash_evidence_path: Path,
     persona_runner: OpenCodePersonaRunner | None = None,
 ) -> ReviewResult:
-    """Run the live TP4 reviewer permission-boundary flight."""
+    """Run the two-stage live TP4 reviewer permission-boundary flight."""
     import hashlib
 
     runner = persona_runner or OpenCodePersonaRunner(
@@ -145,6 +147,9 @@ def start_tp4(
     implementation_path = fixture_dir / "score_validation.py"
 
     requirement = requirement_path.read_text(encoding="utf-8").strip()
+    implementation_evidence = implementation_path.read_text(
+        encoding="utf-8"
+    )
 
     before_bytes = implementation_path.read_bytes()
     before_hash = hashlib.sha256(before_bytes).hexdigest()
@@ -155,15 +160,16 @@ def start_tp4(
         result = runner.review_tp4(
             requirement=requirement,
             fixture_path=fixture_relative,
-            capture_path=capture_path,
+            implementation_evidence=implementation_evidence,
+            stage_a_capture_path=stage_a_capture_path,
+            stage_b_capture_path=stage_b_capture_path,
         )
     finally:
         after_bytes = implementation_path.read_bytes()
         after_hash = hashlib.sha256(after_bytes).hexdigest()
 
-        hash_evidence = capture_path.with_suffix(".sha256.txt")
-        hash_evidence.parent.mkdir(parents=True, exist_ok=True)
-        hash_evidence.write_text(
+        hash_evidence_path.parent.mkdir(parents=True, exist_ok=True)
+        hash_evidence_path.write_text(
             "fixture="
             + fixture_relative
             + "\n"
@@ -187,7 +193,6 @@ def start_tp4(
             )
 
     return result
-
 
 def resume_task(
     checkpoint: Path,
@@ -241,9 +246,34 @@ def main() -> int:
 
     tp4_parser = subparsers.add_parser("tp4")
     tp4_parser.add_argument(
-        "--capture-path",
+        "--stage-a-capture",
         type=Path,
-        default=REPO_ROOT / "evolution-08" / "evidence" / "tp4-attempt2.jsonl",
+        default=(
+            REPO_ROOT
+            / "evolution-08"
+            / "evidence"
+            / "tp4-attempt3-stageA.jsonl"
+        ),
+    )
+    tp4_parser.add_argument(
+        "--stage-b-capture",
+        type=Path,
+        default=(
+            REPO_ROOT
+            / "evolution-08"
+            / "evidence"
+            / "tp4-attempt3-stageB.jsonl"
+        ),
+    )
+    tp4_parser.add_argument(
+        "--hash-evidence",
+        type=Path,
+        default=(
+            REPO_ROOT
+            / "evolution-08"
+            / "evidence"
+            / "tp4-attempt3.sha256.txt"
+        ),
     )
 
     resume_parser = subparsers.add_parser("resume")
@@ -272,7 +302,9 @@ def main() -> int:
 
     if args.command == "tp4":
         result = start_tp4(
-            capture_path=args.capture_path,
+            stage_a_capture_path=args.stage_a_capture,
+            stage_b_capture_path=args.stage_b_capture,
+            hash_evidence_path=args.hash_evidence,
         )
         print(json.dumps(asdict(result), indent=2, sort_keys=True))
         return 0

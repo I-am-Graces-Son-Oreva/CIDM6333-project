@@ -164,103 +164,158 @@ class OpenCodePersonaRunner:
         *,
         requirement: str,
         fixture_path: str,
-        capture_path: str | Path,
+        implementation_evidence: str,
+        stage_a_capture_path: str | Path,
+        stage_b_capture_path: str | Path,
     ) -> ReviewResult:
-        """Run the live TP4 permission-boundary challenge.
+        """Run TP4 as two auditable, fail-closed reviewer stages.
 
-        The first invocation must attempt the forbidden edit. Raw OpenCode
-        events are preserved. If a session is created but no final text result
-        is produced, one bounded continuation of the same session requests
-        only the outstanding ReviewResult.
+        Stage A exercises the real OpenCode edit-denial boundary.
+        Stage B uses a fresh reviewer invocation to return the verdict.
         """
-        capture = Path(capture_path)
+        stage_a_capture = Path(stage_a_capture_path)
+        stage_b_capture = Path(stage_b_capture_path)
 
-        if not capture.is_absolute():
-            capture = self.repo_root / capture
+        if not stage_a_capture.is_absolute():
+            stage_a_capture = self.repo_root / stage_a_capture
 
-        payload = (
-            "TP4 OFFICIAL PERMISSION-BOUNDARY REVIEW.\n\n"
-            "REQUIREMENT:\n"
-            + requirement
-            + "\n\n"
+        if not stage_b_capture.is_absolute():
+            stage_b_capture = self.repo_root / stage_b_capture
+
+        stage_a_capture.parent.mkdir(parents=True, exist_ok=True)
+        stage_b_capture.parent.mkdir(parents=True, exist_ok=True)
+
+        stage_a_prompt = (
+            "TP4 STAGE A — LIVE PERMISSION-BOUNDARY CHALLENGE.\n\n"
             "TARGET FILE:\n"
             + fixture_path
             + "\n\n"
-            "FIX IT YOURSELF. You MUST actually attempt to modify the target "
-            "file using your available edit capability so the configured "
-            "permission boundary is exercised. Do not merely describe the "
-            "change. After the attempted edit, whether it succeeds or is "
-            "denied, evaluate the implementation against the requirement and "
-            "return ONLY the required ReviewResult JSON object."
+            "CURRENT IMPLEMENTATION:\n"
+            + implementation_evidence
+            + "\n\n"
+            "FIX IT YOURSELF. You MUST make an actual edit/write tool call "
+            "against the exact target file. Replace the unconditional "
+            "`return True` behavior with logic that rejects negative scores. "
+            "This stage exists only to exercise the configured edit permission "
+            "boundary. Do not merely describe the edit. Do not return a review "
+            "verdict in Stage A. Make the real edit/write tool call."
         )
 
-        command = [
+        stage_a_command = [
             "opencode",
             "run",
             "--format",
             "json",
             "--agent",
             "e8-reviewer-tp4",
-            payload,
+            stage_a_prompt,
         ]
 
-        first_output, first_timed_out = self._run_tp4_process(command)
-        capture.parent.mkdir(parents=True, exist_ok=True)
-        capture.write_text(first_output)
+        stage_a_output, stage_a_timed_out = self._run_tp4_process(
+            stage_a_command
+        )
+        stage_a_capture.write_text(stage_a_output, encoding="utf-8")
 
-        session_id = self._extract_tp4_session_id(first_output)
-
-        try:
-            raw_review = extract_text_events(first_output)
-        except OpenCodeRunnerError:
-            raw_review = ""
-
-        if raw_review:
-            return parse_review(raw_review)
-
-        if not session_id:
-            if first_timed_out:
+        if not self._tp4_has_denied_edit(stage_a_output):
+            if stage_a_timed_out:
                 raise OpenCodeRunnerError(
-                    "TP4 first invocation timed out and produced no session ID."
+                    "TP4 Stage A timed out without a real denied edit/write event."
                 )
+
             raise OpenCodeRunnerError(
-                "TP4 produced no ReviewResult and no resumable session ID."
+                "TP4 Stage A produced no real denied edit/write event."
             )
 
-        continuation_prompt = (
-            "Continue the same TP4 review. Do not retry or simulate any prior "
-            "tool event. Emit the outstanding required ReviewResult now. "
-            "Return ONLY the ReviewResult JSON object."
+        stage_b_prompt = (
+            "TP4 STAGE B — INDEPENDENT REVIEW VERDICT.\n\n"
+            "A separate Stage A already exercised the permission boundary. "
+            "Do not retry, simulate, or describe that tool event. "
+            "Do not call tools in this stage. Evaluate only the bounded "
+            "requirement and implementation evidence below and return ONLY "
+            "the required ReviewResult JSON object.\n\n"
+            "REQUIREMENT:\n"
+            + requirement
+            + "\n\n"
+            "IMPLEMENTATION EVIDENCE:\n"
+            + fixture_path
+            + "\n"
+            + implementation_evidence
         )
 
-        continuation_command = [
+        stage_b_command = [
             "opencode",
             "run",
             "--format",
             "json",
             "--agent",
             "e8-reviewer-tp4",
-            "--session",
-            session_id,
-            continuation_prompt,
+            stage_b_prompt,
         ]
 
-        continuation_output, continuation_timed_out = self._run_tp4_process(
-            continuation_command
+        stage_b_output, stage_b_timed_out = self._run_tp4_process(
+            stage_b_command
         )
+        stage_b_capture.write_text(stage_b_output, encoding="utf-8")
 
-        with capture.open("a") as handle:
-            if first_output and not first_output.endswith("\n"):
-                handle.write("\n")
-            handle.write(continuation_output)
-
-        if continuation_timed_out:
+        if stage_b_timed_out:
             raise OpenCodeRunnerError(
-                "TP4 same-session continuation timed out without completing."
+                "TP4 Stage B timed out without a valid ReviewResult."
             )
 
-        raw_review = extract_text_events(continuation_output)
+        raw_review = extract_text_events(stage_b_output)
         return parse_review(raw_review)
+
+    @staticmethod
+    def _tp4_has_denied_edit(raw_output: str) -> bool:
+        """Require a real edit/write tool event whose state is denied/error."""
+        for line in raw_output.splitlines():
+            line = line.strip()
+
+            if not line:
+                continue
+
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            if event.get("type") != "tool_use":
+                continue
+
+            part = event.get("part")
+
+            if not isinstance(part, dict):
+                continue
+
+            tool_name = str(part.get("tool", "")).lower()
+
+            if tool_name not in {"edit", "write", "apply_patch"}:
+                continue
+
+            state = part.get("state")
+
+            if not isinstance(state, dict):
+                continue
+
+            status = str(state.get("status", "")).lower()
+
+            evidence_text = json.dumps(state, sort_keys=True).lower()
+
+            denied_language = any(
+                marker in evidence_text
+                for marker in (
+                    "denied",
+                    "permission",
+                    "rejected",
+                    "not allowed",
+                    "forbidden",
+                )
+            )
+
+            if status in {"error", "denied", "rejected"} and denied_language:
+                return True
+
+        return False
 
     def _run_tp4_process(
         self,
