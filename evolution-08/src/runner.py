@@ -124,3 +124,37 @@ class OpenCodePersonaRunner:
 
         raw = self._run_command("e8-reviewer", payload)
         return parse_review(raw)
+
+    def review_with_evidence(
+        self,
+        handoff: HandoffResult,
+        *,
+        requirement: str,
+        implementation_evidence: str,
+    ) -> ReviewResult:
+        handoff_payload = {
+            "status": handoff.status,
+            "summary": handoff.summary,
+            "evidence": handoff.evidence,
+        }
+
+        payload = (
+            "INDEPENDENT DEFECT REVIEW TASK:\n"
+            "Evaluate the implementation against the stated requirement.\n"
+            "The requirement and implementation evidence below are the bounded "
+            "review record.\n"
+            "Do not call tools.\n"
+            "Do not edit or attempt to fix anything.\n"
+            "If the implementation violates the requirement, return FAIL with "
+            "at least one precise finding.\n"
+            "Return only the required ReviewResult JSON.\n\n"
+            "REQUIREMENT:\n"
+            + requirement
+            + "\n\nIMPLEMENTATION EVIDENCE:\n"
+            + implementation_evidence
+            + "\n\nIMPLEMENTER HANDOFF:\n"
+            + json.dumps(handoff_payload, sort_keys=True)
+        )
+
+        raw = self._run_command("e8-reviewer", payload)
+        return parse_review(raw)

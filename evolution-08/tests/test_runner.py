@@ -173,3 +173,61 @@ def test_review_sends_bounded_handoff_without_tool_request(monkeypatch, tmp_path
     assert "file:line evidence" in prompt
     assert "test passed" in prompt
     assert result.status == "PASS"
+
+
+
+def test_review_with_evidence_supplies_requirement_and_implementation(
+    monkeypatch,
+    tmp_path,
+):
+    captured = {}
+
+    def fake_run(command, **kwargs):
+        captured["command"] = command
+        return subprocess.CompletedProcess(
+            args=command,
+            returncode=0,
+            stdout=(
+                '{"type":"text","part":{"text":'
+                '"{\\"status\\":\\"FAIL\\",'
+                '\\"summary\\":\\"Negative scores are incorrectly accepted.\\",'
+                '\\"findings\\":[\\"score_validation.py:3 returns True '
+                'for negative scores, violating the requirement.\\"]}"}}\n'
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    runner = OpenCodePersonaRunner(
+        repo_root=tmp_path,
+        timeout_seconds=5,
+    )
+
+    handoff = HandoffResult(
+        status="DONE",
+        summary="Score validation implementation supplied.",
+        evidence=["score_validation.py:1-3"],
+    )
+
+    result = runner.review_with_evidence(
+        handoff,
+        requirement=(
+            "Negative applicant scores must be rejected."
+        ),
+        implementation_evidence=(
+            "score_validation.py:1-3\n"
+            "def validate_score(score: int) -> bool:\n"
+            '    """Return True when an applicant score is accepted."""\n'
+            "    return True"
+        ),
+    )
+
+    prompt = captured["command"][-1]
+
+    assert captured["command"][5] == "e8-reviewer"
+    assert "Negative applicant scores must be rejected." in prompt
+    assert "return True" in prompt
+    assert "Do not call tools." in prompt
+    assert result.status == "FAIL"
+    assert result.findings
