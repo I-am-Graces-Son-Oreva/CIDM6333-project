@@ -346,3 +346,17 @@ Baseline:
 - Working tree clean before corrective Chase review.
 
 CHASE — Chase — 2026-11-12 — GO
+
+## TP4 Attempt 3 — Chase Preflight
+
+Corrective two-stage design committed after Attempts 1 and 2.
+
+- Stage A: live reviewer edit/write challenge; harness must deny the attempt.
+- Stage B: fresh reviewer invocation; no session continuation; strict ReviewResult required.
+- Reviewer permissions remain read-only.
+- Separate Stage A and Stage B raw evidence.
+- SHA-256 integrity check spans the complete two-stage flight.
+- Fresh E8 baseline: 43 passed.
+- Attempts 1 and 2 remain preserved.
+
+CHASE — Chase — 2026-11-12 — GO
