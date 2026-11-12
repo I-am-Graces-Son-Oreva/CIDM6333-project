@@ -39,3 +39,26 @@ Observed:
 The earlier diagnostic that succeeded had explicitly supplied the exact HandoffResult JSON contract in its prompt. The committed primary implementer persona does not currently restate that exact schema.
 
 No TP1 PASS is claimed for Attempt 2.
+
+## TP1 — Clean Task — Attempt 3 — 2026-11-12
+
+Result: PASS
+
+Official corrective re-flight after Chase GO.
+
+Observed sequence:
+1. Implementer returned `DONE` with evidence verifying `evolution-08/evidence/tp1-clean.txt` contained exactly `E8 TP1 CLEAN IMPLEMENTATION`.
+2. Separate read-only reviewer returned `PASS`.
+3. Workflow checkpointed after `implement` and `review`.
+4. Workflow stopped at `human_approval` with `awaiting_human: true`, `human_approved: false`, and `merge_count: 0`.
+5. Human approval was explicitly supplied by resuming from `02-review.json` with `--approve`.
+6. Workflow checkpointed `human_approval` and `merge`.
+7. Final state recorded `human_approved: true` and `merge_count: 1`.
+
+Evidence:
+- `evolution-08/evidence/tp1-attempt3-checkpoints/01-implement.json`
+- `evolution-08/evidence/tp1-attempt3-checkpoints/02-review.json`
+- `evolution-08/evidence/tp1-attempt3-checkpoints/03-human_approval.json`
+- `evolution-08/evidence/tp1-attempt3-checkpoints/04-merge.json`
+
+TP1 Attempts 1 and 2 remain recorded as fail-closed attempts. This PASS applies only to Attempt 3.
