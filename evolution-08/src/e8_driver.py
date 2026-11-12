@@ -5,6 +5,7 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
+from contracts import HandoffResult, ReviewResult
 from runner import OpenCodePersonaRunner
 from workflow import E8Workflow, WorkflowState, load_checkpoint
 
@@ -56,6 +57,70 @@ def start_task(
     )
 
 
+
+def start_tp2(
+    checkpoint_dir: Path,
+    *,
+    persona_runner: OpenCodePersonaRunner | None = None,
+    merger=None,
+) -> WorkflowState:
+    runner = persona_runner or OpenCodePersonaRunner(
+        repo_root=REPO_ROOT,
+        timeout_seconds=120,
+    )
+
+    requirement_path = (
+        REPO_ROOT
+        / "evolution-08"
+        / "evidence"
+        / "tp2-fixture"
+        / "requirement.txt"
+    )
+    implementation_path = (
+        REPO_ROOT
+        / "evolution-08"
+        / "evidence"
+        / "tp2-fixture"
+        / "score_validation.py"
+    )
+
+    requirement = requirement_path.read_text(encoding="utf-8").strip()
+    implementation = implementation_path.read_text(encoding="utf-8").strip()
+
+    task = (
+        "TP2 PLANTED DEFECT FLIGHT: Inspect the committed score-validation "
+        "fixture as the implementation under review. Do not repair or modify "
+        "the planted fixture. Return a structured DONE handoff describing the "
+        "implementation and evidence."
+    )
+
+    def tp2_reviewer(handoff: HandoffResult) -> ReviewResult:
+        return runner.review_with_evidence(
+            handoff,
+            requirement=requirement,
+            implementation_evidence=(
+                "evolution-08/evidence/tp2-fixture/score_validation.py:1-3\n"
+                + implementation
+            ),
+        )
+
+    if merger is None:
+        merger = lambda: None
+
+    workflow = E8Workflow(
+        implementer=runner.implement,
+        reviewer=tp2_reviewer,
+        merger=merger,
+        checkpoint_dir=checkpoint_dir,
+    )
+
+    state = WorkflowState(task=task)
+
+    return workflow.run_until_interrupt(
+        state,
+        stop_on_review_fail=True,
+    )
+
 def resume_task(
     checkpoint: Path,
     *,
@@ -99,6 +164,13 @@ def main() -> int:
         default=DEFAULT_CHECKPOINT_DIR,
     )
 
+    tp2_parser = subparsers.add_parser("tp2")
+    tp2_parser.add_argument(
+        "--checkpoint-dir",
+        type=Path,
+        default=REPO_ROOT / "evolution-08" / "evidence" / "tp2-checkpoints",
+    )
+
     resume_parser = subparsers.add_parser("resume")
     resume_parser.add_argument("checkpoint", type=Path)
 
@@ -111,6 +183,13 @@ def main() -> int:
     if args.command == "start":
         state = start_task(
             args.task,
+            checkpoint_dir=args.checkpoint_dir,
+        )
+        print_state(state)
+        return 0
+
+    if args.command == "tp2":
+        state = start_tp2(
             checkpoint_dir=args.checkpoint_dir,
         )
         print_state(state)

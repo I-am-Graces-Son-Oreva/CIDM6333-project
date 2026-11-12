@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from contracts import HandoffResult, ReviewResult
-from e8_driver import resume_task, start_task
+from e8_driver import resume_task, start_task, start_tp2
 
 
 class FakePersonaRunner:
@@ -104,3 +104,64 @@ def test_driver_reloads_checkpoint_and_merges_once(tmp_path):
     assert resumed.current_node == "complete"
     assert resumed.merge_count == 1
     assert resumed_merges == ["merged"]
+
+
+
+class FakeTP2PersonaRunner:
+    def __init__(self):
+        self.implement_calls = 0
+        self.review_with_evidence_calls = 0
+        self.requirement = None
+        self.implementation_evidence = None
+
+    def implement(self, task):
+        self.implement_calls += 1
+        return HandoffResult(
+            status="DONE",
+            summary="Planted implementation reported without repair.",
+            evidence=["score_validation.py:1-3"],
+        )
+
+    def review_with_evidence(
+        self,
+        handoff,
+        *,
+        requirement,
+        implementation_evidence,
+    ):
+        self.review_with_evidence_calls += 1
+        self.requirement = requirement
+        self.implementation_evidence = implementation_evidence
+
+        return ReviewResult(
+            status="FAIL",
+            summary="Negative scores are incorrectly accepted.",
+            findings=[
+                "score_validation.py:3 returns True for negative scores."
+            ],
+        )
+
+
+def test_tp2_driver_routes_real_fixture_review_fail_back_to_implement(
+    tmp_path,
+):
+    runner = FakeTP2PersonaRunner()
+    merges = []
+
+    state = start_tp2(
+        checkpoint_dir=tmp_path,
+        persona_runner=runner,
+        merger=lambda: merges.append("merged"),
+    )
+
+    assert runner.implement_calls == 1
+    assert runner.review_with_evidence_calls == 1
+    assert "negative applicant scores" in runner.requirement.lower()
+    assert "return True" in runner.implementation_evidence
+    assert state.review.status == "FAIL"
+    assert state.current_node == "implement"
+    assert state.awaiting_human is False
+    assert state.human_approved is False
+    assert state.merge_count == 0
+    assert state.checkpoints == ["implement", "review"]
+    assert merges == []
