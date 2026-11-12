@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.14.7, pytest-9.2.0, pluggy-1.7.0 -- /Users/orevisco/CIDM6333-project/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/orevisco/CIDM6333-project
+plugins: anyio-4.16.0
+collecting ... collected 3 items
+
+evolution-08/tests/test_controller.py::test_bad_handoff_rejected_before_reviewer_or_merge[DONE. Everything worked.] PASSED [ 33%]
+evolution-08/tests/test_controller.py::test_bad_handoff_rejected_before_reviewer_or_merge[{"status":"MAYBE","summary":"done","evidence":["x"]}] PASSED [ 66%]
+evolution-08/tests/test_controller.py::test_bad_handoff_rejected_before_reviewer_or_merge[{"status":"DONE","summary":"done","evidence":[]}] PASSED [100%]
+
+============================== 3 passed in 0.07s ===============================

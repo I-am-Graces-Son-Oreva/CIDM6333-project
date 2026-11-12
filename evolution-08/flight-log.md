@@ -88,3 +88,31 @@ Evidence:
 - `evolution-08/evidence/tp2-checkpoints/02-review.json`
 
 The planted fixture was not changed after reviewer exposure.
+
+## TP3 — Malformed Results — 2026-11-12
+
+Result: PASS
+
+Official deterministic flight after Chase GO.
+
+The committed E8Controller fail-closed boundary was exercised with the three required malformed implementer results:
+
+1. Prose instead of structured JSON: `DONE. Everything worked.` -> REJECT.
+2. Unknown status: `MAYBE` -> REJECT.
+3. `DONE` without evidence -> REJECT.
+
+Observed result:
+- 3 required cases collected.
+- 3 passed.
+- Each malformed result raised ControllerError before reviewer execution.
+- Reviewer calls remained 0.
+- Merge calls remained 0.
+- No malformed result defaulted to DONE or proceeded to review.
+
+Evidence:
+- `evolution-08/evidence/tp3-malformed-results.txt`
+- `evolution-08/tests/test_controller.py`
+- `evolution-08/src/controller.py`
+- `evolution-08/src/contracts.py`
+
+TP3 verdict: PASS.
