@@ -1,0 +1,1 @@
+Requirement: The score-validation function must reject negative applicant scores. A negative score must not be accepted.
