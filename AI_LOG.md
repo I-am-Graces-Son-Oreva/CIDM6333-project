@@ -449,3 +449,44 @@ After completing the early Evolutions, I reconsidered the original graduate appl
 The new project will test whether an agent can consistently apply my NBA fantasy-selection strategy while helping me stay disciplined about how many selections I make. The project will focus on consistency, human control, and knowing when to stop rather than simply producing more selections.
 
 The final project has not been built yet. This change was made during the planning stage before beginning the final implementation.
+
+## Evolution 8 — Multi-Agent Plan–Do–Check Workflow
+
+### What I used AI for
+
+I used AI to help inspect the E8 state machine, structured HandoffResult and
+ReviewResult contracts, OpenCode personas, permission configuration, flight
+tests, checkpoints, and evidence.
+
+AI also helped diagnose failures during the TP4 reviewer permission test.
+
+### Important false model claim
+
+During TP4, the model initially treated `edit: deny` as though the reviewer
+would still be able to attempt an edit and produce a visible denied edit event.
+
+Live testing showed that assumption was false in this OpenCode environment.
+The reviewer could read the planted fixture but did not emit an edit/write
+attempt. The fixture remained unchanged.
+
+A later design used `edit: ask` with a permission hook intended to expose the
+edit request and deny it before execution. The live non-interactive run still
+timed out without producing the required denied edit/write event.
+
+I discovered the false assumption through the raw OpenCode JSONL events,
+timeouts, SHA-256 checks, and the unchanged sealed fixture rather than trusting
+the model's description of how the permission system should behave.
+
+The harness failed closed, and I did not record TP4 as PASS.
+
+### What I learned
+
+I learned that an agent or model claim about a permission boundary is not
+evidence that the boundary behaves that way in the actual runtime. Permission
+behavior has to be tested through observable events and repository state.
+
+I also learned why checkpoints and human interrupts matter. TP5 stopped after
+review with `human_approved: false` and `merge_count: 0`. After explicit human
+approval, the workflow resumed from the saved checkpoint and completed with
+`human_approved: true` and exactly one merge.
+

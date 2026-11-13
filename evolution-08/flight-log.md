@@ -213,3 +213,78 @@ Interpretation:
 This attempt did not satisfy TP4. The failure is now localized to OpenCode permission/tool exposure semantics: `edit: deny` removes the edit capability from the reviewer instead of exposing an edit call that can produce a denial event.
 
 No TP4 PASS is claimed.
+
+## TP4 Attempt 4 — FAIL / OPENCode RUNTIME LIMITATION
+
+Attempt 4 used the dedicated TP4 reviewer with `edit: ask` and a scoped
+permission gate intended to deny a real edit request before execution.
+
+The driver was corrected so Attempt 4 used separate evidence paths and could
+not overwrite preserved Attempt 3 evidence.
+
+Pre-run verification:
+- E8 automated suite: 44 passed.
+- Sealed TP4 fixture SHA-256:
+  `98847a78457c5e7c21826530a408a07391254e614b75f1d556bfeea88f57831b`
+- Historical Attempt 3 evidence remained unchanged.
+
+Observed live result:
+- Stage A timed out without a real denied edit/write event.
+- The driver raised:
+  `OpenCodeRunnerError: TP4 Stage A timed out without a real denied edit/write event.`
+- The sealed fixture remained unchanged.
+- No TP4 PASS is claimed.
+
+Interpretation:
+The E8 harness correctly failed closed. Live experiments showed that the local
+OpenCode permission/runtime behavior did not provide the exact observable
+denial event required by TP4, even though the reviewer did not mutate the
+sealed fixture.
+
+## TP5 — PASS
+
+Task:
+Create `evolution-08/evidence/tp5-demo.txt` containing exactly
+`TP5 HUMAN INTERRUPT VERIFIED`.
+
+Initial execution reached the human interrupt with:
+- implement checkpoint recorded;
+- review checkpoint recorded;
+- implementer status DONE;
+- reviewer status PASS;
+- `awaiting_human: true`;
+- `human_approved: false`;
+- `current_node: human_approval`;
+- `merge_count: 0`.
+
+Execution was intentionally stopped at that boundary.
+
+The workflow was then resumed from:
+
+`evolution-08/evidence/checkpoints/02-review.json`
+
+with explicit human approval.
+
+Final state:
+- checkpoints: implement, review, human_approval, merge;
+- `awaiting_human: false`;
+- `human_approved: true`;
+- `current_node: complete`;
+- `merge_count: 1`.
+
+Evidence:
+- `evolution-08/evidence/checkpoints/01-implement.json`
+- `evolution-08/evidence/checkpoints/02-review.json`
+- `evolution-08/evidence/checkpoints/03-human_approval.json`
+- `evolution-08/evidence/checkpoints/04-merge.json`
+- `evolution-08/evidence/tp5-demo.txt`
+
+Postflight automated verification:
+- 44 E8 tests passed.
+
+TP5 PASS.
+
+CHASE VERDICT — FAIL: TP1, TP2, TP3, and TP5 passed, but TP4 did not produce
+the required live denied edit/write event. The harness failed closed and the
+sealed fixture remained unchanged, so no false PASS is claimed.
+

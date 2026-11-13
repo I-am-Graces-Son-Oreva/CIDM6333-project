@@ -145,3 +145,26 @@ Automated E8 tests currently verify:
 - exactly one merge.
 
 These automated tests support preflight readiness but do not substitute for the official Evolution 8 sortie evidence.
+
+## TP4 Read-Only Boundary Finding
+
+The normal E8 reviewer remains configured with `edit: deny`.
+
+TP4 exposed an OpenCode runtime limitation while attempting to produce live
+evidence of that boundary. With `edit: deny`, the reviewer did not receive an
+edit capability, so it could not emit an attempted edit followed by a denial.
+
+A later controlled TP4 experiment used a dedicated reviewer with `edit: ask`
+and an OpenCode permission hook intended to deny the requested edit before
+execution. The sealed fixture remained unchanged, but the non-interactive
+reviewer process timed out without producing the required denied edit/write
+event.
+
+The harness failed closed. No TP4 PASS is claimed.
+
+This does not change the production reviewer decision: ordinary E8 review
+continues to use `edit: deny`. The TP4 experiments demonstrate that a
+configuration-level read-only boundary can prevent mutation while the local
+OpenCode runtime may not expose that prevention as the exact denial event
+required by the flight test.
+
