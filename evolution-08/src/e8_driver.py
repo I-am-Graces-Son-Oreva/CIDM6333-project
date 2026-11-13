@@ -252,7 +252,7 @@ def main() -> int:
             REPO_ROOT
             / "evolution-08"
             / "evidence"
-            / "tp4-attempt3-stageA.jsonl"
+            / "tp4-attempt4-stageA.jsonl"
         ),
     )
     tp4_parser.add_argument(
@@ -262,7 +262,7 @@ def main() -> int:
             REPO_ROOT
             / "evolution-08"
             / "evidence"
-            / "tp4-attempt3-stageB.jsonl"
+            / "tp4-attempt4-stageB.jsonl"
         ),
     )
     tp4_parser.add_argument(
@@ -272,7 +272,7 @@ def main() -> int:
             REPO_ROOT
             / "evolution-08"
             / "evidence"
-            / "tp4-attempt3.sha256.txt"
+            / "tp4-attempt4.sha256.txt"
         ),
     )
 
