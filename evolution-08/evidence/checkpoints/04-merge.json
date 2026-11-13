@@ -1,0 +1,27 @@
+{
+  "awaiting_human": false,
+  "checkpoint_node": "merge",
+  "checkpoints": [
+    "implement",
+    "review",
+    "human_approval",
+    "merge"
+  ],
+  "current_node": "merge",
+  "handoff": {
+    "evidence": [
+      "Wrote file /Users/orevisco/CIDM6333-project/evolution-08/evidence/tp5-demo.txt with content 'TP5 HUMAN INTERRUPT VERIFIED' (no trailing newline).",
+      "Read-back verification of /Users/orevisco/CIDM6333-project/evolution-08/evidence/tp5-demo.txt shows a single line whose content is exactly 'TP5 HUMAN INTERRUPT VERIFIED' (1 line total)."
+    ],
+    "status": "DONE",
+    "summary": "Created evolution-08/evidence/tp5-demo.txt containing exactly the requested text and verified it by reading the file back."
+  },
+  "human_approved": true,
+  "merge_count": 1,
+  "review": {
+    "findings": [],
+    "status": "PASS",
+    "summary": "The bounded review record contains a consistent, self-verified completion: the implementer reports creating evolution-08/evidence/tp5-demo.txt with exactly 'TP5 HUMAN INTERRUPT VERIFIED' and no trailing newline, and reports a read-back confirming a single line with that exact content. The two evidence statements agree, and no requirement present in the review record is contradicted or left unsupported. Approval is limited to the supplied evidence; no independent file inspection was performed, as instructed."
+  },
+  "task": "TP5 checkpoint-resume test: create a file named evolution-08/evidence/tp5-demo.txt containing exactly TP5 HUMAN INTERRUPT VERIFIED"
+}
