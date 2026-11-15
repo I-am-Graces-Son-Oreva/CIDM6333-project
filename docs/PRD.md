@@ -170,3 +170,7 @@ Attested: 2026-11-11
 ## Post-Checkpoint Authorization Addendum (2026-11-14)
 
 The design-phase statements above remain as historical checkpoint evidence. After that checkpoint, Joseph explicitly authorized M1 implementation. The current authorization is limited to M1 and, for the present remediation, the five findings in the final M1 review. It does not authorize M2, domain functionality, or a commit.
+
+## M2 Authorization Addendum (2026-11-15)
+
+After M1 passed its independent reviewer checkpoint and commit `8c7d01e` was created, Joseph explicitly authorized M2 only: domain models, typed errors, receipts, and run storage. This supersedes the earlier M1-only authorization status. It does not authorize M3 or later work, changes to Evolution 00–08 or the frozen design specification, or a commit.

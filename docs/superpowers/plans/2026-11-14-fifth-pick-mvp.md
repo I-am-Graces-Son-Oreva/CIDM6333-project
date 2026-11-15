@@ -806,3 +806,7 @@ Plan only. No production code, tests, permissions, hooks, OpenCode configuration
 ## Post-Checkpoint Authorization Addendum (2026-11-14)
 
 After the checkpoint recorded above, Joseph explicitly authorized proceeding with M1 implementation. Joseph's subsequent instruction authorizes only the five bounded M1 reviewer remediations and final M1 review in the current task. This later authorization supersedes the earlier authorization status in `Remaining Genuine Blockers` and the earlier design-phase status in `docs/PRD.md`; it does not authorize M2, domain functionality, or a commit. The earlier checkpoint records are retained as historical evidence.
+
+## M2 Authorization Addendum (2026-11-15)
+
+After M1 passed its independent reviewer checkpoint and commit `8c7d01e` was created, Joseph explicitly authorized M2 only: domain models, typed errors, receipts, and run storage. This supersedes the M1-only authorization above for M2 and does not authorize M3 or later work, changes to Evolution 00–08 or the frozen design specification, or a commit. The M1 checkpoint and authorization records remain unchanged.
