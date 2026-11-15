@@ -1,67 +1,57 @@
 # The Fifth Pick — NBA Fantasy Selection & Discipline
 
-## Purpose
+The Fifth Pick is a human-governed NBA fantasy-selection CLI that applies Joseph's approved methodology; it must never change that methodology, authorize outside his universe, or finalize a slate without his authority.
 
-Help the user consistently apply their documented NBA fantasy strategy while protecting decision quality and knowing when to stop. Recommend selections; never automatically submit entries.
+## Run and test
 
-The goal is not to produce more picks. The goal is to identify the strongest qualified selections and stop when quality falls below the documented standard.
+The Fifth Pick M1 health-only implementation exists, and its mechanical gates are runnable. Current implementation scope remains M1 only; do not begin domain functionality before Joseph accepts the M1 review.
 
-## Authority and Accuracy
+```text
+uv run ruff check
+uv run ruff format --check
+uv run ty check
+uv run python -m unittest discover -s tests
+```
 
-- Governance 0: the user makes every final decision and may reject selections, choose fewer, or make no entry.
-- Apply the user's documented strategy; do not invent new strategy rules.
-- Never present predictions as guarantees or provisional choices as tested.
-- Never invent projections, injuries, lineups, availability, or supporting evidence.
-- Clearly disclose missing, outdated, conflicting, or uncertain information.
-- Use plain English; define required course terminology on first use.
+All four must exit `0`. Show a failing gate before claiming the gates as evidence. Use Python, `uv`, `ruff`, `ty`, and `unittest`; not pytest. The M1 console command is `fifth-pick health`; domain commands remain planned.
 
-## Selection Process
+## Conventions that differ from defaults
 
-1. Gather current projections and NBA information from supported, approved sources.
-2. Evaluate Higher/Lower candidates against the documented strategy.
-3. Exclude candidates that violate player, team, market, or situation rules.
-4. Consider relevant availability, role, matchup, foul trouble, expected minutes, and blowout risk.
-5. Rank qualifying candidates from strongest to weakest.
-6. Apply the Stop Gate.
-7. Record why candidates were selected, excluded, or stopped.
+- Python CLI only; no website, GUI, or pytest.
+- Superpowers discipline; Standard Technical English; project skills for evaluation, evidence, final-slate, and T-20 review.
+- The Odds API `us_dfs` is the approved board source for PrizePicks and Underdog: `player_points`, `player_assists`, `player_rebounds`, `player_points_rebounds_assists`, `player_rebounds_assists`.
+- `THREE_POINT_ATTEMPTS` is outside the live MVP; never substitute threes made or fabricate attempts.
+- Never scrape the platforms, NBA.com, or SI; no cookies, login automation, unofficial endpoints, or NBA.com statistical feeds.
+- Keep PrizePicks and Underdog lines separate; never combine them.
+- Canonical player registry; no name-only matching; ambiguous identity fails closed.
+- Three legitimate observations; Snapshot 3 = T-20; never backfill.
+- No alternate markets by default; multipliers optional.
+- DNP/void are not MISS; use `RESULT UNAVAILABLE` when no trustworthy result.
+- Malik Monk is unselectable until Joseph defines category and direction.
 
-## Stop Gate
+## Rules that must hold (enforced)
 
-- Small slate: maximum 4 final selections.
-- Large slate: maximum 5 final selections.
-- Limits are ceilings, never targets.
-- Never add a weaker candidate simply to reach the maximum.
-- If none qualify, return exactly: **NO ENTRY RECOMMENDED TODAY.**
-- Removing a candidate does not create an obligation to replace it.
-- A new candidate after the limit is reached must replace a stronger-ranked finalist, not increase the entry size.
-- The user may always reduce the recommendation.
+- No entries, wagers, logins, or money movement. Control: no submission path or credentials.
+- No methodology or authorization change. Control: versioned config/spec; validator not built.
+- No outside-universe or trust-tier authorization. Control: allow-list and authorization-first validators; not built.
+- No name-only or ambiguous identity. Control: registry and fail-closed resolver; not built.
+- No combined platform projections. Control: platform-scoped model; not built.
+- No invented evidence; missing evidence fails closed. Control: typed validation; not built.
+- Ceilings: HALF 1–4 / max 4; FULL 5+ / max 5; zero valid; never fill slots. Control: finalizer; not built.
+- No snapshot backfill or fabricated T-20. Control: snapshot store/receipts; not built.
+- No HIT/MISS without trustworthy result. Control: result adjudicator; not built.
+- Reviewer cannot edit Builder work; malformed verdicts fail closed; one correction, then Joseph. Control: reviewer role permissions are configured; verdict parser and correction counter remain unbuilt.
+- Joseph approval before finalization. Control: approval gate/receipt; not built.
+- All four gates pass before completion. Control: the four M1 commands above are runnable mechanical gates.
+- Assurance table: real control and evidence per risk; prompt statements are not enforcement.
+- Evaluate process separately from outcomes; no hit-rate claims without evidence; record evidence, rules, exclusions, rankings, stop reason, and outcome.
 
-## Final Review
+## Where the truth lives
 
-- Earlier analysis produces a watchlist, not a final recommendation.
-- Normally perform final evaluation about 20 minutes before the relevant game begins (T-20).
-- Recheck current projection, availability, lineup/role information, and relevant conditions.
-- A candidate identified earlier must survive the T-20 review to remain final.
-- If a late change removes a candidate, allow the recommendation count to decrease rather than forcing a replacement.
-- Disclose unresolved evidence gaps; do not assume a candidate passed review.
+- Frozen design: `docs/superpowers/specs/2026-11-13-fifth-pick-design.md`.
+- Product requirements: `docs/PRD.md`.
+- Purpose and PEAS: `evolution-00/pitch.md`; choices: `evolution-00/choices.md`; judgments: `design-analyses/LEDGER.md`.
+- Strategy: skill files.
+- Historical Evolution 00–08: do not rewrite.
 
-## Evaluation and Records
-
-Evaluate agent compliance separately from fantasy outcomes.
-
-- Compliance: documented-rule adherence, prohibited selections, correct player markets, Stop Gate behavior, evidence quality, and decision reasons.
-- Outcomes: actual results, hit rate, and performance by ranking position.
-- Record evidence used, rules applied, excluded candidates, final rankings, recommendations, stopping reason, and eventual outcome.
-- A winning result does not prove good process; a losing result does not prove bad process.
-- Do not claim a strategy or hit-rate advantage until the experiment produces evidence for it.
-
-## Project Context
-
-- Initial scope: NBA fantasy selections during the 2026–27 season.
-- Intended runtime: CLI.
-- System purpose, semester rationale, and PEAS: `evolution-00/pitch.md`.
-- Product requirements and acceptance criteria: `docs/PRD.md`.
-- Current technical choices: `evolution-00/choices.md`.
-- Design judgments: `design-analyses/LEDGER.md`.
-- Detailed NBA strategy belongs in dedicated strategy/skill files; do not turn this file into the strategy encyclopedia.
-- Historical Evolution evidence remains historical and should not be rewritten to match the final project.
+This control map points to the spec and PRD for detailed purpose, selection, stop gate, evaluation, and context.

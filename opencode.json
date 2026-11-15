@@ -21,7 +21,14 @@
       "*": "deny",
       "git status *": "allow",
       "git diff *": "allow",
-      "pwd": "allow"
+      "pwd": "allow",
+      "uv sync": "allow",
+      "uv lock": "allow",
+      "uv run fifth-pick health": "allow",
+      "uv run ruff check": "allow",
+      "uv run ruff format --check": "allow",
+      "uv run ty check": "allow",
+      "uv run python -m unittest discover -s tests": "allow"
     },
     "grad-triage-e4_write_triage_note": "ask"
   },
