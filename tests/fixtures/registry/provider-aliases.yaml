@@ -1,0 +1,11 @@
+schema_version: 1
+fixture_purpose: "Synthetic provider-identity fixtures only. Not live provider evidence."
+aliases:
+  - provider_name: "L. Doncic"
+    candidate_ids: ["luka-doncic"]
+  - provider_name: "Luka Doncic"
+    candidate_ids: ["luka-doncic"]
+  - provider_name: "Ambiguous Guard"
+    candidate_ids: ["luka-doncic", "jayson-tatum"]
+  - provider_name: "Ghost Player"
+    candidate_ids: []

@@ -810,3 +810,7 @@ After the checkpoint recorded above, Joseph explicitly authorized proceeding wit
 ## M2 Authorization Addendum (2026-11-15)
 
 After M1 passed its independent reviewer checkpoint and commit `8c7d01e` was created, Joseph explicitly authorized M2 only: domain models, typed errors, receipts, and run storage. This supersedes the M1-only authorization above for M2 and does not authorize M3 or later work, changes to Evolution 00–08 or the frozen design specification, or a commit. The M1 checkpoint and authorization records remain unchanged.
+
+## M3 Authorization Addendum (2026-11-15)
+
+Joseph explicitly authorizes M3 only: configuration loading, canonical registry, identity resolution, and authorization validation. The existing approved player universe in frozen-design Part II 9.1 is version `v1`, effective `2026-11-15`; its entries must not be changed. Apply Part III A1/A2 direction rules and E4/E5 authorization rules. This supersedes the M2-only authorization above for M3. It does not authorize M4 or later work, Evolution changes, frozen-spec changes, or a commit.

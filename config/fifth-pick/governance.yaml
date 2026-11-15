@@ -1,0 +1,23 @@
+schema_version: 1
+content_version: null
+effective_date: null
+provenance:
+  - "docs/superpowers/specs/2026-11-13-fifth-pick-design.md Part II Sections 2, 3, 5, 46; Part III A7-A8; docs/PRD.md Governance and Acceptance Criteria 8-10, 28"
+owner: "Joseph Edafiadhe"
+authority: "Governance Zero"
+ceilings:
+  - label: HALF
+    minimum_games: 1
+    maximum_games: 4
+    maximum_selections: 4
+  - label: FULL
+    minimum_games: 5
+    maximum_games: null
+    maximum_selections: 5
+approval_actions:
+  - APPROVE
+  - REJECT
+  - MODIFY
+zero_selections_valid: true
+never_fill_slots: true
+universe_change_control: "Joseph-approved versioned change with timestamp, effective date, new active version, and preserved previous version."

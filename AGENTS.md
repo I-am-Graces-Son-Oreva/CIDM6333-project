@@ -4,7 +4,7 @@ The Fifth Pick is a human-governed NBA fantasy-selection CLI that applies Joseph
 
 ## Run and test
 
-The Fifth Pick M1 health-only implementation exists, and its mechanical gates are runnable. Current implementation scope remains M1 only; do not begin domain functionality before Joseph accepts the M1 review.
+The Fifth Pick M1 health-only and M2 model/receipt/storage foundations exist. Joseph authorized M3 configuration, registry, identity, and authorization work; current implementation scope remains M3 only. Do not begin M4 before Joseph accepts the M3 review.
 
 ```text
 uv run ruff check

@@ -1,0 +1,18 @@
+schema_version: 1
+content_version: null
+effective_date: null
+provenance:
+  - "docs/superpowers/specs/2026-11-13-fifth-pick-design.md Part II Sections 13-27; Part III A5-A7, E7-E8"
+confidence_levels:
+  - HIGH
+  - MEDIUM
+  - LOW
+rules:
+  - "Senior status is a real ranking priority tier, not a small confidence bonus."
+  - "Foul trouble is a caution signal, not a deterministic block or an automatic confidence cap."
+  - "Only Joseph may promote a LOW-confidence candidate into the final slate."
+  - "The non-Senior showoff heuristic biases toward Lower for scoring props as the projection rises; it is not a deterministic block."
+  - "Missing evidence must never be converted into confidence."
+heuristics:
+  senior_rising_projection: "~80% lean Higher, not a calibrated probability or hit-rate claim."
+  senior_falling_projection: "~50/50, not a calibrated probability."

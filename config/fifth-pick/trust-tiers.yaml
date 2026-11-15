@@ -1,0 +1,90 @@
+schema_version: 1
+content_version: null
+effective_date: null
+provenance:
+  - "docs/superpowers/specs/2026-11-13-fifth-pick-design.md Part II Sections 12-18 and 13; Part III E4"
+senior:
+  - Luka Doncic
+  - Victor Wembanyama
+  - Nikola Jokic
+  - Stephen Curry
+  - Jayson Tatum
+  - Devin Booker
+  - Jalen Brunson
+  - Tyrese Maxey
+  - Joel Embiid
+  - Kawhi Leonard
+  - Donovan Mitchell
+  - Kevin Durant
+  - Giannis Antetokounmpo
+  - Anthony Davis
+  - Anthony Edwards
+  - Shai Gilgeous-Alexander
+  - Damian Lillard
+  - Deni Avdija
+pra_trust:
+  - Luka Doncic
+  - Nikola Jokic
+  - Kevin Durant
+  - Domantas Sabonis
+  - Alperen Sengun
+  - Austin Reaves
+  - Victor Wembanyama
+  - Amen Thompson
+  - Yaxel Lendeborg
+  - Deni Avdija
+  - Jamal Murray
+  - Anthony Davis
+  - Paolo Banchero
+  - Giannis Antetokounmpo
+  - Bam Adebayo
+  - Scottie Barnes
+  - Karl-Anthony Towns
+  - Jayson Tatum
+assist_trust:
+  - Cade Cunningham
+  - Andrew Nembhard
+  - Jalen Johnson
+  - Dyson Daniels
+  - Giannis Antetokounmpo
+  - Trae Young
+  - Nikola Jokic
+  - Jamal Murray
+  - LaMelo Ball
+  - Isaiah Hartenstein
+  - Keyonte George
+  - Austin Reaves
+  - Luka Doncic
+  - Alperen Sengun
+  - Kevin Durant
+  - Stephon Castle
+  - Tyrese Haliburton
+  - James Harden
+  - LeBron James
+rebound_trust:
+  - Victor Wembanyama
+  - Luke Kornet
+  - Cameron Boozer
+  - Alperen Sengun
+  - Kevin Durant
+  - Domantas Sabonis
+  - Luka Doncic
+  - Walker Kessler
+  - Donovan Clingan
+  - Chet Holmgren
+  - Isaiah Hartenstein
+  - Aday Mara
+  - Rudy Gobert
+  - Nikola Jokic
+  - Alex Sarr
+  - Anthony Davis
+  - Bam Adebayo
+  - Giannis Antetokounmpo
+  - Naz Reid
+  - Kel'el Ware
+  - Jalen Duren
+  - Jarrett Allen
+  - Scottie Barnes
+  - Joel Embiid
+  - Karl-Anthony Towns
+  - Julius Randle

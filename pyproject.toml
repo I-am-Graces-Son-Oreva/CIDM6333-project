@@ -7,7 +7,9 @@ name = "fifth-pick"
 version = "0.1.0"
 description = "Human-governed NBA fantasy selection and discipline CLI"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "PyYAML>=6.0",
+]
 
 [project.scripts]
 fifth-pick = "fifth_pick.cli:main"
@@ -16,6 +18,7 @@ fifth-pick = "fifth_pick.cli:main"
 dev = [
   "ruff>=0.9",
   "ty>=0.0.1a1",
+  "types-PyYAML>=6.0",
 ]
 legacy = [
   "mcp<2",

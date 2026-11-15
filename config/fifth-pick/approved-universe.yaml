@@ -1,0 +1,918 @@
+schema_version: 1
+content_version: "v1"
+effective_date: "2026-11-15"
+provenance:
+  - "docs/superpowers/specs/2026-11-13-fifth-pick-design.md Part II 9.1"
+  - "Joseph Edafiadhe instruction 2026-11-15: Part II 9.1 is approved universe content version v1, effective 2026-11-15, entries unchanged"
+entries:
+  - name: "Jayson Tatum"
+    source_entry: "Jayson Tatum = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Derrick White"
+    source_entry: "Derrick White = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Payton Pritchard"
+    source_entry: "Payton Pritchard = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Paul George"
+    source_entry: "Paul George = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Mitchell Robinson"
+    source_entry: "Mitchell Robinson = lower points"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Michael Porter Jr."
+    source_entry: "Michael Porter Jr. = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Julius Randle"
+    source_entry: "Julius Randle = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Miles McBride"
+    source_entry: "Miles McBride = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Josh Hart"
+    source_entry: "Josh Hart = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Dalton Knecht"
+    source_entry: "Dalton Knecht = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "OG Anunoby"
+    source_entry: "OG Anunoby = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jalen Brunson"
+    source_entry: "Jalen Brunson = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Mikal Bridges"
+    source_entry: "Mikal Bridges = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Karl-Anthony Towns"
+    source_entry: "Karl-Anthony Towns = higher/lower points / PRA / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Tyrese Maxey"
+    source_entry: "Tyrese Maxey = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Anfernee Simons"
+    source_entry: "Anfernee Simons = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jaylen Brown"
+    source_entry: "Jaylen Brown = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Joel Embiid"
+    source_entry: "Joel Embiid = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "LeBron James"
+    source_entry: "LeBron James = higher/lower points / rebounds+assists"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: REBOUNDS_ASSISTS
+        directions: [HIGHER, LOWER]
+  - name: "VJ Edgecombe"
+    source_entry: "VJ Edgecombe = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Kawhi Leonard"
+    source_entry: "Kawhi Leonard = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Scottie Barnes"
+    source_entry: "Scottie Barnes = higher/lower points / PRA / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Immanuel Quickley"
+    source_entry: "Immanuel Quickley = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "RJ Barrett"
+    source_entry: "RJ Barrett = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Josh Giddey"
+    source_entry: "Josh Giddey = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Caleb Wilson"
+    source_entry: "Caleb Wilson = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Matas Buzelis"
+    source_entry: "Matas Buzelis = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Norman Powell"
+    source_entry: "Norman Powell = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "James Harden"
+    source_entry: "James Harden = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Evan Mobley"
+    source_entry: "Evan Mobley = higher/lower points / rebounds"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: REBOUNDS
+        directions: [HIGHER, LOWER]
+  - name: "Peyton Watson"
+    source_entry: "Peyton Watson = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jarrett Allen"
+    source_entry: "Jarrett Allen = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Donovan Mitchell"
+    source_entry: "Donovan Mitchell = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Jalen Duren"
+    source_entry: "Jalen Duren = higher/lower points / PRA / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Cade Cunningham"
+    source_entry: "Cade Cunningham = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Ausar Thompson"
+    source_entry: "Ausar Thompson = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Taurean Prince"
+    source_entry: "Taurean Prince = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Tyrese Haliburton"
+    source_entry: "Tyrese Haliburton = lower points / assists higher/lower"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+      - category: ASSISTS
+        directions: [HIGHER, LOWER]
+  - name: "Obi Toppin"
+    source_entry: "Obi Toppin = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Andrew Nembhard"
+    source_entry: "Andrew Nembhard = assists / PRA"
+    categories:
+      - category: ASSISTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Ivica Zubac"
+    source_entry: "Ivica Zubac = points / rebounds / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: REBOUNDS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Pascal Siakam"
+    source_entry: "Pascal Siakam = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Tyler Herro"
+    source_entry: "Tyler Herro = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Kyle Kuzma"
+    source_entry: "Kyle Kuzma = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jaime Jaquez Jr."
+    source_entry: "Jaime Jaquez Jr. = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Ryan Rollins"
+    source_entry: "Ryan Rollins = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Kel'el Ware"
+    source_entry: "Kel'el Ware = points / rebounds"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: REBOUNDS
+        directions: [HIGHER, LOWER]
+  - name: "Myles Turner"
+    source_entry: "Myles Turner = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jalen Johnson"
+    source_entry: "Jalen Johnson = higher/lower points / PRA / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "CJ McCollum"
+    source_entry: "CJ McCollum = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Kingston Flemings"
+    source_entry: "Kingston Flemings = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Dyson Daniels"
+    source_entry: "Dyson Daniels = points lower / assists higher/lower"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+      - category: ASSISTS
+        directions: [HIGHER, LOWER]
+  - name: "Nickeil Alexander-Walker"
+    source_entry: "Nickeil Alexander-Walker = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Onyeka Okongwu"
+    source_entry: "Onyeka Okongwu = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Naz Reid"
+    source_entry: "Naz Reid = higher/lower points / 3-point attempts / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: THREE_POINT_ATTEMPTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Coby White"
+    source_entry: "Coby White = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Kon Knueppel"
+    source_entry: "Kon Knueppel = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Grayson Allen"
+    source_entry: "Grayson Allen = higher/lower points / 3-point attempts"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: THREE_POINT_ATTEMPTS
+        directions: [HIGHER, LOWER]
+  - name: "Dennis Schroder"
+    source_entry: "Dennis Schroder = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Brandon Miller"
+    source_entry: "Brandon Miller = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Giannis Antetokounmpo"
+    source_entry: "Giannis Antetokounmpo = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Tim Hardaway Jr."
+    source_entry: "Tim Hardaway Jr. = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Klay Thompson"
+    source_entry: "Klay Thompson = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Bam Adebayo"
+    source_entry: "Bam Adebayo = higher/lower points / rebounds higher/lower"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: REBOUNDS
+        directions: [HIGHER, LOWER]
+  - name: "Andrew Wiggins"
+    source_entry: "Andrew Wiggins = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Bobby Portis Jr."
+    source_entry: "Bobby Portis Jr. = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Anthony Black"
+    source_entry: "Anthony Black = higher/lower points / PRA / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Desmond Bane"
+    source_entry: "Desmond Bane = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Jalen Suggs"
+    source_entry: "Jalen Suggs = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Paolo Banchero"
+    source_entry: "Paolo Banchero = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Franz Wagner"
+    source_entry: "Franz Wagner = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Tristan da Silva"
+    source_entry: "Tristan da Silva = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Wendell Carter Jr."
+    source_entry: "Wendell Carter Jr. = PRA"
+    categories:
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Trae Young"
+    source_entry: "Trae Young = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "AJ Dybantsa"
+    source_entry: "AJ Dybantsa = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Alex Sarr"
+    source_entry: "Alex Sarr = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Anthony Davis"
+    source_entry: "Anthony Davis = higher/lower points / PRA / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "DeMar DeRozan"
+    source_entry: "DeMar DeRozan = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Nikola Jokic"
+    source_entry: "Nikola Jokic = higher/lower points / assists / rebounds / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: ASSISTS
+        directions: [HIGHER, LOWER]
+      - category: REBOUNDS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Cameron Johnson"
+    source_entry: "Cameron Johnson = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jamal Murray"
+    source_entry: "Jamal Murray = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Aaron Gordon"
+    source_entry: "Aaron Gordon = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "LaMelo Ball"
+    source_entry: "LaMelo Ball = higher/lower points / assists / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: ASSISTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Jaden McDaniels"
+    source_entry: "Jaden McDaniels = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Anthony Edwards"
+    source_entry: "Anthony Edwards = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Ayo Dosunmu"
+    source_entry: "Ayo Dosunmu = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jonathan Kuminga"
+    source_entry: "Jonathan Kuminga = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Rudy Gobert"
+    source_entry: "Rudy Gobert = lower points / rebounds higher / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+      - category: REBOUNDS
+        directions: [HIGHER]
+    foul_trouble: true
+  - name: "Shai Gilgeous-Alexander"
+    source_entry: "Shai Gilgeous-Alexander = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Chet Holmgren"
+    source_entry: "Chet Holmgren = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Isaiah Hartenstein"
+    source_entry: "Isaiah Hartenstein = points lower"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Aday Mara"
+    source_entry: "Aday Mara = points lower"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Damian Lillard"
+    source_entry: "Damian Lillard = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Scoot Henderson"
+    source_entry: "Scoot Henderson = points lower"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Ja Morant"
+    source_entry: "Ja Morant = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Jrue Holiday"
+    source_entry: "Jrue Holiday = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Deni Avdija"
+    source_entry: "Deni Avdija = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Toumani Camara"
+    source_entry: "Toumani Camara = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Donovan Clingan"
+    source_entry: "Donovan Clingan = rebounds higher/lower / points lower"
+    categories:
+      - category: REBOUNDS
+        directions: [HIGHER, LOWER]
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Keyonte George"
+    source_entry: "Keyonte George = higher/lower points / assists / PRA / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: ASSISTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Ace Bailey"
+    source_entry: "Ace Bailey = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jaren Jackson Jr."
+    source_entry: "Jaren Jackson Jr. = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Darryn Peterson"
+    source_entry: "Darryn Peterson = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Lauri Markkanen"
+    source_entry: "Lauri Markkanen = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Yaxel Lendeborg"
+    source_entry: "Yaxel Lendeborg = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Brandin Podziemski"
+    source_entry: "Brandin Podziemski = PRA lower"
+    categories:
+      - category: PRA
+        directions: [LOWER]
+  - name: "Jimmy Butler III"
+    source_entry: "Jimmy Butler III = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Draymond Green"
+    source_entry: "Draymond Green = points lower / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+    foul_trouble: true
+  - name: "Stephen Curry"
+    source_entry: "Stephen Curry = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Keaton Wagler"
+    source_entry: "Keaton Wagler = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Brandon Ingram"
+    source_entry: "Brandon Ingram = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Darius Garland"
+    source_entry: "Darius Garland = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Rui Hachimura"
+    source_entry: "Rui Hachimura = higher/lower PRA"
+    categories:
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Collin Sexton"
+    source_entry: "Collin Sexton = higher/lower PRA"
+    categories:
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Walker Kessler"
+    source_entry: "Walker Kessler = lower points"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Austin Reaves"
+    source_entry: "Austin Reaves = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Luka Doncic"
+    source_entry: "Luka Doncic = higher/lower points / assists / rebounds / PRA"
+    aliases:
+      - "Luka Dončić"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: ASSISTS
+        directions: [HIGHER, LOWER]
+      - category: REBOUNDS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Dillon Brooks"
+    source_entry: "Dillon Brooks = lower PRA"
+    categories:
+      - category: PRA
+        directions: [LOWER]
+  - name: "Jalen Green"
+    source_entry: "Jalen Green = lower PRA"
+    categories:
+      - category: PRA
+        directions: [LOWER]
+  - name: "Collin Gillespie"
+    source_entry: "Collin Gillespie = lower PRA"
+    categories:
+      - category: PRA
+        directions: [LOWER]
+  - name: "Devin Booker"
+    source_entry: "Devin Booker = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Miles Bridges"
+    source_entry: "Miles Bridges = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Darius Acuff Jr."
+    source_entry: "Darius Acuff Jr. = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Zach LaVine"
+    source_entry: "Zach LaVine = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Domantas Sabonis"
+    source_entry: "Domantas Sabonis = higher/lower PRA / foul trouble"
+    categories:
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Keegan Murray"
+    source_entry: "Keegan Murray = higher/lower PRA"
+    categories:
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Kyrie Irving"
+    source_entry: "Kyrie Irving = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "PJ Washington"
+    source_entry: "PJ Washington = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Cooper Flagg"
+    source_entry: "Cooper Flagg = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Amen Thompson"
+    source_entry: "Amen Thompson = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Fred VanVleet"
+    source_entry: "Fred VanVleet = lower PRA"
+    categories:
+      - category: PRA
+        directions: [LOWER]
+  - name: "Kevin Durant"
+    source_entry: "Kevin Durant = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Jabari Smith Jr."
+    source_entry: "Jabari Smith Jr. = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Reed Sheppard"
+    source_entry: "Reed Sheppard = lower PRA"
+    categories:
+      - category: PRA
+        directions: [LOWER]
+  - name: "Alperen Sengun"
+    source_entry: "Alperen Sengun = higher/lower points / PRA / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Marcus Smart"
+    source_entry: "Marcus Smart = lower points"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Ty Jerome"
+    source_entry: "Ty Jerome = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Jerami Grant"
+    source_entry: "Jerami Grant = lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+      - category: PRA
+        directions: [LOWER]
+  - name: "Zach Edey"
+    source_entry: "Zach Edey = points lower"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Cameron Boozer"
+    source_entry: "Cameron Boozer = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Jeremiah Fears"
+    source_entry: "Jeremiah Fears = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Zion Williamson"
+    source_entry: "Zion Williamson = higher/lower points / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+    foul_trouble: true
+  - name: "Jordan Poole"
+    source_entry: "Jordan Poole = points lower / foul trouble"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+    foul_trouble: true
+  - name: "Derik Queen"
+    source_entry: "Derik Queen = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Trey Murphy III"
+    source_entry: "Trey Murphy III = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Saddiq Bey"
+    source_entry: "Saddiq Bey = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Victor Wembanyama"
+    source_entry: "Victor Wembanyama = higher/lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Dylan Harper"
+    source_entry: "Dylan Harper = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Keldon Johnson"
+    source_entry: "Keldon Johnson = lower points"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "De'Aaron Fox"
+    source_entry: "De'Aaron Fox = lower points / PRA"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+      - category: PRA
+        directions: [LOWER]
+  - name: "Stephon Castle"
+    source_entry: "Stephon Castle = higher/lower points / assists / PRA"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+      - category: ASSISTS
+        directions: [HIGHER, LOWER]
+      - category: PRA
+        directions: [HIGHER, LOWER]
+  - name: "Luke Kornet"
+    source_entry: "Luke Kornet = rebounds higher/lower"
+    categories:
+      - category: REBOUNDS
+        directions: [HIGHER, LOWER]
+  - name: "Devin Vassell"
+    source_entry: "Devin Vassell = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Julian Champagnie"
+    source_entry: "Julian Champagnie = higher/lower points"
+    categories:
+      - category: POINTS
+        directions: [HIGHER, LOWER]
+  - name: "Harrison Barnes"
+    source_entry: "Harrison Barnes = lower points"
+    categories:
+      - category: POINTS
+        directions: [LOWER]
+  - name: "Malik Monk"
+    source_entry: "Malik Monk remains in the registry but has no approved category or direction (Part II 9.1; Part III E5)."
+    categories: []

@@ -597,3 +597,715 @@ OK
 ```
 
 All four commands exited `0`. The full suite includes the 25 M2 tests and 12 M1 tests. Generated `__pycache__` files are removed after this run; no tests or production behavior are changed by that cleanup.
+
+## M3 Authorization and Baseline
+
+Joseph's 2026-11-15 instruction authorizes M3 only. It authorizes the existing Part II 9.1 approved player universe as version `v1`, effective `2026-11-15`, with no entry changes. Part III A1/A2, E4, and E5 govern normalization and authorization. M4 and later work, Evolution changes, frozen-spec changes, and commits remain out of scope.
+
+Fresh pre-M3 baseline:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+47 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+.....................................
+Ran 37 tests in 0.140s
+OK
+```
+
+All four commands exited `0` before M3 implementation began.
+
+## M3 — Configuration, Registry, Identity, and Authorization
+
+### M3 RED Before Production Code
+
+The M3 tests were written before `config.py`, `registry.py`, `identity.py`, and `authorization.py` existed. Full discovery reported three import failures. The exception and module lines were retained; the full tracebacks were not retained.
+
+```text
+ImportError: Failed to import test module: test_authorization
+ModuleNotFoundError: No module named 'fifth_pick.authorization'
+
+ImportError: Failed to import test module: test_config
+ModuleNotFoundError: No module named 'fifth_pick.config'
+
+ImportError: Failed to import test module: test_identity
+ModuleNotFoundError: No module named 'fifth_pick.identity'
+```
+
+This was the expected RED: the M1 and M2 tests still ran, and the new M3 test modules could not import because their production modules did not yet exist.
+
+During the initial implementation pass, `uv run ruff check` reported E501 line-length findings and `uv run ruff format --check` reported unformatted files before correction. Those exact earlier outputs were not retained. They were corrected manually; no assertion or gate was weakened. The retained format failure below is from the later test-strengthening pass.
+
+### M3 Test-Strengthening RED
+
+A stronger test was added to compare every parsed Part II 9.1 category/direction segment with `approved-universe.yaml`. Its first run exposed a test-helper parsing bug, not a production defect. Observed first failure and final count:
+
+```text
+FAIL: test_all_normalized_categories_follow_a1_and_a2 (test_config.ConfigLoadingTests.test_all_normalized_categories_follow_a1_and_a2) (player='Trae Young')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_config.py", line 300, in test_all_normalized_categories_follow_a1_and_a2
+    self.assertEqual(actual, expected_categories(source_entry))
+                             ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/orevisco/CIDM6333-project/tests/test_config.py", line 86, in expected_categories
+    raise AssertionError(f"unparsable category segment: {segment!r}")
+AssertionError: unparsable category segment: 'higher'
+
+----------------------------------------------------------------------
+Ran 81 tests in 0.948s
+
+FAILED (failures=131)
+```
+
+The helper split on `/`, so the `higher/lower` direction text in the frozen source was split into `higher` and `lower`. The separator was corrected to the exact `" / "` delimiter used by the source. The strengthened test now compares every entry and does not weaken or skip any assertion.
+
+### M3 First Post-Implementation Format Gate Failure
+
+After the strengthened test passed, `uv run ruff format --check` failed. Observed output:
+
+```text
+unformatted: File would be reformatted
+   --> tests/test_config.py:100:1
+    |
+ 99 |
+    -
+100 | def copy_config_dir(destination: Path) -> Path:
+    |
+
+1 file would be reformatted, 53 files already formatted
+```
+
+The extra blank line was removed manually. No formatter command was run, and no gate was bypassed.
+
+### M3 Final Gate Results
+
+Observed after the strengthened test, documentation update, and manual formatting correction:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+54 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+.................................................................................
+----------------------------------------------------------------------
+Ran 81 tests in 0.872s
+
+OK
+```
+
+All four commands exited `0`. The 81 tests comprise the 37 M1/M2 tests plus the 44 M3 tests. No Fifth Pick test was skipped or excluded.
+
+### M3 Worktree Evidence
+
+Snapshot taken after M3 implementation and the architecture update, before this evidence section was appended:
+
+```text
+git status --short --untracked-files=all
+ M AGENTS.md
+ M docs/PRD.md
+ M docs/fifth-pick/architecture.md
+ M docs/fifth-pick/gates.md
+ M docs/superpowers/plans/2026-11-14-fifth-pick-mvp.md
+ M pyproject.toml
+ M uv.lock
+?? config/fifth-pick/approved-sources.yaml
+?? config/fifth-pick/approved-universe.yaml
+?? config/fifth-pick/category-map.yaml
+?? config/fifth-pick/governance.yaml
+?? config/fifth-pick/methodology.yaml
+?? config/fifth-pick/trust-tiers.yaml
+?? src/fifth_pick/authorization.py
+?? src/fifth_pick/config.py
+?? src/fifth_pick/identity.py
+?? src/fifth_pick/registry.py
+?? tests/fixtures/registry/provider-aliases.yaml
+?? tests/test_authorization.py
+?? tests/test_config.py
+?? tests/test_identity.py
+```
+
+```text
+git diff --stat
+ AGENTS.md                                          |  2 +-
+ docs/PRD.md                                        |  4 ++
+ docs/fifth-pick/architecture.md                    | 59 ++++++++++++++++--
+ docs/fifth-pick/gates.md                           | 24 ++++++++
+ .../superpowers/plans/2026-11-14-fifth-pick-mvp.md |  4 ++
+ pyproject.toml                                     |  5 +-
+ uv.lock                                            | 70 ++++++++++++++++++++++
+ 7 files changed, 161 insertions(+), 7 deletions(-)
+```
+
+```text
+git status --short -- evolution-00 evolution-01 evolution-02 evolution-03 evolution-04 evolution-05 evolution-06 evolution-07 evolution-08
+(no output)
+
+git status --short -- docs/superpowers/specs/2026-11-13-fifth-pick-design.md
+(no output)
+```
+
+No M3 commit was made. The frozen design and historical Evolution material are unchanged. `AGENTS.md`, `docs/PRD.md`, and the implementation plan contain only the previously authorized M3 status addenda.
+
+### M3 Reviewer Finding Correction — Authoritative Authorization Configuration
+
+Reviewer findings requiring correction:
+
+1. `AuthorizationGate(live_categories=...)` lets a caller include `THREE_POINT_ATTEMPTS`, overriding the frozen live allowlist.
+2. `AuthorizationGate` accepts caller-supplied `Registry`/`CategoryMapConfig` derived from arbitrary `load_configs(config_dir)` data, allowing added grants to reach authorization despite v1 metadata.
+3. Caller-supplied universe version/effective-date arguments let decisions carry arbitrary provenance.
+
+The correction makes `AuthorizationGate` construct its own `ConfigBundle` from the fixed default authoritative config directory, derive the registry, category map, version, and effective date from that validated bundle, and always use `LIVE_MVP_CATEGORIES`. The constructor accepts no caller overrides.
+
+#### Correction RED Before Production Code
+
+Tests were added before the production change for caller-supplied registry, category map, live-category set, and universe metadata. The custom registry test builds a registry containing an extra player and a `THREE_POINT_ATTEMPTS` grant to show that data cannot reach the gate. With the no-arg API not yet implemented, the first full discovery run stopped in `setUpClass`:
+
+```text
+E......................................................................
+======================================================================
+ERROR: setUpClass (test_authorization.AuthorizationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 21, in setUpClass
+    cls.gate = AuthorizationGate()
+               ~~~~~~~~~~~~~~~~~^^^
+TypeError: AuthorizationGate.__init__() missing 4 required keyword-only arguments: 'registry', 'category_map', 'universe_version', and 'universe_effective_date'
+
+----------------------------------------------------------------------
+Ran 70 tests in 0.887s
+
+FAILED (errors=1)
+```
+
+To exercise the injection findings directly, `setUpClass` temporarily used the legacy constructor, which was still the production API. Full discovery then showed the four injection tests failing because the legacy gate accepted each override:
+
+```text
+....FFFF.............................................................................
+======================================================================
+FAIL: test_gate_rejects_caller_supplied_category_map (test_authorization.AuthorizationTests.test_gate_rejects_caller_supplied_category_map)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 181, in test_gate_rejects_caller_supplied_category_map
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+======================================================================
+FAIL: test_gate_rejects_caller_supplied_live_categories (test_authorization.AuthorizationTests.test_gate_rejects_caller_supplied_live_categories)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 187, in test_gate_rejects_caller_supplied_live_categories
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+======================================================================
+FAIL: test_gate_rejects_caller_supplied_registry (test_authorization.AuthorizationTests.test_gate_rejects_caller_supplied_registry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 161, in test_gate_rejects_caller_supplied_registry
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+======================================================================
+FAIL: test_gate_rejects_caller_supplied_universe_metadata (test_authorization.AuthorizationTests.test_gate_rejects_caller_supplied_universe_metadata)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 191, in test_gate_rejects_caller_supplied_universe_metadata
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+----------------------------------------------------------------------
+Ran 85 tests in 1.126s
+
+FAILED (failures=4)
+```
+
+#### Correction GREEN After Production Code
+
+After the constructor/root fix and restoring the no-arg `setUpClass` construction, full discovery passed:
+
+```text
+.....................................................................................
+----------------------------------------------------------------------
+Ran 85 tests in 1.447s
+
+OK
+```
+
+#### Correction Final Gate Results
+
+Observed after the production fix and documentation updates:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+54 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+.....................................................................................
+----------------------------------------------------------------------
+Ran 85 tests in 0.955s
+
+OK
+```
+
+All four commands exited `0`. No test was skipped or excluded. No commit was made.
+
+### M3 Post-Correction Worktree Evidence
+
+Snapshot after the authorization-gate correction and final gate run:
+
+```text
+git status --short --untracked-files=all
+ M AGENTS.md
+ M docs/PRD.md
+ M docs/fifth-pick/architecture.md
+ M docs/fifth-pick/gates.md
+ M docs/superpowers/plans/2026-11-14-fifth-pick-mvp.md
+ M pyproject.toml
+ M uv.lock
+?? config/fifth-pick/approved-sources.yaml
+?? config/fifth-pick/approved-universe.yaml
+?? config/fifth-pick/category-map.yaml
+?? config/fifth-pick/governance.yaml
+?? config/fifth-pick/methodology.yaml
+?? config/fifth-pick/trust-tiers.yaml
+?? src/fifth_pick/authorization.py
+?? src/fifth_pick/config.py
+?? src/fifth_pick/identity.py
+?? src/fifth_pick/registry.py
+?? tests/fixtures/registry/provider-aliases.yaml
+?? tests/test_authorization.py
+?? tests/test_config.py
+?? tests/test_identity.py
+```
+
+```text
+git diff --stat
+ AGENTS.md                                          |   2 +-
+ docs/PRD.md                                        |   4 +
+ docs/fifth-pick/architecture.md                    |  61 +++-
+ docs/fifth-pick/gates.md                           | 337 +++++++++++++++++++++
+ .../superpowers/plans/2026-11-14-fifth-pick-mvp.md |   4 +
+ pyproject.toml                                     |   5 +-
+ uv.lock                                            |  70 +++++
+ 7 files changed, 476 insertions(+), 7 deletions(-)
+```
+
+```text
+git status --short -- evolution-00 evolution-01 evolution-02 evolution-03 evolution-04 evolution-05 evolution-06 evolution-07 evolution-08
+(no output)
+
+git status --short -- docs/superpowers/specs/2026-11-13-fifth-pick-design.md
+(no output)
+```
+
+No M3 commit was made. Both `src/fifth_pick/__pycache__/` and `tests/__pycache__/` are empty after cleanup. No M4 files or runtime artifacts are present.
+
+### M3 Controller Verification After Authorization Fix
+
+Fresh controller-run gates after removing caller-controlled authorization inputs:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+54 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+.....................................................................................
+Ran 85 tests in 1.042s
+OK
+```
+
+All four commands exited `0`. The 85-test suite includes M1, M2, and M3 tests; the M3 authorization-boundary tests are in `tests/test_authorization.py`.
+
+Current M3 worktree snapshot, before this evidence block was appended:
+
+```text
+git status --short --untracked-files=all
+ M AGENTS.md
+ M docs/PRD.md
+ M docs/fifth-pick/architecture.md
+ M docs/fifth-pick/gates.md
+ M docs/superpowers/plans/2026-11-14-fifth-pick-mvp.md
+ M pyproject.toml
+ M uv.lock
+?? config/fifth-pick/approved-sources.yaml
+?? config/fifth-pick/approved-universe.yaml
+?? config/fifth-pick/category-map.yaml
+?? config/fifth-pick/governance.yaml
+?? config/fifth-pick/methodology.yaml
+?? config/fifth-pick/trust-tiers.yaml
+?? src/fifth_pick/authorization.py
+?? src/fifth_pick/config.py
+?? src/fifth_pick/identity.py
+?? src/fifth_pick/registry.py
+?? tests/fixtures/registry/provider-aliases.yaml
+?? tests/test_authorization.py
+?? tests/test_config.py
+?? tests/test_identity.py
+```
+
+```text
+git diff --stat
+ AGENTS.md                                          |   2 +-
+ docs/PRD.md                                        |   4 +
+ docs/fifth-pick/architecture.md                    |  61 ++++-
+ docs/fifth-pick/gates.md                           | 274 +++++++++++++++++++++
+ .../superpowers/plans/2026-11-14-fifth-pick-mvp.md |   4 +
+ pyproject.toml                                     |   5 +-
+ uv.lock                                            |  70 ++++++
+ 7 files changed, 413 insertions(+), 7 deletions(-)
+```
+
+The frozen design spec and Evolution 00–08 remained unchanged at this snapshot. No M3 commit was created and no M4 work was started.
+
+### M3 Final Reviewer Finding Correction — Approved-Universe Entry Content Pin
+
+Final reviewer finding: `load_configs(custom_dir)` accepted a caller-supplied directory whose `approved-universe.yaml` retained `v1` / `2026-11-15` metadata but contained extra outside-universe players or grants, so a modified `v1` bundle could be treated as the authorized universe.
+
+The correction adds `test_modified_v1_universe_entries_fail_closed` in `tests/test_config.py`. It copies the six configs to a `TemporaryDirectory`, appends a syntactically valid outside-universe player with a `POINTS` higher/lower grant to `approved-universe.yaml` while leaving `content_version`, `effective_date`, and `provenance` intact, and asserts `load_configs(copied_dir)` raises `ConfigError`.
+
+#### Correction RED Before Production Code
+
+Observed before the content-integrity check existed; the current loader accepted the altered universe:
+
+```text
+..............................F.......................................................
+======================================================================
+FAIL: test_modified_v1_universe_entries_fail_closed (test_config.ConfigLoadingTests.test_modified_v1_universe_entries_fail_closed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_config.py", line 237, in test_modified_v1_universe_entries_fail_closed
+    with self.assertRaises(ConfigError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: ConfigError not raised
+
+----------------------------------------------------------------------
+Ran 86 tests in 1.071s
+
+FAILED (failures=1)
+```
+
+#### Expected Digest Exposure
+
+A temporary diagnostic unittest asserted the canonical entry digest against a placeholder, exposed the actual value, and was then removed. Only the mutation-rejection test was retained.
+
+```text
+AssertionError: 'PENDING' != '5b80fc42654e72f0a04d184fa078e319126bfbdb9117d672be71529d0ec6c121'
+- PENDING
++ 5b80fc42654e72f0a04d184fa078e319126bfbdb9117d672be71529d0ec6c121
+```
+
+`APPROVED_UNIVERSE_ENTRIES_SHA256` is the canonical UTF-8 JSON SHA-256 of the parsed `approved-universe.entries` list (`sort_keys`, compact separators, preserved list order).
+
+#### Correction GREEN After Production Code
+
+Observed after the digest pin was added and the diagnostic test removed:
+
+```text
+......................................................................................
+----------------------------------------------------------------------
+Ran 86 tests in 1.057s
+
+OK
+```
+
+#### Correction Final Gate Results
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+54 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+......................................................................................
+----------------------------------------------------------------------
+Ran 86 tests in 1.057s
+
+OK
+```
+
+All four commands exited `0`. The 86 tests comprise the 85 prior M1/M2/M3 tests plus the retained mutation-rejection test; no test was skipped or excluded. Only `src/fifth_pick/config.py`, `tests/test_config.py`, `docs/fifth-pick/architecture.md`, and `docs/fifth-pick/gates.md` were changed for this correction. No commit was made.
+
+### M3 Final Reviewer Finding Correction — Immutable Authorization State
+
+Final reviewer finding: after the no-argument constructor, ordinary callers could reassign `AuthorizationGate._registry` or `AuthorizationGate._live_categories`, and the gate reached mutable registry index dictionaries and a mutable `CategoryMapConfig.mappings`, bypassing the fixed live-category and universe configuration.
+
+The correction makes `AuthorizationGate` a frozen, slotted record with no caller-supplied construction path. Its registry ID/name/alias index attributes are frozen and hold read-only `MappingProxyType` mappings; `CategoryMapConfig.mappings` is defensively copied into a read-only `MappingProxyType`. `LIVE_MVP_CATEGORIES` is still assigned internally by the no-argument constructor.
+
+#### Correction RED Before Production Code
+
+Tests were added first for gate attribute reassignment, registry index injection, and category-map entry addition. Full discovery observed the expected failures against the prior mutable gate, registry indexes, and category map:
+
+```text
+....F....FFFFFF...FFFF.............F..............................................................
+======================================================================
+FAIL: test_gate_category_map_is_immutable (test_authorization.AuthorizationTests.test_gate_category_map_is_immutable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 255, in test_gate_category_map_is_immutable
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+======================================================================
+FAIL: test_gate_state_is_immutable_after_construction (test_authorization.AuthorizationTests.test_gate_state_is_immutable_after_construction) (attribute='_registry')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 208, in test_gate_state_is_immutable_after_construction
+    with self.assertRaises(AttributeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: AttributeError not raised
+
+======================================================================
+FAIL: test_gate_state_is_immutable_after_construction (test_authorization.AuthorizationTests.test_gate_state_is_immutable_after_construction) (attribute='_category_map')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 208, in test_gate_state_is_immutable_after_construction
+    with self.assertRaises(AttributeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: AttributeError not raised
+
+======================================================================
+FAIL: test_gate_state_is_immutable_after_construction (test_authorization.AuthorizationTests.test_gate_state_is_immutable_after_construction) (attribute='_live_categories')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 208, in test_gate_state_is_immutable_after_construction
+    with self.assertRaises(AttributeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: AttributeError not raised
+
+======================================================================
+FAIL: test_gate_state_is_immutable_after_construction (test_authorization.AuthorizationTests.test_gate_state_is_immutable_after_construction) (attribute='_universe_version')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 208, in test_gate_state_is_immutable_after_construction
+    with self.assertRaises(AttributeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: AttributeError not raised
+
+======================================================================
+FAIL: test_gate_state_is_immutable_after_construction (test_authorization.AuthorizationTests.test_gate_state_is_immutable_after_construction) (attribute='_universe_effective_date')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 208, in test_gate_state_is_immutable_after_construction
+    with self.assertRaises(AttributeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: AttributeError not raised
+
+======================================================================
+FAIL: test_gate_state_is_immutable_after_construction (test_authorization.AuthorizationTests.test_gate_state_is_immutable_after_construction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 211, in test_gate_state_is_immutable_after_construction
+    self.assertFalse(
+    ~~~~~~~~~~~~~~~~^
+        gate.authorize("outside-universe-player", Category.POINTS, Direction.HIGHER).allowed
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_registry_indexes_are_immutable (test_authorization.AuthorizationTests.test_registry_indexes_are_immutable) (attribute='_by_id')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 239, in test_registry_indexes_are_immutable
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+======================================================================
+FAIL: test_registry_indexes_are_immutable (test_authorization.AuthorizationTests.test_registry_indexes_are_immutable) (attribute='_by_name')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 239, in test_registry_indexes_are_immutable
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+======================================================================
+FAIL: test_registry_indexes_are_immutable (test_authorization.AuthorizationTests.test_registry_indexes_are_immutable) (attribute='_by_alias')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 239, in test_registry_indexes_are_immutable
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+======================================================================
+FAIL: test_registry_indexes_are_immutable (test_authorization.AuthorizationTests.test_registry_indexes_are_immutable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_authorization.py", line 244, in test_registry_indexes_are_immutable
+    self.assertIsNone(registry.player_by_id(injected.player_id))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RegistryPlayer(player_id='outside-universe-player', canonical_name='Outside Universe Player', grants=frozenset({AuthorizationGrant(category=<Category.POINTS: 'POINTS'>, direction=<Direction.HIGHER: 'HIGHER'>)}), aliases=(), foul_trouble=False) is not None
+
+======================================================================
+FAIL: test_category_map_mappings_are_immutable (test_config.ConfigLoadingTests.test_category_map_mappings_are_immutable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/CIDM6333-project/tests/test_config.py", line 390, in test_category_map_mappings_are_immutable
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+----------------------------------------------------------------------
+Ran 90 tests in 1.349s
+
+FAILED (failures=12)
+```
+
+#### Correction GREEN After Production Code
+
+The first post-implementation gate attempt found two test-side issues only: Ruff `SIM117` for a nested `with`, and ty rejecting `operator.setitem` against a value typed as `Mapping`. The tests were corrected by combining the `with` statements and typing the attempted-mutation value as `Any` at that site. No assertion was weakened.
+
+Observed GREEN:
+
+```text
+..........................................................................................
+----------------------------------------------------------------------
+Ran 90 tests in 1.317s
+
+OK
+```
+
+#### Correction Final Gate Results
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+54 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+..........................................................................................
+----------------------------------------------------------------------
+Ran 90 tests in 1.267s
+
+OK
+```
+
+All four commands exited `0`. The 90 tests comprise the 86 prior M1/M2/M3 tests plus four retained immutability tests; no test was skipped or excluded. Only `src/fifth_pick/authorization.py`, `src/fifth_pick/registry.py`, `src/fifth_pick/config.py`, `tests/test_authorization.py`, `tests/test_config.py`, `docs/fifth-pick/architecture.md`, and `docs/fifth-pick/gates.md` were changed for this correction. No constructor or factory path for caller-supplied registry, category map, config directory, live categories, universe version, or effective date was added. No commit was made.
+
+### M3 Final Controller Verification
+
+Fresh gates after the authorization-state correction:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+54 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+..........................................................................................
+Ran 90 tests in 1.311s
+OK
+```
+
+All four commands exited `0`.
+
+Final M3 worktree snapshot before appending this block:
+
+```text
+git status --short --untracked-files=all
+ M AGENTS.md
+ M docs/PRD.md
+ M docs/fifth-pick/architecture.md
+ M docs/fifth-pick/gates.md
+ M docs/superpowers/plans/2026-11-14-fifth-pick-mvp.md
+ M pyproject.toml
+ M uv.lock
+?? config/fifth-pick/approved-sources.yaml
+?? config/fifth-pick/approved-universe.yaml
+?? config/fifth-pick/category-map.yaml
+?? config/fifth-pick/governance.yaml
+?? config/fifth-pick/methodology.yaml
+?? config/fifth-pick/trust-tiers.yaml
+?? src/fifth_pick/authorization.py
+?? src/fifth_pick/config.py
+?? src/fifth_pick/identity.py
+?? src/fifth_pick/registry.py
+?? tests/fixtures/registry/provider-aliases.yaml
+?? tests/test_authorization.py
+?? tests/test_config.py
+?? tests/test_identity.py
+```
+
+```text
+git diff --stat
+ AGENTS.md                                          |   2 +-
+ docs/PRD.md                                        |   4 +
+ docs/fifth-pick/architecture.md                    |  63 +++-
+ docs/fifth-pick/gates.md                           | 627 +++++++++++++++++++++
+ .../superpowers/plans/2026-11-14-fifth-pick-mvp.md |   4 +
+ pyproject.toml                                     |   5 +-
+ uv.lock                                            |  70 ++++
+ 7 files changed, 768 insertions(+), 7 deletions(-)
+```
+
+No M3 commit was made. No Evolution or frozen-spec changes were present. No `var/fifth-pick/` directory was created. Test-generated Python bytecode caches were removed after this gate run; no verification command is run after cache cleanup.
+
+### M3 Cache-Cleanup Authorization and Reverification
+
+The final reviewer identified ignored bytecode caches under `evolution-07/lab/__pycache__/` and `evolution-08/src/__pycache__/`. Joseph authorized cleanup only in those two locations. On inspection, both directories were already absent, so no Evolution file was deleted or otherwise modified. After the final gate run below, both directories remained absent and `git status --short -- evolution-07 evolution-08` returned no output.
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+54 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+..........................................................................................
+Ran 90 tests in 1.317s
+OK
+```
+
+All four commands exited `0`. No M4 work or M3 commit was performed.
