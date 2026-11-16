@@ -2,9 +2,9 @@
 
 ## Scope
 
-This document describes the M2 domain model, receipts, and run storage, plus the M3 configuration, registry, identity, and authorization layers. Later milestone artifacts are listed as reserved and are not implemented here.
+This document describes the M2 domain model, receipts, and run storage; the M3 configuration, registry, identity, and authorization layers; and the M4 source adapter, live client, quota control, and redaction. Later milestone artifacts are listed as reserved and are not implemented here.
 
-M2 provides typed vocabulary and an append-only evidence store. M3 provides versioned authoritative configuration, a canonical player registry, exact identity resolution, and exact player/category/direction authorization. Neither provides source retrieval, snapshot scheduling, methodology, ranking, T-20 review, finalization, approval, or result grading.
+M2 provides typed vocabulary and an append-only evidence store. M3 provides versioned authoritative configuration, a canonical player registry, exact identity resolution, and exact player/category/direction authorization. M4 provides an offline-testable The Odds API `us_dfs` adapter that produces platform-scoped, provenance-bearing boards and hands identity resolution to the M3 registry. None provides snapshot scheduling, methodology, ranking, T-20 review, finalization, approval, or result grading.
 
 ## Module Map
 
@@ -18,8 +18,14 @@ M2 provides typed vocabulary and an append-only evidence store. M3 provides vers
 | `src/fifth_pick/registry.py` | Build canonical player IDs, exact name/alias/ID indexes, grants, and narrow one-player-one-slot uniqueness. |
 | `src/fifth_pick/identity.py` | Resolve exact canonical names, registered aliases, and explicit provider aliases; ambiguous or unknown identity fails closed. |
 | `src/fifth_pick/authorization.py` | Authorize exact player, category, and direction grants inside the live MVP; expose exact market mapping. |
+| `src/fifth_pick/sources/base.py` | Pre-snapshot source projections, events, boards, board provenance, and fail-closed source errors. |
+| `src/fifth_pick/sources/transport.py` | Minimal `Transport` protocol, `HttpResponse`, an explicit live `UrllibTransport`, and `TransportError`. |
+| `src/fifth_pick/sources/quota.py` | Credit budget, quota-header capture, and request-cost estimation. |
+| `src/fifth_pick/sources/odds_api.py` | Approved The Odds API `us_dfs` request shape, response parsing, provenance, and fail-closed retrieval. |
+| `src/fifth_pick/sources/normalize.py` | Exact market/direction mapping and fail-closed identity binding to the M3 registry. |
+| `src/fifth_pick/sources/fixtures.py` | Synthetic offline fixture transport that never reaches the network. |
 
-M2 modules are standard-library only. M3 `config.py` uses PyYAML for local file loading; M3 modules do not import network libraries, read environment variables, log, or write to `var/fifth-pick/`.
+M2 modules are standard-library only. M3 `config.py` uses PyYAML for local file loading; M3 modules do not import network libraries, read environment variables, log, or write to `var/fifth-pick/`. M4 `transport.py` uses only the standard library and `urllib`; `odds_api.py` reads the API key from the injected environment mapping (defaulting to `os.environ`) and performs no write, log, or receipt side effect. No M4 module writes to `var/fifth-pick/`.
 
 ## Typed Vocabulary
 
@@ -185,9 +191,36 @@ Unresolved or ambiguous identity returns `PLAYER_IDENTITY_UNRESOLVED`; Luka DonÄ
 
 M3 does not write receipts in production. Tests use the M2 `RunStore` with temporary injected roots to prove that allow and deny decisions can be recorded as evidence.
 
+## M4 Source Adapter
+
+M4 retrieves the approved The Odds API `us_dfs` board for PrizePicks and Underdog and stops at the boundary of the M2 `Observation`/M5 `Snapshot` store. It produces a `SourceBoard` of `SourceProjection` values with provenance timestamps but no snapshot number, no canonical identity, and no M5+ record. Nothing in M4 backfills evidence or fabricates a T-20 snapshot.
+
+### Approved request shape
+
+`OddsApiSourceConfig` fixes the region `us_dfs`, the bookmakers `("prizepicks", "underdog")`, and the five approved live markets `player_points`, `player_assists`, `player_rebounds`, `player_points_rebounds_assists`, and `player_rebounds_assists`. Any deviation fails closed with `SourceError`. The request uses the quota-free events endpoint `GET /v4/sports/basketball_nba/events` and one per-event odds endpoint `GET /v4/sports/basketball_nba/events/{eventId}/odds?markets=<five>&bookmakers=prizepicks,underdog`. `regions` is omitted, the key is sent only in the `x-api-key` header, and the key never appears in a URL.
+
+### Fail-closed retrieval
+
+`OddsApiClient.fetch_board(live_authorized=..., budget=...)` requires an injected `Transport`, an explicit `live_authorized=True`, and a positive `QuotaBudget`. It fails closed, before any further call, on a missing key (`MissingApiKeyError`), a rejected credential (`UnauthorizedResponseError` for 401/403), an exhausted quota (`QuotaExhaustedError` for `x-requests-remaining: 0`, or 402/429), a malformed payload (`MalformedPayloadError`), and an estimate above budget (`BudgetExceededError`). The events endpoint is quota-free; the estimated cost is one credit per market per event. There is no retry, fallback, or provider substitution.
+
+### Platform separation and market exactness
+
+PrizePicks and Underdog projections are kept separate; the same player on both platforms yields two distinct `SourceProjection` values and is never combined. Only the five approved markets are projected. An unapproved market key in a payload (for example `player_threes`) is skipped and never becomes a `SourceProjection`; `THREE_POINT_ATTEMPTS` is never mapped from `player_threes`. Only exact `Over`/`Under` outcome names become directions.
+
+### Provenance and redaction
+
+`BoardProvenance` records the source id, region, bookmakers, markets, request timestamp, retrieval time, the maximum market `last_update` as the source update time (or `None` when absent), the SHA-256 of the concatenated raw response bodies, the redacted request URL, and the captured `QuotaSnapshot`. Redaction reuses the M2 `redact_text()` helper, so exact secrets and sensitive query parameters become `[REDACTED]`. The key is read only from `THE_ODDS_API_KEY` in the injected environment and is never logged, stored, or written to a receipt.
+
+### Identity handoff
+
+M4 does not resolve identity. `normalize.resolve_board()` binds each `SourceProjection` to the M3 registry using `IdentityResolver.resolve_provider()` only. A canonical display name is not treated as a provider alias, and unknown or ambiguous provider names fail closed with `PLAYER_IDENTITY_UNRESOLVED` while preserving the projection. M4 adds no production provider aliases.
+
+### Offline testing
+
+The client depends only on the `Transport` protocol. Tests inject a fake transport or the synthetic `FixtureTransport` in `tests/fixtures/odds_api/`, so no unit test reaches the network. `UrllibTransport` exists for explicit live use and is never constructed by default. Live smoke remains opt-in and requires separate explicit authorization and an explicit credit budget; no live request was made during M4 implementation.
+
 ## Reserved Later Milestones
 
-- M4: source adapter, live client, quota, and source-level redaction.
 - M5: snapshot collection and missed-snapshot recording.
 - M6: evidence, methodology, confidence, and ranking.
 - M7: T-20 review.

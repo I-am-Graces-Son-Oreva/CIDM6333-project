@@ -178,3 +178,7 @@ After M1 passed its independent reviewer checkpoint and commit `8c7d01e` was cre
 ## M3 Authorization Addendum (2026-11-15)
 
 Joseph explicitly authorizes M3 only: configuration loading, canonical registry, identity resolution, and authorization validation. The existing approved player universe in frozen-design Part II 9.1 is version `v1`, effective `2026-11-15`; its entries must not be changed. Apply Part III A1/A2 direction rules and E4/E5 authorization rules. This does not authorize M4 or later work, Evolution changes, frozen-spec changes, or a commit.
+
+## M4 Authorization Addendum (2026-11-15)
+
+Joseph explicitly authorized M4 only: the approved The Odds API `us_dfs` source adapter, live-client implementation, redaction, quota controls, deterministic fixtures, and source-verification evidence. This authorizes implementation, not a live API request. Live smoke still requires separate explicit authorization and an explicit credit budget. M5 or later work, Evolution or frozen-spec changes, and commits remain out of scope.

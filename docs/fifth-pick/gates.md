@@ -622,6 +622,30 @@ OK
 
 All four commands exited `0` before M3 implementation began.
 
+## M4 Authorization and Baseline
+
+Joseph's 2026-11-15 instruction authorizes M4 implementation only. It does not authorize a live API request. Live smoke remains opt-in and requires separate explicit authorization, `THE_ODDS_API_KEY`, and an explicit credit budget. M5 and later work and commits remain out of scope.
+
+Fresh pre-M4 baseline:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+54 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+..........................................................................................
+Ran 90 tests in 1.311s
+OK
+```
+
+All four commands exited `0` before M4 implementation began. No live request was made.
+
 ## M3 — Configuration, Registry, Identity, and Authorization
 
 ### M3 RED Before Production Code
@@ -1309,3 +1333,280 @@ OK
 ```
 
 All four commands exited `0`. No M4 work or M3 commit was performed.
+
+## M4 — Source Adapter, Live Client, Redaction, and Quota
+
+### M4 RED Before Production Code
+
+The M4 tests (`tests/test_odds_api.py`, `tests/test_normalize.py`, `tests/test_quota.py`) and the synthetic fixtures were written before any `src/fifth_pick/sources/` module existed. Full discovery ran the prior 90 M1–M3 tests and reported three import failures for the new modules:
+
+```text
+...........................................................................EEE...............
+======================================================================
+ERROR: test_normalize (unittest.loader._FailedTest.test_normalize)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_normalize
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 433, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 374, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/Users/orevisco/CIDM6333-project/tests/test_normalize.py", line 8, in <module>
+    from fifth_pick.sources.base import (
+    ...<4 lines>...
+    )
+ModuleNotFoundError: No module named 'fifth_pick.sources'
+
+
+======================================================================
+ERROR: test_odds_api (unittest.loader._FailedTest.test_odds_api)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_odds_api
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 433, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 374, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/Users/orevisco/CIDM6333-project/tests/test_odds_api.py", line 10, in <module>
+    from fifth_pick.sources import odds_api
+ModuleNotFoundError: No module named 'fifth_pick.sources'
+
+
+======================================================================
+ERROR: test_quota (unittest.loader._FailedTest.test_quota)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_quota
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 433, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 374, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/Users/orevisco/CIDM6333-project/tests/test_quota.py", line 4, in <module>
+    from fifth_pick.sources.quota import (
+    ...<5 lines>...
+    )
+ModuleNotFoundError: No module named 'fifth_pick.sources'
+
+
+----------------------------------------------------------------------
+Ran 93 tests in 1.264s
+
+FAILED (errors=3)
+```
+
+This was the expected RED: the prior M1–M3 tests still ran, and the three M4 test modules could not import because `src/fifth_pick/sources/` did not yet exist.
+
+### M4 First Post-Implementation Gate Failure
+
+After the M4 modules were written, full unittest passed and `uv run ruff format --check` reported no file to reformat. Two gates still failed. Observed `uv run ruff check`:
+
+```text
+E501 Line too long (101 > 100)
+  --> src/fifth_pick/sources/normalize.py:67:101
+   |
+67 | def resolve_identity(projection: SourceProjection, resolver: IdentityResolver) -> ResolvedProjection:
+   |                                                                                                     ^
+68 |     """Bind one projection to a canonical player using the provider alias index only.
+   |
+
+F401 [*] `fifth_pick.sources.quota.QuotaSnapshot` imported but unused
+  --> src/fifth_pick/sources/odds_api.py:37:5
+   |
+35 | from fifth_pick.sources.quota import (
+36 |     QuotaBudget,
+37 |     QuotaSnapshot,
+   |     ^^^^^^^^^^^^^
+38 |     estimate_odds_cost,
+39 |     parse_quota_headers,
+   |
+help: Remove unused import: `fifth_pick.sources.quota.QuotaSnapshot`
+
+E501 Line too long (101 > 100)
+   --> src/fifth_pick/sources/odds_api.py:306:101
+    |
+304 |         for bookmaker in bookmakers:
+305 |             if not isinstance(bookmaker, dict):
+306 |                 raise MalformedPayloadError(f"odds payload for {event_id} has a malformed bookmaker")
+    |                                                                                                     ^
+307 |             platform = _platform_for_bookmaker(bookmaker.get("key"))
+    |
+
+E501 Line too long (101 > 100)
+   --> tests/test_odds_api.py:407:101
+    |
+405 |     def test_non_list_bookmakers_fails_closed(self) -> None:
+406 |         events_body = (FIXTURE_DIR / "events.json").read_bytes()
+407 |         responses = {events_url(): HttpResponse(status=200, headers=QUOTA_HEADERS, body=events_body)}
+    |                                                                                                     ^
+
+E501 Line too long (101 > 100)
+   --> tests/test_odds_api.py:421:101
+    |
+421 |         responses = {events_url(): HttpResponse(status=200, headers=QUOTA_HEADERS, body=events_body)}
+    |                                                                                                     ^
+
+Found 5 errors.
+[*] 1 fixable with `--fix`.
+```
+
+Observed `uv run ty check`:
+
+```text
+error[missing-attribute]: Object of type `object` has no attribute `events`
+   --> tests/test_odds_api.py:263:30
+error[missing-attribute]: Object of type `object` has no attribute `provenance`
+   --> tests/test_odds_api.py:269:22
+error[missing-attribute]: Object of type `object` has no attribute `projections`
+   --> tests/test_odds_api.py:284:23
+error[missing-attribute]: Object of type `object` has no attribute `projections`
+   --> tests/test_odds_api.py:322:52
+error[missing-attribute]: Object of type `object` has no attribute `projections`
+   --> tests/test_odds_api.py:328:62
+error[missing-attribute]: Object of type `object` has no attribute `events`
+   --> tests/test_odds_api.py:338:26
+error[missing-attribute]: Object of type `object` has no attribute `provenance`
+   --> tests/test_odds_api.py:346:26
+error[missing-attribute]: Object of type `object` has no attribute `events`
+   --> tests/test_odds_api.py:362:30
+error[invalid-argument-type]: Argument to function `fetch_fixture_board` is incorrect
+   --> tests/test_odds_api.py:441:37
+info: Expected `FakeTransport`, found `FixtureTransport`
+error[missing-attribute]: Object of type `object` has no attribute `events`
+   --> tests/test_odds_api.py:443:30
+Found 10 diagnostics
+```
+
+The findings were corrected without weakening any assertion: the long lines were wrapped, the unused import was removed, and `fetch_fixture_board()`/`make_client()` were typed against the `Transport` protocol and `SourceBoard` so the fake and fixture transports both satisfy the boundary.
+
+### M4 Final Gate Results
+
+Observed after the M4 modules, fixtures, and documentation existed:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+66 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+.....................................................................................................................................................
+---------------------------------------------------------------------
+Ran 149 tests in 1.466s
+
+OK
+```
+
+All four commands exited `0`. The 149 tests comprise the 90 prior M1–M3 tests plus the M4 tests in `tests/test_odds_api.py`, `tests/test_normalize.py`, and `tests/test_quota.py`. No test was skipped or excluded. No live request was made: every M4 test injects a fake or synthetic transport. The Ruff format file count is recorded verbatim from the final run; the gate claim rests on the exit status and the absence of any file to reformat, not on interpreting that count.
+
+### M4 Worktree Evidence
+
+Snapshot taken after M4 implementation and the architecture and source-verification docs, before this evidence block was appended:
+
+```text
+git status --short --untracked-files=all
+ M AGENTS.md
+ M docs/PRD.md
+ M docs/fifth-pick/architecture.md
+ M docs/fifth-pick/gates.md
+ M docs/superpowers/plans/2026-11-14-fifth-pick-mvp.md
+?? docs/fifth-pick/source-verification.md
+?? src/fifth_pick/sources/__init__.py
+?? src/fifth_pick/sources/base.py
+?? src/fifth_pick/sources/fixtures.py
+?? src/fifth_pick/sources/normalize.py
+?? src/fifth_pick/sources/odds_api.py
+?? src/fifth_pick/sources/quota.py
+?? src/fifth_pick/sources/transport.py
+?? tests/fixtures/odds_api/README.md
+?? tests/fixtures/odds_api/events.json
+?? tests/fixtures/odds_api/odds-evt-bos-nyk-20261115.json
+?? tests/fixtures/odds_api/odds-evt-lal-dal-20261115.json
+?? tests/test_normalize.py
+?? tests/test_odds_api.py
+?? tests/test_quota.py
+```
+
+```text
+git diff --stat
+ AGENTS.md                                          |  2 +-
+ docs/PRD.md                                        |  4 +++
+ docs/fifth-pick/architecture.md                    | 41 +++++++++++++++++++---
+ docs/fifth-pick/gates.md                           | 24 +++++++++++++
+ .../superpowers/plans/2026-11-14-fifth-pick-mvp.md |  4 +++
+ 5 files changed, 70 insertions(+), 5 deletions(-)
+```
+
+```text
+git status --short -- evolution-00 evolution-01 evolution-02 evolution-03 evolution-04 evolution-05 evolution-06 evolution-07 evolution-08
+(no output)
+
+git status --short -- docs/superpowers/specs/2026-11-13-fifth-pick-design.md
+(no output)
+```
+
+No M4 commit was made. The frozen design specification and Evolution 00–08 are unchanged. `AGENTS.md`, `docs/PRD.md`, and the implementation plan contain only the previously authorized M4 status and authorization addenda; `docs/fifth-pick/architecture.md` and `docs/fifth-pick/gates.md` are updated with M4 content. The M4 paths listed above are the only implementation additions, and no M5 files are present.
+
+Ignored Python bytecode caches exist under `src/fifth_pick/__pycache__/`, `src/fifth_pick/sources/__pycache__/`, and `tests/__pycache__/` (confirmed by `git status --short --ignored`). They are git-ignored and untracked, and they were created by the verification runs. Removing them is not possible under this session's authorized command allowlist, so they are disclosed here rather than reported as cleaned. The historical Evolution caches listed as ignored (`evolution-08/tests/__pycache__/`, `src/__pycache__/`, `src/e6_context/__pycache__/`, `src/e7_memory/__pycache__/`, `src/grad_mcp/__pycache__/`) were not created or modified by M4 and were left untouched.
+
+### M4 Quota Preflight Fix — Reported Remaining
+
+Joseph provided the regression evidence (two failing tests) and authorized a minimal quota-preflight fix in `src/fifth_pick/sources/odds_api.py` only. No live calls and no commit.
+
+#### RED Before Fix (provided)
+
+`uv run python -m unittest discover -s tests` ran 151 tests and failed with exactly 2 expected failures:
+
+```text
+Ran 151 tests
+FAILED (failures=2)
+test_reported_remaining_below_estimate_fails_closed_before_odds
+test_reported_remaining_below_next_event_fails_closed_before_odds
+AssertionError: QuotaExhaustedError not raised
+```
+
+#### Fix
+
+- In `fetch_board()` (`src/fifth_pick/sources/odds_api.py`): after computing the estimated board cost, if provider-reported `x-requests-remaining` is present and less than the complete estimate, raise `QuotaExhaustedError` before starting odds requests.
+- Before each event-odds request, if reported remaining is present and less than the cost for the remaining events (`remaining_events * len(markets)`), raise `QuotaExhaustedError` before that request.
+- Caller-budget checks, request headers/URLs, transport, and all other source/request constraints preserved; no tests altered.
+
+#### GREEN Full Discovery After Fix
+
+```text
+uv run python -m unittest discover -s tests
+.......................................................................................................................................................
+----------------------------------------------------------------------
+Ran 151 tests in 1.505s
+
+OK
+```
+
+#### Final Gate Results
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+66 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+.......................................................................................................................................................
+----------------------------------------------------------------------
+Ran 151 tests in 1.505s
+
+OK
+```
+
+All four commands exited `0`. No live request was made. No commit was made.
+

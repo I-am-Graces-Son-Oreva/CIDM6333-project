@@ -1,0 +1,48 @@
+{
+  "id": "evt-bos-nyk-20261115",
+  "sport_key": "basketball_nba",
+  "sport_title": "NBA",
+  "commence_time": "2026-11-16T00:00:00Z",
+  "home_team": "Boston Celtics",
+  "away_team": "New York Knicks",
+  "bookmakers": [
+    {
+      "key": "prizepicks",
+      "title": "PrizePicks",
+      "last_update": "2026-11-15T17:00:00Z",
+      "markets": [
+        {
+          "key": "player_points",
+          "last_update": "2026-11-15T17:00:00Z",
+          "outcomes": [
+            {"name": "Over", "description": "Jayson Tatum", "price": 1.9, "point": 27.5},
+            {"name": "Under", "description": "Jayson Tatum", "price": 1.9, "point": 27.5}
+          ]
+        },
+        {
+          "key": "player_threes",
+          "last_update": "2026-11-15T17:00:00Z",
+          "outcomes": [
+            {"name": "Over", "description": "Jayson Tatum", "price": 2.1, "point": 3.5},
+            {"name": "Under", "description": "Jayson Tatum", "price": 1.7, "point": 3.5}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "underdog",
+      "title": "Underdog",
+      "last_update": "2026-11-15T16:58:00Z",
+      "markets": [
+        {
+          "key": "player_points_rebounds_assists",
+          "last_update": "2026-11-15T16:58:00Z",
+          "outcomes": [
+            {"name": "Over", "description": "Jayson Tatum", "price": 1.85, "point": 41.5},
+            {"name": "Under", "description": "Jayson Tatum", "price": 1.85, "point": 41.5}
+          ]
+        }
+      ]
+    }
+  ]
+}
