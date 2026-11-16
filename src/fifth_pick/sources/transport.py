@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Final, Protocol
 
-from fifth_pick.sources.base import SourceError
+from fifth_pick.sources.base import EvidenceMode, SourceError
 
 DEFAULT_TIMEOUT_SECONDS: Final[float] = 10.0
 
@@ -49,6 +49,8 @@ class UrllibTransport:
     Construct this explicitly and only with separate live authorization. It performs a
     real network request and must never be a default.
     """
+
+    evidence_mode = EvidenceMode.LIVE
 
     def __init__(self, *, timeout: float = DEFAULT_TIMEOUT_SECONDS) -> None:
         if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0:

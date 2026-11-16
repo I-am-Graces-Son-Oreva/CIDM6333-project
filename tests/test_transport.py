@@ -2,10 +2,14 @@ import unittest
 from unittest import mock
 from urllib.request import Request
 
+from fifth_pick.sources.base import EvidenceMode
 from fifth_pick.sources.transport import HttpResponse, UrllibTransport
 
 
 class RedirectHandlingTests(unittest.TestCase):
+    def test_live_transport_is_marked_live_without_network_access(self) -> None:
+        self.assertIs(UrllibTransport.evidence_mode, EvidenceMode.LIVE)
+
     def test_live_transport_rejects_redirect_without_forwarding_api_key(self) -> None:
         api_key = "test-api-key"
         start_url = "https://api.example.test/events"

@@ -6,12 +6,21 @@ observations. Nothing here assigns snapshot numbers or backfills evidence.
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import StrEnum
 
 from fifth_pick.errors import FifthPickError
 from fifth_pick.models import LIVE_MVP_CATEGORIES, Category, Direction, Platform
 from fifth_pick.sources.quota import QuotaSnapshot
+
+
+class EvidenceMode(StrEnum):
+    """Whether a board came from the live adapter or deterministic fixture transport."""
+
+    LIVE = "live"
+    FIXTURE = "fixture"
+    UNKNOWN = "unknown"
 
 
 class SourceError(FifthPickError):
@@ -131,6 +140,11 @@ class BoardProvenance:
     payload_sha256: str
     request_url: str
     quota: QuotaSnapshot
+    _evidence_mode: EvidenceMode = field(
+        default=EvidenceMode.UNKNOWN,
+        init=False,
+        repr=False,
+    )
 
     def __post_init__(self) -> None:
         _require_non_empty(self.source_id, "source_id")
@@ -147,6 +161,12 @@ class BoardProvenance:
         _require_non_empty(self.request_url, "request_url")
         if not isinstance(self.quota, QuotaSnapshot):
             raise SourceError("quota must be a QuotaSnapshot")
+
+    @property
+    def evidence_mode(self) -> EvidenceMode:
+        """Return the mode stamped by the built-in M4 transport adapter."""
+
+        return self._evidence_mode
 
 
 @dataclass(frozen=True, slots=True)

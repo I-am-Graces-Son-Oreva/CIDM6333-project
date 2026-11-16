@@ -496,6 +496,13 @@ class FixtureTransportTests(unittest.TestCase):
 
         self.assertEqual(len(board.events), 2)
 
+    def test_fixture_board_provenance_is_labeled_fixture(self) -> None:
+        transport = load_board_fixture(FIXTURE_DIR)
+
+        board = fetch_fixture_board(transport)
+
+        self.assertEqual(getattr(board.provenance, "evidence_mode", None), "fixture")
+
     def test_fixture_transport_never_hits_the_network(self) -> None:
         transport = load_board_fixture(FIXTURE_DIR)
 

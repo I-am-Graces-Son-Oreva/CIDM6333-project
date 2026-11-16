@@ -21,6 +21,7 @@ from fifth_pick.receipts import redact_text
 from fifth_pick.sources.base import (
     BoardProvenance,
     BudgetExceededError,
+    EvidenceMode,
     LiveAuthorizationError,
     MalformedPayloadError,
     MissingApiKeyError,
@@ -80,6 +81,19 @@ def events_url() -> str:
     """The quota-free events endpoint for the approved sport."""
 
     return f"{BASE_URL}/sports/{SPORT_KEY}/events"
+
+
+def _transport_evidence_mode(transport: Transport) -> EvidenceMode:
+    """Label only the built-in live and synthetic transports; custom transports stay unknown."""
+
+    from fifth_pick.sources.fixtures import FixtureTransport
+    from fifth_pick.sources.transport import UrllibTransport
+
+    if type(transport) is UrllibTransport:
+        return EvidenceMode.LIVE
+    if type(transport) is FixtureTransport:
+        return EvidenceMode.FIXTURE
+    return EvidenceMode.UNKNOWN
 
 
 def odds_url(event_id: str, config: OddsApiSourceConfig) -> str:
@@ -160,6 +174,7 @@ class OddsApiClient:
         self._clock: Callable[[], datetime] = (
             (lambda: datetime.now(UTC)) if clock is None else clock
         )
+        self._evidence_mode = _transport_evidence_mode(transport)
 
     def fetch_board(self, *, live_authorized: bool, budget: QuotaBudget) -> SourceBoard:
         """Retrieve the board, or fail closed before spending credits."""
@@ -249,6 +264,7 @@ class OddsApiClient:
             request_url=redact_text(events_url()),
             quota=quota,
         )
+        object.__setattr__(provenance, "_evidence_mode", self._evidence_mode)
         return SourceBoard(provenance=provenance, events=tuple(events))
 
     def _read_api_key(self) -> str:

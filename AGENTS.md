@@ -4,7 +4,7 @@ The Fifth Pick is a human-governed NBA fantasy-selection CLI that applies Joseph
 
 ## Run and test
 
-The Fifth Pick M1 health-only, M2 model/receipt/storage, and M3 configuration/registry/identity/authorization foundations exist. Joseph authorized M4 source adapter, live-client, redaction, and quota implementation; current scope remains M4 only. Do not run live smoke without separate authorization and an explicit budget; do not begin M5 before Joseph accepts M4 review.
+The Fifth Pick M1 health-only, M2 model/receipt/storage, M3 configuration/registry/identity/authorization, and M4 source foundations exist; M4 was accepted. Joseph authorized M5 snapshot workflow only. Do not begin M6 before M5 review PASS. M5 acceptance uses offline boards and requires no live API request.
 
 ```text
 uv run ruff check
@@ -32,13 +32,13 @@ All four must exit `0`. Show a failing gate before claiming the gates as evidenc
 ## Rules that must hold (enforced)
 
 - No entries, wagers, logins, or money movement. Control: no submission path or credentials.
-- No methodology or authorization change. Control: versioned config/spec; validator not built.
-- No outside-universe or trust-tier authorization. Control: allow-list and authorization-first validators; not built.
-- No name-only or ambiguous identity. Control: registry and fail-closed resolver; not built.
-- No combined platform projections. Control: platform-scoped model; not built.
-- No invented evidence; missing evidence fails closed. Control: typed validation; not built.
+- No methodology or authorization change. Control: frozen spec, digest-pinned M3 universe, and exact `AuthorizationGate`; M6 methodology execution is not built.
+- No outside-universe or trust-tier authorization. Control: digest-pinned allow-list and authorization-first exact-grant validation.
+- No name-only or ambiguous identity. Control: canonical registry, provider-alias-only resolution, and M5 authoritative-player equality check.
+- No combined platform projections. Control: platform-scoped source, observation, and snapshot records; verified offline.
+- No invented evidence; missing evidence fails closed. Control: typed source/snapshot validation, explicit live/fixture/unknown evidence mode, provenance excerpts, and missed-slot receipts; M6 evidence evaluation is not built.
 - Ceilings: HALF 1–4 / max 4; FULL 5+ / max 5; zero valid; never fill slots. Control: finalizer; not built.
-- No snapshot backfill or fabricated T-20. Control: snapshot store/receipts; not built.
+- No snapshot backfill or fabricated T-20. Control: M5 snapshot ledger, target validation, missed-slot markers, and receipts.
 - No HIT/MISS without trustworthy result. Control: result adjudicator; not built.
 - Reviewer cannot edit Builder work; malformed verdicts fail closed; one correction, then Joseph. Control: reviewer role permissions are configured; verdict parser and correction counter remain unbuilt.
 - Joseph approval before finalization. Control: approval gate/receipt; not built.

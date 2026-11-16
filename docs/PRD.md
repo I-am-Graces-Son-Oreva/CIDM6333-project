@@ -182,3 +182,7 @@ Joseph explicitly authorizes M3 only: configuration loading, canonical registry,
 ## M4 Authorization Addendum (2026-11-15)
 
 Joseph explicitly authorized M4 only: the approved The Odds API `us_dfs` source adapter, live-client implementation, redaction, quota controls, deterministic fixtures, and source-verification evidence. This authorizes implementation, not a live API request. Live smoke still requires separate explicit authorization and an explicit credit budget. M5 or later work, Evolution or frozen-spec changes, and commits remain out of scope.
+
+## M5 Authorization Addendum
+
+Joseph accepted the M4 reviewer checkpoint and explicitly authorizes M5 snapshot workflow and idempotent collection only. M5 follows the frozen three-snapshot timing and integrity rules and uses offline source boards for implementation and acceptance; this authorization does not authorize a live API request, M6 or later work, Evolution or frozen-spec changes, or a commit.

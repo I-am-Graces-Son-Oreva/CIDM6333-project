@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Final
 
-from fifth_pick.sources.base import MalformedPayloadError, SourceError
+from fifth_pick.sources.base import EvidenceMode, MalformedPayloadError, SourceError
 from fifth_pick.sources.odds_api import (
     OddsApiSourceConfig,
     events_url,
@@ -29,6 +29,8 @@ DEFAULT_QUOTA_HEADERS: Final[Mapping[str, str]] = {
 
 class FixtureTransport:
     """Serve the two approved endpoints from synthetic bodies. Never network."""
+
+    evidence_mode = EvidenceMode.FIXTURE
 
     def __init__(
         self,

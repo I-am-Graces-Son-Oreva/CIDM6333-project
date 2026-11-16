@@ -2,9 +2,9 @@
 
 ## Scope
 
-This document describes the M2 domain model, receipts, and run storage; the M3 configuration, registry, identity, and authorization layers; and the M4 source adapter, live client, quota control, and redaction. Later milestone artifacts are listed as reserved and are not implemented here.
+This document describes the M2 domain model, receipts, and run storage; the M3 configuration, registry, identity, and authorization layers; the M4 source adapter, live client, quota control, and redaction; and the M5 snapshot workflow. Later milestone artifacts are listed as reserved and are not implemented here.
 
-M2 provides typed vocabulary and an append-only evidence store. M3 provides versioned authoritative configuration, a canonical player registry, exact identity resolution, and exact player/category/direction authorization. M4 provides an offline-testable The Odds API `us_dfs` adapter that produces platform-scoped, provenance-bearing boards and hands identity resolution to the M3 registry. None provides snapshot scheduling, methodology, ranking, T-20 review, finalization, approval, or result grading.
+M2 provides typed vocabulary and an append-only evidence store. M3 provides versioned authoritative configuration, a canonical player registry, exact identity resolution, and exact player/category/direction authorization. M4 provides an offline-testable The Odds API `us_dfs` adapter that produces platform-scoped, provenance-bearing boards and hands identity resolution to the M3 registry. M5 records authorized projection snapshots, missed slots, and receipts; it does not implement methodology, ranking, T-20 conclusions, finalization, approval, or result grading.
 
 ## Module Map
 
@@ -18,12 +18,13 @@ M2 provides typed vocabulary and an append-only evidence store. M3 provides vers
 | `src/fifth_pick/registry.py` | Build canonical player IDs, exact name/alias/ID indexes, grants, and narrow one-player-one-slot uniqueness. |
 | `src/fifth_pick/identity.py` | Resolve exact canonical names, registered aliases, and explicit provider aliases; ambiguous or unknown identity fails closed. |
 | `src/fifth_pick/authorization.py` | Authorize exact player, category, and direction grants inside the live MVP; expose exact market mapping. |
-| `src/fifth_pick/sources/base.py` | Pre-snapshot source projections, events, boards, board provenance, and fail-closed source errors. |
+| `src/fifth_pick/sources/base.py` | Pre-snapshot source projections, events, boards, live/fixture/unknown evidence mode, board provenance, and fail-closed source errors. |
 | `src/fifth_pick/sources/transport.py` | Minimal `Transport` protocol, `HttpResponse`, an explicit live `UrllibTransport`, and `TransportError`. |
 | `src/fifth_pick/sources/quota.py` | Credit budget, quota-header capture, and request-cost estimation. |
 | `src/fifth_pick/sources/odds_api.py` | Approved The Odds API `us_dfs` request shape, response parsing, provenance, and fail-closed retrieval. |
 | `src/fifth_pick/sources/normalize.py` | Exact market/direction mapping and fail-closed identity binding to the M3 registry. |
 | `src/fifth_pick/sources/fixtures.py` | Synthetic offline fixture transport that never reaches the network. |
+| `src/fifth_pick/snapshots.py` | M5 three-slot timing, identity and authorization checks, idempotent collection, missed slots, provenance, and receipts. |
 
 M2 modules are standard-library only. M3 `config.py` uses PyYAML for local file loading; M3 modules do not import network libraries, read environment variables, log, or write to `var/fifth-pick/`. M4 `transport.py` uses only the standard library and `urllib`; `odds_api.py` reads the API key from the injected environment mapping (defaulting to `os.environ`) and performs no write, log, or receipt side effect. No M4 module writes to `var/fifth-pick/`.
 
@@ -97,22 +98,23 @@ Receipts are JSON Lines. Each line has the same fields:
 
 ## Run Layout
 
-Storage receives an injected root. M2 writes only this layout:
+Storage receives an injected root. M2 writes receipts; M5 adds the snapshot ledger:
 
 ```text
 <injected-root>/
 └── runs/
     └── <run_id>/
-        └── receipts.jsonl
+        ├── receipts.jsonl
+        └── snapshots/
+            └── ledger.jsonl
 ```
 
 Run IDs must match `[A-Za-z0-9][A-Za-z0-9._-]{0,127}`. The resolved run path must remain under the injected root; traversal, separators, absolute paths, and symlink escapes fail closed.
 
-The following plan artifacts are reserved and are not created or implemented in M2:
+The following plan artifacts remain reserved and are not created or implemented in M5:
 
 ```text
 run.json
-snapshots/
 evidence/
 candidates.json
 final.json
@@ -209,7 +211,7 @@ PrizePicks and Underdog projections are kept separate; the same player on both p
 
 ### Provenance and redaction
 
-`BoardProvenance` records the source id, region, bookmakers, markets, request timestamp, retrieval time, the maximum market `last_update` as the source update time (or `None` when absent), the SHA-256 of the concatenated raw response bodies, the redacted request URL, and the captured `QuotaSnapshot`. Redaction reuses the M2 `redact_text()` helper, so exact secrets and sensitive query parameters become `[REDACTED]`. The key is read only from `THE_ODDS_API_KEY` in the injected environment and is never logged, stored, or written to a receipt.
+`BoardProvenance` records the source id, region, bookmakers, markets, request timestamp, retrieval time, the maximum market `last_update` as the source update time (or `None` when absent), the SHA-256 of the concatenated raw response bodies, the redacted request URL, the captured `QuotaSnapshot`, and `evidence_mode`. The built-in `UrllibTransport` is marked `LIVE`; `FixtureTransport` is marked `FIXTURE`; custom/unmarked transports remain `UNKNOWN`. M5 rejects unknown mode and persists the mode with each snapshot so synthetic boards cannot be reported as live evidence. Redaction reuses the M2 `redact_text()` helper, so exact secrets and sensitive query parameters become `[REDACTED]`. The key is read only from `THE_ODDS_API_KEY` in the injected environment and is never logged, stored, or written to a receipt.
 
 ### Identity handoff
 
@@ -219,9 +221,20 @@ M4 does not resolve identity. `normalize.resolve_board()` binds each `SourceProj
 
 The client depends only on the `Transport` protocol. Tests inject a fake transport or the synthetic `FixtureTransport` in `tests/fixtures/odds_api/`, so no unit test reaches the network. `UrllibTransport` exists for explicit live use and is never constructed by default. Live smoke remains opt-in and requires separate explicit authorization and an explicit credit budget; no live request was made during M4 implementation.
 
+## M5 Snapshot Workflow
+
+`SnapshotWorkflow` accepts only an M4 `SourceBoard`, a `RunStore`, an exact `IdentityResolver`, and the authoritative `AuthorizationGate`. It rechecks the approved `us_dfs` source, bookmakers, and five markets; every projection must resolve to the exact configured registry player and pass exact category/direction authorization. PrizePicks and Underdog are separate snapshot keys and records.
+
+Snapshot 1 records the first accepted projection observation before tipoff. Snapshot 2 targets the midpoint between Snapshot 1's source retrieval time and T-20 (`tipoff - 20 minutes`), capped at `tipoff - 80 minutes`. When a 60-minute separation is achievable, collection does not accept an earlier observation. If it is not achievable, a distinct observation after Snapshot 1 and before the latest target is allowed. If no valid target remains, or the latest target expires without Snapshot 2, the ledger records `SNAPSHOT_2_MISSED` and later collection cannot backfill it. An unavailable projection before the deadline is receipted and may be retried before the deadline.
+
+Snapshot 3 targets the `tipoff - 25 minutes` through `tipoff - 20 minutes` window. If a projection is unavailable from T-25 until tipoff, the attempt is receipted and a new legitimate board observation may be collected before tipoff. A successful collection after T-20 but before tipoff is retained with its actual source retrieval and system recording timestamps and a `late` marker; after tipoff the slot is recorded as `PROJECTION_OBSERVATION_MISSED`. A missing Snapshot 2 is recorded before Snapshot 3 proceeds. Out-of-order requests are receipted and rejected.
+
+Collection is idempotent for `(run_id, snapshot number, platform, canonical player, category, direction, event)`: a duplicate returns the persisted record. Missed markers prevent later reconstruction. There is no backfill operation, supporting-source refresh API, snapshot-four path, methodology evaluation, or finalization path in M5.
+
+Each `snapshots/ledger.jsonl` entry stores the typed `Snapshot`/`Observation`, canonical player ID, `evidence_mode` (`LIVE` or `FIXTURE`), event tipoff, target and late state, `Provenance`, and a structured projection excerpt copied from the M4 `SourceProjection`. The excerpt is not represented as a raw payload; the M4 combined raw-payload SHA-256 is retained unchanged. `RunStore` receipts record accepted, duplicate, missed, late, and rejected collection events. Runtime data stays under the injected `RunStore` root (the operational root is `var/fifth-pick/`); tests use temporary roots and synthetic boards. M5 performs no API or network request.
+
 ## Reserved Later Milestones
 
-- M5: snapshot collection and missed-snapshot recording.
 - M6: evidence, methodology, confidence, and ranking.
 - M7: T-20 review.
 - M8: finalization, ceilings, and Joseph approval.

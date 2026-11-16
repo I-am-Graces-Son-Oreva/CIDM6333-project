@@ -1610,3 +1610,194 @@ OK
 
 All four commands exited `0`. No live request was made. No commit was made.
 
+## M5 Snapshot Workflow Verification
+
+M5 was explicitly authorized in Joseph's current instruction after M4 acceptance. The implementation is limited to the frozen snapshot workflow; its tests use synthetic M4 `SourceBoard` values and temporary storage roots. No live API request is required or was made. A narrow M4 provenance metadata extension marks built-in `UrllibTransport` boards `LIVE`, synthetic `FixtureTransport` boards `FIXTURE`, and unmarked custom transports `UNKNOWN`; it does not change the approved request shape or behavior. The mode is stamped by `OddsApiClient` and is not a `BoardProvenance` constructor or `dataclasses.replace` field. M5 rejects `UNKNOWN` and stores the mode to prevent fixtures being presented as live evidence.
+
+### TDD RED Evidence
+
+Before the snapshot workflow existed, the required full discovery command failed on the M5 module-presence assertion:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_m5_snapshot_workflow_module_exists (test_snapshots.SnapshotModuleTests.test_m5_snapshot_workflow_module_exists)
+AssertionError: False is not true : M5 snapshot workflow module is missing
+Ran 153 tests
+FAILED (failures=1)
+```
+
+Additional regression tests were added before correcting demonstrated gaps in batch ledger idempotency, missing-projection retry windows, canonical identity binding, event-time consistency, and persisted ledger validation. The full unittest command was rerun after each correction.
+
+The independent M5 reviewer then identified two edge cases. New regression tests reproduced both before the narrow fixes:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_early_absent_snapshot_3_does_not_miss_open_snapshot_2
+FAIL: test_source_update_after_retrieval_fails_closed
+Ran 182 tests
+FAILED (failures=2)
+```
+
+The fix preserves an open Snapshot 2 window after an early absent-candidate Snapshot 3 attempt and rejects a source update later than its retrieval. Earlier source `last_update` timestamps remain valid and are retained as provenance.
+
+The next read-only review identified persistence-only timestamp checks. Regression tests failed before adding ledger read validation:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_persisted_snapshots_require_consistent_event_tipoff
+FAIL: test_persisted_source_update_after_retrieval_fails_closed
+Ran 186 tests
+FAILED (failures=2)
+```
+
+Ledger loading now rejects source update timestamps later than retrieval and event tipoff changes across snapshots for one candidate key. The M5 authorization addenda are undated because Joseph's current instruction did not provide an authorization date.
+
+The reviewer re-review found two additional timing cases; their regression tests failed before correction:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_projection_retrieved_before_board_request_fails_closed
+FAIL: test_snapshot_3_recorded_after_tipoff_fails_closed
+Ran 184 tests
+FAILED (failures=2)
+```
+
+Board validation now rejects a system retrieval timestamp preceding the request that returned the board, and persisted Snapshot 3 entries must have a system recording timestamp before tipoff. Provider `last_update` may still predate the request.
+
+The final reviewer pass identified an additional post-tipoff case. Its regression failed before moving the missed-slot check ahead of the T-25 eligibility check; the same review also exposed stale M3/M4 control-status text in `AGENTS.md`:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_post_tipoff_collection_marks_old_snapshot_3_projection_missed
+Ran 187 tests
+FAILED (failures=1)
+```
+
+M5 now records Snapshot 3 as missed when collection occurs after tipoff even if the projection timestamp is earlier than T-25. `AGENTS.md` now points to the implemented M3 identity/authorization and M4 platform controls and distinguishes M6 functionality that remains unbuilt.
+
+The empty-board schedule-conflict regression also failed before the absent-candidate path began checking the persisted event tipoff:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_empty_board_tipoff_change_fails_closed_without_missed_slot
+Ran 197 tests
+FAILED (failures=1)
+```
+
+The final reviewer found persisted slot ordering was not validated. The orphaned and reordered ledger tests failed before adding cross-row slot-state checks:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_persisted_snapshot_2_requires_snapshot_1_first
+FAIL: test_persisted_ledger_rejects_snapshot_2_before_snapshot_1
+FAIL: test_persisted_snapshot_3_requires_snapshot_2_or_miss_first
+Ran 194 tests
+FAILED (failures=3)
+```
+
+The source-mode provenance tests also failed before the M4 metadata extension:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_fixture_board_provenance_is_labeled_fixture
+FAIL: test_fixture_origin_is_preserved_in_snapshot
+FAIL: test_unknown_evidence_origin_fails_closed
+Ran 190 tests
+FAILED (failures=3)
+```
+
+The BoardProvenance API initially still exposed a fixture-mode mutator. Its regression failed before that mutator was removed:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_board_provenance_has_no_caller_fixture_mode_setter
+Ran 195 tests
+FAILED (failures=1)
+```
+
+The relabel regression then failed before making evidence mode non-init provenance metadata:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_fixture_evidence_mode_cannot_be_relabelled_live
+Ran 195 tests
+FAILED (failures=1)
+```
+
+The reviewer also found that a persisted missed-slot marker could disagree with its Snapshot 1 player/event. The regression failed before the ledger cross-check was added:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_persisted_missed_slot_must_match_snapshot_1_identity
+Ran 196 tests
+FAILED (failures=1)
+```
+
+The late-S3 retry and persisted provider-name excerpt checks also failed before correction:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_absent_snapshot_3_can_retry_after_t20_before_tipoff
+FAIL: test_snapshot_excerpt_provider_name_must_be_nonempty_text
+Ran 199 tests
+FAILED (failures=2)
+```
+
+The final Snapshot 3 ordering regression failed before collection rejected an observation older than Snapshot 1:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_snapshot_3_source_retrieval_must_follow_snapshot_1
+Ran 200 tests
+FAILED (failures=1)
+```
+
+The persisted-miss boundary test failed before ledger validation required Snapshot 3 misses to be recorded at or after tipoff:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_persisted_snapshot_3_miss_before_tipoff_fails_closed
+Ran 201 tests
+FAILED (failures=1)
+```
+
+Event-time conflict tests then failed before collection and persisted-ledger checks were keyed by event rather than candidate:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_persisted_event_tipoff_is_consistent_across_candidates
+FAIL: test_tipoff_change_blocks_new_candidate_for_existing_event
+Ran 203 tests
+FAILED (failures=2)
+```
+
+The collection-time ordering regression failed before Snapshot 2 rejected a source/recording clock that regressed behind Snapshot 1:
+
+```text
+uv run python -m unittest discover -s tests
+FAIL: test_snapshot_2_recording_time_must_follow_snapshot_1_recording
+Ran 205 tests
+FAILED (failures=1)
+```
+
+### Final M5 Gates
+
+Observed after M5 implementation and documentation:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+70 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 205 tests in 13.294s
+
+OK
+```
+
+All four commands exited `0`. The 205-test full suite includes the 51 M5 snapshot tests, two M4 evidence-mode tests, and all prior M1-M4 and historical discovery tests; no live API call was made. M5 snapshot payload excerpts are derived from the M4 source projections and remain separate from Joseph-reported live verification evidence. No commit was made.
