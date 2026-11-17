@@ -130,6 +130,21 @@ def load_pending_proposal(store: RunStore, run_id: str) -> dict[str, object]:
     return final
 
 
+def load_approved_final(store: RunStore, run_id: str) -> dict[str, object]:
+    """Read the receipt-verified official final selection without changing it."""
+
+    final, _path = _read_final(store, run_id)
+    approval = final["approval"]
+    assert isinstance(approval, dict)
+    if (
+        final["state"] != "APPROVED_BY_JOSEPH"
+        or approval.get("action") != "APPROVE"
+        or approval.get("official_final") != final["proposed"]
+    ):
+        raise ApprovalError("run has no receipt-verified Joseph-approved final selection")
+    return final
+
+
 def _decision_event(action: str) -> str:
     return {
         "APPROVE": "JOSEPH_APPROVED",

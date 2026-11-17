@@ -63,6 +63,51 @@ class ApprovalTests(unittest.TestCase):
             exit_code = main(["decide", "--run-id", RUN_ID])
         return exit_code, stdout.getvalue(), stderr.getvalue()
 
+    def approved_final_reader(self):
+        return approval_module.load_approved_final
+
+    def test_load_approved_final_returns_exact_official_final(self) -> None:
+        proposed = self.create_proposal(("Luka Doncic", "Derrick White"))
+        exit_code, _stdout, stderr = self.decide("APPROVE")
+        final_path = self.store.run_directory(RUN_ID) / "final.json"
+        before_final = final_path.read_bytes()
+        before_receipts = self.store.read_receipts(RUN_ID)
+
+        self.assertEqual(exit_code, 0, stderr)
+        approved = self.approved_final_reader()(self.store, RUN_ID)
+
+        self.assertEqual(approved["state"], "APPROVED_BY_JOSEPH")
+        self.assertEqual(
+            approved["approval"]["official_final"],
+            proposed["proposed"],
+        )
+        self.assertEqual(approved["slate_version"], 1)
+        self.assertEqual(final_path.read_bytes(), before_final)
+        self.assertEqual(self.store.read_receipts(RUN_ID), before_receipts)
+
+    def test_load_approved_final_requires_approved_receipt(self) -> None:
+        self.create_proposal()
+
+        with self.assertRaises(ApprovalError):
+            self.approved_final_reader()(self.store, RUN_ID)
+
+    def test_load_approved_final_rejects_rejected_state(self) -> None:
+        self.create_proposal()
+        exit_code, _stdout, stderr = self.decide("REJECT", "No final selection today.")
+        self.assertEqual(exit_code, 0, stderr)
+
+        with self.assertRaises(ApprovalError):
+            self.approved_final_reader()(self.store, RUN_ID)
+
+    def test_load_approved_final_rejects_modified_but_unapproved_state(self) -> None:
+        proposal = self.create_proposal(("Luka Doncic", "Derrick White"))
+        selection_id = proposal["proposed"][0]["candidate_key"]
+        exit_code, _stdout, stderr = self.decide("MODIFY", selection_id)
+        self.assertEqual(exit_code, 0, stderr)
+
+        with self.assertRaises(ApprovalError):
+            self.approved_final_reader()(self.store, RUN_ID)
+
     def test_finalization_alone_does_not_create_approved_state(self) -> None:
         final = self.create_proposal()
         receipts = self.store.read_receipts(RUN_ID)
