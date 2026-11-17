@@ -28,6 +28,7 @@ from fifth_pick.models import (
 )
 from fifth_pick.receipts import Receipt
 from fifth_pick.registry import Registry, RegistryPlayer, canonical_player_id
+from fifth_pick.slate_manifest import persist_m4_event_board
 from fifth_pick.sources.base import EvidenceMode, SourceBoard, SourceEvent, SourceProjection
 from fifth_pick.sources.odds_api import (
     APPROVED_BOOKMAKERS,
@@ -664,6 +665,7 @@ class SnapshotWorkflow:
         now = self._clock()
         _require_aware(now, "clock")
         self._validate_board(board, now)
+        persist_m4_event_board(self._store, run_id, number, board, now)
         entries = self._read_entries(run_id)
         events = {event.event_id: event for event in board.events}
         if not board.projections:

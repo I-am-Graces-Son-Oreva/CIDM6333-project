@@ -174,6 +174,80 @@ class SnapshotWorkflowTests(unittest.TestCase):
         ledger = self.store.run_directory(RUN_ID) / "snapshots" / "ledger.jsonl"
         self.assertTrue(ledger.is_file())
 
+    def test_first_m4_board_persists_chicago_run_metadata_and_event_manifest(self) -> None:
+        board = make_board(NOW, make_projection(NOW))
+
+        self.workflow.collect(RUN_ID, 1, board)
+
+        run_directory = self.store.run_directory(RUN_ID)
+        run_metadata = json.loads((run_directory / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual(run_metadata["run_id"], RUN_ID)
+        self.assertEqual(run_metadata["slate_date"], "2026-11-15")
+        self.assertEqual(run_metadata["slate_timezone"], "America/Chicago")
+        self.assertEqual(run_metadata["started_at"], NOW.isoformat())
+        self.assertEqual(run_metadata["start_source"], SOURCE_ID)
+        self.assertEqual(run_metadata["start_payload_sha256"], board.provenance.payload_sha256)
+
+        manifest_path = run_directory / "m4-event-boards.jsonl"
+        manifests = [json.loads(line) for line in manifest_path.read_text().splitlines()]
+        self.assertEqual(len(manifests), 1)
+        manifest = manifests[0]
+        self.assertEqual(manifest["run_id"], RUN_ID)
+        self.assertEqual(manifest["snapshot_number"], 1)
+        self.assertEqual(manifest["source_id"], SOURCE_ID)
+        self.assertEqual(manifest["payload_sha256"], board.provenance.payload_sha256)
+        self.assertEqual(
+            [event["event_id"] for event in manifest["events"]],
+            [EVENT_ID],
+        )
+        self.assertEqual(manifest["events"][0]["commence_time"], TIPOFF.isoformat())
+        receipts = self.store.read_receipts(RUN_ID)
+        self.assertIn("SLATE_RUN_STARTED", {item["event"] for item in receipts})
+        self.assertIn("M4_EVENT_BOARD_RECORDED", {item["event"] for item in receipts})
+
+    def test_slate_date_is_pinned_by_first_m4_request_across_local_midnight(self) -> None:
+        first_request = datetime(2026, 11, 16, 5, 30, tzinfo=UTC)
+        first_tipoff = datetime(2026, 11, 16, 5, 45, tzinfo=UTC)
+        self.clock.current = first_request
+        first_board = make_board(
+            first_request,
+            make_projection(first_request),
+            tipoff_at=first_tipoff,
+        )
+        self.workflow.collect(RUN_ID, 1, first_board)
+
+        after_midnight = datetime(2026, 11, 16, 6, 30, tzinfo=UTC)
+        self.clock.current = after_midnight
+        later_board = make_board(
+            after_midnight,
+            make_projection(after_midnight),
+            tipoff_at=first_tipoff,
+        )
+        self.workflow.collect(RUN_ID, 1, later_board)
+
+        run_metadata = json.loads(
+            (self.store.run_directory(RUN_ID) / "run.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(run_metadata["started_at"], first_request.isoformat())
+        self.assertEqual(run_metadata["slate_date"], "2026-11-15")
+        self.assertEqual(run_metadata["slate_timezone"], "America/Chicago")
+
+    def test_duplicate_m4_board_manifest_record_is_idempotent(self) -> None:
+        board = make_board(NOW, make_projection(NOW))
+
+        self.workflow.collect(RUN_ID, 1, board)
+        self.workflow.collect(RUN_ID, 1, board)
+
+        manifest_path = self.store.run_directory(RUN_ID) / "m4-event-boards.jsonl"
+        manifests = manifest_path.read_text(encoding="utf-8").splitlines()
+        receipts = tuple(
+            item
+            for item in self.store.read_receipts(RUN_ID)
+            if item["event"] == "M4_EVENT_BOARD_RECORDED"
+        )
+        self.assertEqual(len(manifests), 1)
+        self.assertEqual(len(receipts), 1)
+
     def test_snapshot_1_after_tipoff_is_missed(self) -> None:
         late_at = TIPOFF + timedelta(minutes=1)
         self.clock.current = late_at

@@ -1,4 +1,4 @@
-# Fifth Pick M5 Snapshot Runbook
+# Fifth Pick M5 Snapshot and M8 Finalization Runbook
 
 ## Scope
 
@@ -34,3 +34,17 @@ M6 LIVE validation resolves `snapshot_run_id` under the application-owned root v
 The frozen design requires recorded source provenance, payload hashes, and receipts; it does not require cryptographic signatures or tamper-proof storage. The current boundary does not defend against an actor with direct write access to the application data directory. Filesystem access controls or cryptographically authenticated manifests are future hardening if Joseph expands that threat model, not part of M6.
 
 If identity, authorization, source provenance, timestamps, or ledger contents are invalid, M5 fails closed. If a required slot is missed, retain the miss receipt and ledger marker; do not backfill or treat fewer observations as three. M5 does not authorize automatic finalization. Joseph remains Governance Zero.
+
+## M8 Finalization and Joseph Approval
+
+`SnapshotWorkflow.collect()` records each validated M4 event board and receipt. The first board, bound to the run's start timestamp and payload hash, pins the slate date in `America/Chicago`. M8 counts unique event IDs from that board whose commencement date matches the pinned Chicago date. Later board observations do not change the slate boundary. A missing or unverifiable run manifest blocks finalization.
+
+LIVE finalization requires `application_run_store()` for the M4 manifest, M5 ledger, M7 reviews, and resulting final artifacts. Offline finalization may use an injected store only when the M4 run and all supplied M6/M7 evidence are explicitly `FIXTURE`; M4 boards or candidate/review records that mix LIVE and FIXTURE fail closed. Fixture records remain offline evidence and are not a path to authorize a LIVE decision.
+
+`finalize_slate()` accepts M6 `CandidateCase` records and prior/current M7 case pairs; callers cannot supply a game count, slate classification, ranked result, or review result. It reproduces M6 ranking internally, validates M7 review records against their receipts and the supplied candidate audits, and records exclusions in `audit.json`. The ceiling pool is frozen from the M6 ranking before M7 removals: zero games recommends exactly `NO ENTRY RECOMMENDED TODAY.`, one through four games use HALF with a maximum of four, and five or more use FULL with a maximum of five. M7 removals, duplicate players, or fewer qualified candidates leave slots empty; M8 never promotes a replacement from below the frozen pool.
+
+M8 writes a compact `final.json`, detailed `audit.json`, and a proposal receipt. A proposal, including a no-entry recommendation, remains `AWAITING_JOSEPH`; it is not Joseph's official final state. Use `fifth-pick decide --run-id RUN_ID` to review the displayed proposal and enter exactly `APPROVE`, `REJECT`, or `MODIFY`. REJECT requires a reason. MODIFY accepts only candidate keys already displayed, records a new slate version, and requires a later explicit decision. Modifying an empty no-entry proposal preserves `NO ENTRY RECOMMENDED TODAY.` and a `NO_ENTRY` proposal receipt so Joseph can make the next decision. Only the interactive `decide` flow can write a Joseph-attributed state; lower-level mutation is internal. The application receipt is persisted before an APPROVE or REJECT state is written. No action logs in to a platform, submits selections, wagers, or moves money.
+
+M7 review records are required only when at least one in-slate candidate is in the frozen M6 ceiling pool. A malformed, unreadable, or receipt-invalid M7 ledger blocks such a candidate and records the reason in `audit.json` and `receipts.jsonl`. If there are no games or no ranked candidate requiring T-20 review, M8 does not require an M7 ledger to preserve the no-entry outcome.
+
+M8 acceptance uses offline fixtures. Do not make a live API request for implementation or review, and do not begin M9 result grading until the independent M8 reviewer returns PASS and Joseph has reviewed the work.
