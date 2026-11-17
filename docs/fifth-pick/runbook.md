@@ -6,14 +6,14 @@ M5 records the three authorized projection observations and their provenance. It
 
 ## Runtime Storage
 
-Create the M2 `RunStore` with the operational root `var/fifth-pick/`. For each validated run ID, M5 writes:
+Production uses `application_run_store()`, whose application-owned root is the repository's `var/fifth-pick/`. M5 writes each validated run under that root:
 
 ```text
 var/fifth-pick/runs/<run_id>/receipts.jsonl
 var/fifth-pick/runs/<run_id>/snapshots/ledger.jsonl
 ```
 
-Tests inject a temporary `RunStore` root. Runtime artifacts are not source fixtures and must not be committed. M4 marks built-in live boards `LIVE` and synthetic `FixtureTransport` boards `FIXTURE`; M5 rejects `UNKNOWN` origin. The snapshot ledger contains the canonical observation, evidence mode, source provenance, a structured excerpt copied from the M4 projection, and the unchanged M4 combined payload SHA-256. It does not contain the API key or raw response bodies.
+M5 tests inject a temporary `RunStore` root. Runtime artifacts are not source fixtures and must not be committed. M4 marks built-in live boards `LIVE` and synthetic `FixtureTransport` boards `FIXTURE`; M5 rejects `UNKNOWN` origin. The snapshot ledger contains the canonical observation, evidence mode, source provenance, a structured excerpt copied from the M4 projection, and the unchanged M4 combined payload SHA-256. It does not contain the API key or raw response bodies.
 
 ## Collecting Snapshots
 
@@ -23,10 +23,14 @@ Tests inject a temporary `RunStore` root. Runtime artifacts are not source fixtu
 4. Snapshot 3 targets the event-specific T-25 to T-20 window. Call `collect(run_id, 3, board)` with a fresh M4 board in that window. If a projection is unavailable from T-25 until tipoff, its attempt is receipted and another legitimate board observation may be collected before tipoff. A successful collection after T-20 but before tipoff is recorded as late with actual source retrieval and system recording times; it never substitutes a fabricated T-20 timestamp. At or after tipoff the missing observation is recorded as `PROJECTION_OBSERVATION_MISSED` and cannot be reconstructed.
 5. Snapshot 3 is accepted only after Snapshot 1 and either an accepted Snapshot 2 or a recorded missed Snapshot 2. Out-of-order attempts are receipted and rejected. A duplicate `(run, slot, platform, player, category, direction, event)` returns the persisted record and adds an idempotent duplicate receipt.
 
-`SnapshotWorkflow.read(run_id)` returns persisted snapshots; `read_missed(run_id)` returns missed-slot records. Supporting-source refreshes do not use this API and do not create projection snapshots. There is no backfill operation or fourth snapshot.
+`SnapshotWorkflow.read(run_id)` returns persisted snapshots; `read_missed(run_id)` returns missed-slot records. Both use the shared M5 ledger decoder. Supporting-source refreshes do not use this API and do not create projection snapshots. There is no backfill operation or fourth snapshot.
 
 ## Evidence and Stop Conditions
 
-Every accepted observation keeps its platform, canonical player, category, projection, direction, event, source update time, system retrieval time, and snapshot number. Its provenance keeps source ID, access method, source timestamp, retrieval time, event reference, and payload hash. The structured source excerpt comes only from the accepted `SourceProjection`; it is not reconstructed from a hash or labeled as a raw payload.
+Every accepted observation keeps its platform, canonical player, category, projection, direction, event, source update time, system retrieval time, and snapshot number. Its provenance keeps source ID, access method, source timestamp, retrieval time, event reference, and payload hash. The structured source excerpt comes only from the accepted `SourceProjection`; it is not reconstructed from a hash or labeled as a raw payload. Each accepted snapshot and missed marker has its existing M5 receipt in the same run store.
+
+M6 LIVE validation resolves `snapshot_run_id` under the application-owned root via `read_application_snapshot_ledger()`; callers cannot provide a `RunStore`, workflow, or reader to choose the authoritative LIVE source. It reuses the M5 ledger decoder/order validator and requires the corresponding accepted/missed receipts and exact record/provenance equality. Fixture cases remain explicitly offline and do not use this LIVE path.
+
+The frozen design requires recorded source provenance, payload hashes, and receipts; it does not require cryptographic signatures or tamper-proof storage. The current boundary does not defend against an actor with direct write access to the application data directory. Filesystem access controls or cryptographically authenticated manifests are future hardening if Joseph expands that threat model, not part of M6.
 
 If identity, authorization, source provenance, timestamps, or ledger contents are invalid, M5 fails closed. If a required slot is missed, retain the miss receipt and ledger marker; do not backfill or treat fewer observations as three. M5 does not authorize automatic finalization. Joseph remains Governance Zero.

@@ -15,6 +15,7 @@ from fifth_pick.receipts import Receipt
 
 RUNS_DIRECTORY: Final[str] = "runs"
 RECEIPTS_FILENAME: Final[str] = "receipts.jsonl"
+APPLICATION_STORAGE_ROOT: Final[Path] = Path(__file__).resolve().parents[2] / "var" / "fifth-pick"
 _RUN_ID_PATTERN: Final[re.Pattern[str]] = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
@@ -165,3 +166,9 @@ class RunStore:
         _atomic_write(path, content)
 
         return AppendResult(receipt=dict(new_record), created=True)
+
+
+def application_run_store() -> RunStore:
+    """Construct the application-owned operational store for `var/fifth-pick`."""
+
+    return RunStore(APPLICATION_STORAGE_ROOT)

@@ -1801,3 +1801,579 @@ OK
 ```
 
 All four commands exited `0`. The 205-test full suite includes the 51 M5 snapshot tests, two M4 evidence-mode tests, and all prior M1-M4 and historical discovery tests; no live API call was made. M5 snapshot payload excerpts are derived from the M4 source projections and remain separate from Joseph-reported live verification evidence. No commit was made.
+
+## M5 Independent Reviewer Checkpoint
+
+Reviewer verdict: `PASS`, findings: none. The read-only review covered M5 snapshot timing, retry/no-backfill behavior, ledger validation, provenance, platform separation, identity/authorization, fixture/live evidence mode, and M5-only scope. The reviewer accepted the gate outputs and repository/session claims as supplied evidence; it did not run shell commands or independently inspect Git state. No M6 work began before this PASS checkpoint.
+
+## M6 Authorization and Scope
+
+After this M5 `PASS`, Joseph authorized M6 evidence validation, frozen-methodology evaluation, confidence guards, candidate auditing, and ranking only. Acceptance is synthetic/offline. No live API request, M7 work, frozen-spec or Evolution change, or commit is authorized. The pre-existing M5 reviewer checkpoint above is retained unchanged. The frozen design specification remains unmodified.
+
+## M6 RED and Initial Gate Failures
+
+Before M6 methodology and ranking implementation, full discovery reproduced the expected incomplete implementation:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 227 tests
+FAILED (failures=14)
+```
+
+The failures were in the unimplemented `evaluate_candidate()` and `rank_candidates()` paths. Added M6 regression tests also exposed missing evidence serialization, accepting out-of-order snapshot records, malformed confidence judgments, unauthorized audit ranking, and invalid or overlapping near-tie decisions.
+
+The first M6 mechanical gate attempt recorded these failures before correction:
+
+```text
+uv run ruff check
+Found 26 errors.
+
+uv run ruff format --check
+6 files would be reformatted
+
+uv run ty check
+Found 7 diagnostics
+```
+
+No gate was weakened and no test was excluded. Formatting, imports/types, malformed-input handling, confidence guards, and ranking validation were corrected. Full discovery includes the existing M1-M5 tests and all M6 tests; no live source access was used.
+
+## M6 Implementation Decisions
+
+- History summaries are measured against the actual Snapshot 3 projection (`33.5` in the synthetic case), which yields four higher and four lower outcomes for the supplied last-eight fixture. The prior `3/4` expectation used a `34.0` line inconsistent with Snapshot 3 and was corrected.
+- The frozen Senior list excludes Karl-Anthony Towns. Senior LOWER tests now use authorized Senior Luka Doncic; the separate Karl-Anthony Towns foul-trouble test remains. This corrects the test fixture, not the frozen classification.
+- The frozen specification leaves “approximately equal” non-Senior candidates qualitative. M6 permits discretionary tie-breaking only when candidates share confidence, category/direction/platform/event context, evidence-kind/effect/significance and facts, history sample counts/outcome sequence, and material-gap signatures; one slot must remain, and the decision must cite evidence and explain the preference. The pair must be adjacent so the decision cannot cross any other candidate. This restrictive operational definition avoids a numeric score; if it is too narrow, a legitimate discretionary comparison may remain untied for Joseph.
+- M6 serializes audits and rankings and atomically writes `candidates.json` under the injected `RunStore` run directory. It does not expose an analyze CLI command or provide a full run orchestrator; those integrations remain outside M6.
+
+## M6 Pre-Review Gates
+
+Observed after the M6 implementation, tests, and documentation:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+78 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 241 tests in 18.446s
+OK
+```
+
+All four commands exited `0`. The full discovery run includes 36 M6 tests in addition to the 205-test pre-M6 suite. M6 acceptance used only synthetic/offline evidence; no live API request was made. M7 remains blocked until the independent M6 reviewer returns `PASS`. No commit was made.
+
+## M6 Pre-Review Worktree Evidence
+
+Snapshot after M6 implementation and final gates:
+
+```text
+git status --short --untracked-files=all
+ M AGENTS.md
+ M docs/PRD.md
+ M docs/fifth-pick/architecture.md
+ M docs/fifth-pick/gates.md
+ M docs/superpowers/plans/2026-11-14-fifth-pick-mvp.md
+?? src/fifth_pick/evidence.py
+?? src/fifth_pick/methodology.py
+?? src/fifth_pick/ranking.py
+?? tests/fixtures/evidence/README.md
+?? tests/fixtures/evidence/m6-history.json
+?? tests/m6_support.py
+?? tests/test_evidence.py
+?? tests/test_methodology.py
+?? tests/test_ranking.py
+```
+
+```text
+git status --short -- evolution-00 evolution-01 evolution-02 evolution-03 evolution-04 evolution-05 evolution-06 evolution-07 evolution-08
+(no output)
+
+git status --short -- docs/superpowers/specs/2026-11-13-fifth-pick-design.md
+(no output)
+```
+
+No commit was made. The M5 PASS checkpoint was preserved; M6 review remains pending.
+
+## M6 Independent Review and Correction Pass
+
+The independent read-only M6 reviewer returned `FAIL`. It identified five findings: ranking trusted caller-provided authorization/Senior flags; the near-tie signature omitted meaningful gaps and outcome history; unavailable H2H/incomplete last-8 could be omitted from audits; incomplete unauthorized cases returned caller gap details before authorization; and the planned fixture `candidates.json` artifact was absent.
+
+One test-first correction pass addressed those findings:
+
+- `rank_candidates()` now rechecks canonical registry equality, candidate-key identity, exact category/direction authorization, and Senior classification from authoritative config. Forged outside-universe qualified audits cannot rank.
+- The near-tie signature now compares player-market context, evidence kinds/effects/significance, summarized history outcomes, and material-gap details in addition to confidence. Tests reject mismatched evidence strength, material gaps, and overlapping discretionary decisions.
+- Missing H2H and unavailable/incomplete last-8 history now produce explicit minor `EvidenceGap` records by default. A caller can mark missing evidence critical when the recommendation materially depends on it, following frozen A9.
+- Authorization now precedes incomplete-snapshot status and caller-supplied gap disclosure. Unauthorized incomplete candidates return `BLOCKED` without evidence/gaps.
+- `write_candidates()` reruns ranking validation and atomically writes `candidates.json` inside the validated `RunStore` run directory. A temporary-root test verifies the output path and contents.
+
+The reviewer workflow permits one correction pass; no re-review was dispatched. The recorded independent verdict therefore remains `FAIL`, notwithstanding the implemented corrections and their tests. Joseph's review/decision is required before treating M6 as accepted or beginning M7.
+
+## M6 Post-Correction Gates
+
+Observed after the single reviewer-correction pass, its regression tests, and documentation:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+78 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 248 tests in 19.876s
+OK
+```
+
+All four commands exited `0`. The 248-test suite is the 205-test pre-M6 suite plus 43 M6 tests. It includes forged-audit authorization and Senior rechecks, material near-tie gaps/history, missing-history disclosures, authorization-before-gap output, and atomic `candidates.json` writing. Acceptance remained offline; no live API request was made. The independent reviewer verdict remains `FAIL` because no re-review was dispatched after the correction pass. M7 remains blocked for Joseph's decision.
+
+Post-correction repository state:
+
+```text
+git status --short --untracked-files=all
+ M AGENTS.md
+ M docs/PRD.md
+ M docs/fifth-pick/architecture.md
+ M docs/fifth-pick/gates.md
+ M docs/superpowers/plans/2026-11-14-fifth-pick-mvp.md
+?? src/fifth_pick/evidence.py
+?? src/fifth_pick/methodology.py
+?? src/fifth_pick/ranking.py
+?? tests/fixtures/evidence/README.md
+?? tests/fixtures/evidence/m6-history.json
+?? tests/m6_support.py
+?? tests/test_evidence.py
+?? tests/test_methodology.py
+?? tests/test_ranking.py
+
+git status --short -- evolution-00 evolution-01 evolution-02 evolution-03 evolution-04 evolution-05 evolution-06 evolution-07 evolution-08
+(no output)
+
+git status --short -- docs/superpowers/specs/2026-11-13-fifth-pick-design.md
+(no output)
+```
+
+No commit was made. Only M6 authorization, implementation, tests, and architecture/gate evidence are in the worktree; the frozen specification and Evolution 00–08 are unchanged.
+
+## M6 Latest Ranking Findings and Correction
+
+The fresh reviewer returned `FAIL` with three ranking findings: near-tie signatures omitted history outcome sequences and recorded facts; nonadjacent pair reordering could cross Senior LOWER candidates; equal-confidence ordering used lexicographic signal labels rather than qualitative evidence strength.
+
+Test-first regression coverage reproduced all three findings. Additional regressions cover disclosed history versus absent history and retaining the most material concern when an evidence kind has multiple signals. The narrow `ranking.py` correction now:
+
+- Compares near-ties using candidate context, every evidence kind/effect/significance and structured facts, history sample counts and ordered outcomes, and material gaps.
+- Allows a discretionary reordering only for adjacent candidates, so no intervening candidate, including Senior LOWER, can be crossed.
+- Uses qualitative Pareto dominance after Senior HIGHER priority and existing confidence: stronger supporting evidence, fewer/less significant concerns and gaps, and favorable history comparisons when sample availability is comparable. It preserves stable input order for incomparable profiles rather than applying enum/text lexical order or an aggregate score.
+
+## M6 Latest Ranking Correction Gates
+
+Observed after the three ranking corrections and regression tests:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+78 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 254 tests in 19.694s
+OK
+```
+
+All four commands exited `0`. The 254-test suite includes the 205-test pre-M6 suite and 49 M6 tests. M6 remains offline; no live API request was made. No M7 work, commit, or push occurred. A new independent configured read-only reviewer is pending.
+
+## M6 Final Near-Tie Signature Correction
+
+The latest reviewer identified one remaining hole: near-tie signatures did not include claims, excerpts, full provenance, raw history samples, or candidate projection. Five test-first regressions independently changed each of those recorded inputs. Before the signature correction, the observed RED was:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 259 tests
+FAILED (failures=5)
+```
+
+`_evidence_signature()` now includes the candidate projection; every evidence claim, excerpt, provenance field, structured fact, and normalized raw sample; and history sample counts and ordered outcome patterns. It does not calculate scores or use those values to rank; they only prevent materially different records from entering the bounded discretionary near-tie path. The five RED tests now pass.
+
+Final M6 gates after this correction:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+78 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 259 tests in 20.699s
+OK
+```
+
+All four commands exited `0`. The 259-test suite is the 205-test pre-M6 suite plus 54 M6 tests. Acceptance remained offline; no live request occurred. Evolution 00-08 and the frozen design remain unchanged. No M7 work, commit, or push occurred. A fresh independent read-only reviewer is pending.
+
+## M6 Final Qualification-Revalidation Correction
+
+The sole remaining reviewer finding was that `rank_candidates()` could trust caller-forged `CandidateAudit` `QUALIFIED`/`HIGH` fields without verifying that the existing M6 methodology and evidence supported them. Regression coverage verifies that ranking excludes a qualified/high audit with empty evidence, excludes a qualified/high audit with only one cited IMPORTANT supporting signal, and excludes forged status/confidence that conflict with the audit's retained `ANALYSIS_ONLY` disposition.
+
+The first RED run exposed three intended ranking failures and four existing `make_audit()` fixture `TypeError`s caused by callers supplying `status`/`trust_labels` that the helper did not accept. The helper signature was corrected without changing production behavior. The clean RED run then reproduced only the three expected assertion failures:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 262 tests
+FAILED (failures=3)
+```
+
+The correction keeps the evidence citation, HIGH/MEDIUM confidence, disposition, sufficient-evidence, major-concern, and Senior LOWER checks in `methodology.py`. `evaluate_candidate()` and the new audit revalidation predicate share those M6 checks. The audit retains the judgment fields needed to revalidate; ranking calls the predicate only after its authoritative identity/authorization/Senior rechecks and excludes unsupported claims. A qualitative-ranking test fixture was also corrected to remove a support citation when it changes that evidence item to a concern; the comparison and expected ordering remain unchanged.
+
+Fresh final gates after the correction and M6 documentation update:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+78 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 262 tests in 28.525s
+OK
+```
+
+All four commands exited `0`. The 262-test suite remains the 205-test pre-M6 suite plus 57 M6 tests. Acceptance used offline fixtures only; no live API/network request was made. The current independent read-only M6 review is pending. Evolution 00-08 and the frozen design specification remain unchanged. No M7 work, commit, or push occurred.
+
+## M6 Architecture-Level Ranking Trust Boundary
+
+The repeated ranking findings had one root cause: `CandidateAudit` was both a methodology output and ranking's proof that methodology had run. The record is frozen but caller-replaceable, so individually rechecking status, confidence, authorization, or evidence left all other derived fields available to ordering, disclosure, serialization, and near-tie comparison. Findings involving forged authorization/Senior flags, methodology status/confidence, evidence/provenance, history, gaps, projection, and near-tie signatures were manifestations of this same output-trust boundary.
+
+The architecture now makes `CandidateCase` the sole ranking input. `rank_candidates()` calls the existing `evaluate_candidate()` for each case and ranks only the fresh `CandidateAudit` results. A caller-supplied `CandidateAudit` is rejected as the wrong input type; none of its candidate identity/projection, status, confidence, authorization, Senior, evidence/provenance, history, gaps, movement, rationale, rules, exclusions, citations, or disclosure fields can affect ranking. The methodology layer validates exact registry identity and authorization before evidence analysis/disclosure, and derives classification, history, gaps, movement, status, confidence, and audit text from the typed case. Ranking still uses the existing qualitative comparator and constrained near-tie decision; the near-tie signature now includes all gap details, including MINOR gaps.
+
+The architecture-level RED was observed before changing the API:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 265 tests
+FAILED (failures=23, errors=2)
+```
+
+The 23 failures were adversarial `CandidateAudit` variants that the old ranking boundary accepted instead of rejecting; the two errors were new `CandidateCase` inputs rejected by the old audit-only API. After converting the ranking behavior tests to cases and adding the missing minor-gap signature regression, restoring the old material-gap-only signature produced this independent RED:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 266 tests
+FAILED (failures=1)
+```
+
+The failure was `test_near_tie_rejects_different_minor_gap_disclosures`; including all recorded gaps in the signature resolved it.
+
+Final M6 architecture-correction gates:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+78 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 268 tests in 26.032s
+OK
+```
+
+All four commands exited `0`. The suite includes 205 pre-M6 tests and 63 M6 tests. Existing M6 controls remain in force: qualitative evidence dominance and stable incomparable ordering, authoritative Senior and authorization evaluation, adjacent-only near-tie discretion with full evidence/history/gap signatures, generated missing-history disclosures, authorization-before-disclosure, and atomic run-scoped `candidates.json`. Acceptance used deterministic offline fixtures only. Evolution 00-08 and the frozen design specification remain unchanged; no live request, M7 work, commit, or push occurred. The broad independent read-only M6 review is pending.
+
+### Final Case-Validation Closure After Broad Review
+
+The broad reviewer returned `FAIL` with five findings. All five were defects in the same remaining boundary: the methodology accepted a caller-built `CandidateCase` but did not canonicalize or validate every cross-record relationship and source claim before producing the audit. One coherent correction extended the M6 case/evidence validation boundary rather than adding ranking-specific checks:
+
+- Snapshot sets now agree on event start; Snapshot 2's target is recomputed using the existing M5 midpoint function; provider-player excerpts must match the canonical player or a registered alias; missed markers must match candidate ID/key/event and be unique by slot.
+- Live supporting evidence is rejected because M6 has no supporting-source retrieval path. Fixture provenance remains explicit and validated.
+- Repeated MATCHUP, LAST_8, or SAME_SEASON_H2H records fail closed; validated evidence and history summaries are canonicalized so tuple order cannot change history, ranking, or serialized audit output.
+- HIGH confidence counts distinct underlying supporting signals rather than duplicate records with different evidence IDs.
+- Regression tests cover each reviewer finding, while the ranking boundary continues to accept only cases and re-run the methodology.
+
+Before the closure, the new adversarial regressions produced the observed RED:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 276 tests
+FAILED (failures=8)
+```
+
+Final gates after the single coherent correction pass:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+78 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 276 tests in 27.729s
+OK
+```
+
+All four commands exited `0`. The full suite is 205 pre-M6 tests plus 71 M6 tests. Acceptance remained offline; the M6 supporting-evidence validator now fails closed on all `LIVE` evidence and no live request was made. Evolution 00-08 and the frozen design specification remain unchanged. No M7 work, commit, or push occurred. The one final independent read-only M6 review is pending.
+
+## M6 Sealed Canonical Output Boundary
+
+The final requested architecture completes one trust transition:
+
+```text
+raw CandidateCase
+  -> evaluate_candidates(): validate/canonicalize, then run M6 methodology
+  -> sealed MethodologyResult containing immutable CandidateAudit records
+  -> rank_candidates()/write_candidates(): accept only the registered, unmodified result
+```
+
+The prior raw-case ranking API was replaced. Ranking does not inspect raw cases, reconstruct audits, or accept standalone audits. A `MethodologyResult` constructed or replaced by a caller is not in the methodology's process-local result registry and fails closed. This resolves the remaining trust gap where a typed case could bypass the method-to-ranking handoff even after its fields were validated.
+
+The same canonicalization pass now reuses `validate_snapshot_sequence()` from the M5 ledger contract before incomplete-case returns; validates approved source/reference, event start, Snapshot 2 target, slot/order timing, missed-marker identity/uniqueness/timing; preserves snapshots and missed markers in canonical audits; fails closed on unavailable live supporting-source retrieval; redacts evidence IDs, claims, excerpts, provenance, fact keys/values, sample text, gaps, methodology rationale/disclosure, and serialized snapshot text through the existing redactor; canonicalizes evidence/history ordering; rejects duplicate summary context; deduplicates underlying HIGH signals independent of EvidenceKind labels; and preserves the strongest gap per kind/reason. Near-tie signatures include the full validated snapshot path, including projection sequence, provenance, and late Snapshot 3 state, plus all evidence/history/gap details.
+
+The M6 regressions observed RED before their corresponding corrections. The final snapshot/missed-marker audit regression specifically failed before `CandidateAudit` serialized the validated missed records:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 288 tests
+FAILED (errors=1)
+```
+
+The prior broad-review RED runs also remain recorded above; no reviewer finding was patched outside this single methodology-owned trust transition. Final four-gate evidence and the final independent reviewer verdict are pending.
+
+## M6 Final Canonicalization Trust Boundary
+
+The final broad reviewer returned `FAIL` with six remaining paths within one root cause: M6 did not yet establish a single complete canonical state before ranking and serialization. Findings covered fabricated snapshot source/reference data; incomplete snapshot/marker checks before partial-case returns; unredacted facts and samples; confidence signals duplicated by changing `EvidenceKind`; weaker gaps overwriting stronger gaps; and snapshot history/late state missing from audits and near-tie comparison.
+
+The final architecture is now:
+
+```text
+raw CandidateCase
+  -> evaluate_candidates(): validate, canonicalize, and evaluate with M6 methodology
+  -> immutable MethodologyResult registered only by the methodology factory
+  -> rank_candidates()/write_candidates(): accept only that unmodified result
+```
+
+The ranking layer does not receive raw cases, reconstruct audits, or accept standalone/replaced audits or caller-created/replaced result wrappers. The methodology boundary reuses the M5 ledger-order contract for all available snapshots and missed markers before incomplete-case returns; checks the approved board source and event-bound reference; verifies exact registry/provider identity, cross-snapshot event start, Snapshot 2 midpoint, marker IDs/slots/times, and existing Snapshot 3 rules; rejects all `LIVE` supporting evidence while the M6 supporting-source retrieval path is unavailable; canonicalizes/redacts evidence, judgments, gaps, and output text; sorts evidence/history deterministically; rejects ambiguous duplicate history-context records; counts distinct underlying HIGH support signals independent of caller `EvidenceKind`; and retains only the strongest gap per kind/reason. Canonical audits serialize full snapshot observations, provenance, missed markers, and late state; near-tie signatures use the validated snapshot path plus complete evidence, history, and gap details. The existing qualitative ranking, Senior priority, stable incomparable ordering, adjacent-only discretion, authorization ordering, and atomic run-scoped persistence remain downstream of that transition.
+
+Observed RED runs for this correction sequence:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 281 tests
+FAILED (failures=2, errors=21)
+
+uv run python -m unittest discover -s tests
+Ran 284 tests
+FAILED (failures=3)
+
+uv run python -m unittest discover -s tests
+Ran 284 tests
+FAILED (failures=1)
+
+uv run python -m unittest discover -s tests
+Ran 288 tests
+FAILED (errors=1)
+```
+
+Those RED runs exposed, respectively, the missing sealed methodology-result boundary, evidence/gap text redaction and strongest-gap handling, distinct-signal relabeling, and missed-marker audit serialization. They were resolved by the single canonicalization pipeline above rather than ranking-specific repairs.
+
+Final gates after the canonicalization boundary and documentation updates:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+78 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 288 tests in 31.063s
+OK
+```
+
+All four commands exited `0`. The suite is 205 pre-M6 tests plus 83 M6 tests. Acceptance uses offline fixtures; no live API/network request was made. Evolution 00-08 and the frozen design specification remain unchanged. No M7 work, commit, or push occurred. The final independent read-only M6 reviewer is pending.
+
+## M6 Latest Structural Trust-Boundary Remediation
+
+The latest independent review named three remaining structural defects: the mutable `MethodologyResult` `WeakSet` trust registry, LIVE snapshots that were only internally validated rather than bound to M5 records, and duplicate `PerformanceSample` identities that could alter history summaries. Regression tests first reproduced the defects, including caller self-registration and bypass mutation, fabricated LIVE snapshots, all previously forged audit fields, duplicate-history ordering changes, and conflicting same-game values. The observed RED was:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 293 tests
+FAILED (failures=31)
+```
+
+A follow-up regression then demonstrated that a module-level private seal could itself be imported and used to construct a forged result. The observed RED was:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 294 tests
+FAILED (failures=1)
+```
+
+The result type, its seal, and its constructor/checking functions now live in one private factory closure; `evaluate_candidates()` is the only supported producer, and the public module has no registration set or seal constant.
+
+The structural corrections use the existing boundaries:
+
+- `MethodologyResult` is now a tuple-backed immutable result with a closure-private constructor seal. The mutable registry is removed; `rank_candidates()` and `write_candidates()` still accept only canonical methodology output.
+- LIVE `CandidateCase` inputs name an M5 run and require the existing `SnapshotWorkflow` to read its validated snapshot ledger and missed markers. Every supplied record must equal the corresponding persisted record, including source mode and provenance. Fixture cases continue through the explicit offline path.
+- `PerformanceSample` identity is `(played_at, opponent, season)`. Identical duplicates are canonicalized once; differing values for one identity raise `EvidenceError` before history summaries.
+
+The focused offline regression also populated an M5 fixture ledger through `SnapshotWorkflow` and verified that relabeling those persisted fixture records as LIVE does not qualify them.
+
+### Final Structural Remediation Gates
+
+Observed after the three structural corrections and their adversarial regressions:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+79 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 294 tests
+OK
+```
+
+All four commands exited `0`. This full suite includes 205 pre-M6 tests and 89 M6 tests. Acceptance used offline fixtures only; no live network/API request was made. Evolution 00-08 and the frozen design specification remain unchanged. No M7 work, commit, or push occurred. The single final broad independent M6 review is reported in the task closeout.
+
+## M6 Caller-Case Ranking Boundary
+
+The final independent reviewer demonstrated that `tuple.__getitem__(valid_result, 0)` recovered the closure-held result seal and allowed a forged audit to reach ranking and `candidates.json`. The new regressions were added before the structural change. Against the old result-accepting API, full discovery showed:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 295 tests
+FAILED (failures=28, errors=21)
+```
+
+The correction removes `MethodologyResult`, the seal, and the result factory altogether. `rank_candidates()` and `write_candidates()` accept only `tuple[CandidateCase, ...]`. Ranking invokes the existing M6 evaluator inside its own call and immediately consumes its local canonical audits; persistence uses the same ranking path. A caller-supplied audit tuple or result-shaped object is rejected before ranking or writing. No methodology implementation was duplicated.
+
+The regression coverage now exercises the recovered internal-field attack as an untrusted result-shaped object, confirms valid cases retain their established ranking, and checks forged audits/status/confidence/evidence/provenance/history/gaps remain rejected. Existing M5 LIVE-ledger binding and duplicate-sample tests remain in the suite. Final four-gate evidence and the one final independent read-only acceptance verdict follow.
+
+### Final Gates After Caller-Case Boundary
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+79 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 295 tests
+OK
+```
+
+All four commands exited `0`. M6 acceptance remained offline; no live API/network request occurred. No Evolution 00-08 or frozen-design changes, M7 work, commit, or push were made.
+
+## M6 M5-Owned Ledger Access Boundary
+
+The latest independent reviewer found that a caller could override methods on a supplied `SnapshotWorkflow` and make fabricated records appear to come from M5. Tests were added before changing that path. Against the caller-supplied-workflow implementation, full discovery observed:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 300 tests
+FAILED (failures=3)
+```
+
+The correction removes workflow/reader parameters from M6 evaluation and ranking. M6 requires the injected exact `RunStore` for LIVE cases and reads through M5's module-owned `read_snapshot_ledger(store, run_id)` function. That function performs the existing ledger decoding, identity/slot checks, and `validate_ledger_order()`; `SnapshotWorkflow` read methods delegate to the same M5-owned parser. Caller overrides of `read()`, `read_missed()`, or `_read_entries` are not consulted by M6. The offline LIVE-mode integration test stamps deterministic fixture boards at the existing M4 transport-mode seam, records them using M5, and confirms those records qualify only when read from that M5 ledger. Other regressions confirm fabricated snapshot and missed-marker records fail despite overridden workflow methods/state, and fixture cases remain independent of a store.
+
+The resulting trust path is `CandidateCase -> M6 evaluation inside ranking/persistence`, with LIVE origin read from M5-owned ledger code and no caller-controlled workflow reader. Final gate evidence and the one final independent read-only acceptance verdict follow below.
+
+### Final Gates After M5-Owned Reader
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+79 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 301 tests
+OK
+```
+
+All four commands exited `0`. The suite includes the new M5 reader override, missed-marker override, `_read_entries` mutation, fake workflow, valid M5 LIVE-ledger, and fixture-path regressions. No live network/API request was made. No Evolution 00-08 or frozen-design changes, M7 work, commit, or push occurred.
+
+## M6 Application-Owned LIVE Storage
+
+The latest reviewer identified caller-selected `RunStore.root` as the remaining LIVE origin bypass. Tests first demonstrated that a caller could submit an M5-shaped ledger from an arbitrary root, while M6 either trusted that store or had no application-owned lookup. The observed RED was:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 305 tests
+FAILED (failures=4)
+```
+
+The frozen design requires recorded source provenance, access method, payload hashes, and receipts; the M5 contract defines the operational `var/fifth-pick` root, run-scoped ledger, and receipts. Neither document requires cryptographic signatures or signing keys. `RunStore()`'s application default is now `APPLICATION_STORAGE_ROOT = <project-root>/var/fifth-pick`; `application_run_store()` constructs that path internally. M6 accepts only the `CandidateCase.snapshot_run_id` for LIVE lookup and calls M5's `read_application_snapshot_ledger()`, which resolves the fixed root internally, reuses the existing ledger parser/order validator, and verifies each record against its accepted or missed receipt. `rank_candidates()` and `write_candidates()` do not accept a source `RunStore`; the latter's store is only its candidates.json output location. M5 tests continue using explicitly injected temporary stores.
+
+The regressions cover an arbitrary caller store, a schema-valid altered ledger outside the application root, a mismatched run ID, missing M5 receipts, successful M5-produced LIVE-mode records at the configured root, and fixture evaluation with an empty root. Direct malicious modification of the application data directory is outside the specified frozen threat model and is documented as future filesystem-permission or cryptographic-manifest hardening; M6 adds no signing mechanism.
+
+### Final Gates After Application-Owned Storage
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+79 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 305 tests
+OK
+```
+
+All four commands exited `0`. Acceptance used offline source fixtures only; no live API/network request occurred. No Evolution 00-08 or frozen-design changes, M7 work, commit, or push occurred. The single final independent M6 acceptance verdict follows in the task report.
+
+## M6 Application-Owned LIVE Storage
+
+The subsequent reviewer found that a caller could choose a `RunStore` root containing a schema-valid LIVE ledger. Regressions for application-root resolution, arbitrary store arguments, an external fabricated ledger, run-ID mismatch, legitimate M5 data, fixture isolation, and matching receipts were added before the storage-boundary change. The observed RED was:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 305 tests
+FAILED (failures=4)
+```
+
+The frozen design specifies source identifiers, retrieval/source times, access method, excerpts, payload hashes, and receipts. The frozen M5 contract specifies `var/fifth-pick/runs/<run_id>/snapshots/ledger.jsonl` and run-scoped receipts. Neither specifies signatures, keys, or cryptographic ledger authenticity. Therefore M6 uses the application-owned `APPLICATION_STORAGE_ROOT` (`var/fifth-pick`) and M5 `application_run_store()` construction. M6 accepts only the case's `snapshot_run_id`; it cannot receive a store/root. M5's `read_application_snapshot_ledger()` reads that run from the fixed root, reuses the existing decoder/order checks, and requires matching accepted/missed receipts and source provenance. `write_candidates()` may still receive its output `RunStore`, but that value is not used to resolve LIVE source evidence. Tests inject the app-root constant only to isolate temporary M5 runs.
+
+Direct malicious filesystem modification of the application data directory is not detected cryptographically and is not specified by the frozen threat model. Filesystem access controls or signed manifests are future hardening only if Joseph expands that requirement; no signing mechanism is added in M6. Final four-gate evidence and the single final independent M6 acceptance verdict follow below.

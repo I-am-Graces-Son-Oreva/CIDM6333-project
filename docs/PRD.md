@@ -186,3 +186,7 @@ Joseph explicitly authorized M4 only: the approved The Odds API `us_dfs` source 
 ## M5 Authorization Addendum
 
 Joseph accepted the M4 reviewer checkpoint and explicitly authorizes M5 snapshot workflow and idempotent collection only. M5 follows the frozen three-snapshot timing and integrity rules and uses offline source boards for implementation and acceptance; this authorization does not authorize a live API request, M6 or later work, Evolution or frozen-spec changes, or a commit.
+
+## M6 Authorization Addendum
+
+After the M5 independent reviewer returned `PASS`, Joseph explicitly authorized M6 evidence validation, frozen-methodology evaluation, confidence guards, candidate auditing, and ranking only. M6 acceptance uses synthetic/offline evidence and makes no live API request. This authorization does not authorize M7 or later work, changes to Evolution 00–08 or the frozen design specification, a live request, or a commit.

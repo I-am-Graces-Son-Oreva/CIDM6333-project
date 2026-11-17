@@ -35,7 +35,12 @@ from fifth_pick.sources.odds_api import (
     APPROVED_REGION,
     SOURCE_ID,
 )
-from fifth_pick.storage import RunStore
+from fifth_pick.storage import (
+    RUNS_DIRECTORY,
+    RunStore,
+    _validate_run_id,
+    application_run_store,
+)
 
 SNAPSHOTS_DIRECTORY: Final[str] = "snapshots"
 SNAPSHOTS_FILENAME: Final[str] = "ledger.jsonl"
@@ -185,6 +190,11 @@ class SnapshotEvidence:
                 raise SnapshotError("Snapshot 3 late flag does not match its timestamps")
         object.__setattr__(self, "source_excerpt", MappingProxyType(excerpt))
 
+    def to_dict(self) -> dict[str, object]:
+        """Serialize the validated snapshot with its timing and provenance."""
+
+        return _snapshot_entry(self)
+
 
 @dataclass(frozen=True, slots=True)
 class MissedSnapshot:
@@ -223,6 +233,11 @@ class MissedSnapshot:
         if self.reason is not expected_reason:
             raise SnapshotError("missed snapshot reason does not match its slot")
         _require_aware(self.recorded_at, "recorded_at")
+
+    def to_dict(self) -> dict[str, object]:
+        """Serialize the validated missed slot and its recording time."""
+
+        return _missed_entry(self)
 
 
 def _require_aware(value: datetime, field: str) -> None:
@@ -503,6 +518,117 @@ def _atomic_write(path: Path, content: bytes) -> None:
         with suppress(OSError):
             temporary_path.unlink(missing_ok=True)
         raise
+
+
+def _snapshot_ledger_path(store: RunStore, run_id: str) -> Path:
+    _validate_run_id(run_id)
+    root = store.root
+    run_directory = (root / RUNS_DIRECTORY / run_id).resolve()
+    if not run_directory.is_relative_to(root):
+        raise SnapshotError("snapshot run directory escapes the storage root")
+    path = run_directory / SNAPSHOTS_DIRECTORY / SNAPSHOTS_FILENAME
+    if not path.resolve().is_relative_to(run_directory):
+        raise SnapshotError("snapshot ledger path escapes the run directory")
+    return path
+
+
+def read_snapshot_ledger(
+    store: RunStore,
+    run_id: str,
+) -> tuple[SnapshotEvidence | MissedSnapshot, ...]:
+    """Read and validate one M5 ledger without dispatching through a workflow instance."""
+
+    if type(store) is not RunStore:
+        raise SnapshotError("snapshot ledger access requires the M5 RunStore")
+    path = _snapshot_ledger_path(store, run_id)
+    try:
+        raw = path.read_bytes()
+    except FileNotFoundError:
+        return ()
+    except OSError as exc:
+        raise SnapshotError(f"cannot read snapshot ledger for run {run_id!r}") from exc
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise SnapshotError("snapshot ledger is not valid UTF-8") from exc
+    entries: list[SnapshotEvidence | MissedSnapshot] = []
+    seen: set[tuple[int, str]] = set()
+    event_starts: dict[str, datetime] = {}
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        if not line.strip():
+            raise SnapshotError(f"snapshot ledger has a blank line at {line_number}")
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise SnapshotError(f"snapshot ledger has invalid JSON at line {line_number}") from exc
+        if not isinstance(item, dict):
+            raise SnapshotError(f"snapshot ledger line {line_number} is not an object")
+        decoded = _decode_entry(item)
+        number = (
+            decoded.snapshot.number if isinstance(decoded, SnapshotEvidence) else decoded.number
+        )
+        entry_identity = (number, decoded.candidate_key)
+        if entry_identity in seen:
+            raise SnapshotError("snapshot ledger contains a duplicate slot and candidate key")
+        if isinstance(decoded, SnapshotEvidence):
+            known_start = event_starts.get(decoded.event_id)
+            if known_start is not None and decoded.event_start != known_start:
+                raise SnapshotError("snapshot ledger event tipoff changed between slots")
+            event_starts[decoded.event_id] = decoded.event_start
+        seen.add(entry_identity)
+        entries.append(decoded)
+    _validate_ledger_order(entries)
+    return tuple(entries)
+
+
+def _expected_snapshot_receipt(
+    run_id: str,
+    entry: SnapshotEvidence | MissedSnapshot,
+) -> dict[str, str | None]:
+    if isinstance(entry, SnapshotEvidence):
+        number = entry.snapshot.number
+        timestamp = _timestamp(entry.snapshot.recorded_at)
+        event = "SNAPSHOT_LATE" if entry.late else "SNAPSHOT_ACCEPTED"
+        result = "RECORDED"
+        source = entry.provenance.source
+        reason = None
+        event_key = f"snapshot-accepted-{number}-{entry.candidate_key}"
+    else:
+        number = entry.number
+        timestamp = _timestamp(entry.recorded_at)
+        event = "SNAPSHOT_MISSED"
+        result = "MISSED"
+        source = SOURCE_ID
+        reason = entry.reason.value
+        event_key = f"snapshot-missed-{number}-{entry.candidate_key}"
+    return Receipt(
+        timestamp=timestamp,
+        event=event,
+        result=result,
+        subject=entry.candidate_key,
+        source=source,
+        reason=reason,
+        run_id=run_id,
+        event_key=event_key,
+    ).to_dict()
+
+
+def read_application_snapshot_ledger(
+    run_id: str,
+) -> tuple[SnapshotEvidence | MissedSnapshot, ...]:
+    """Read LIVE evidence from the configured M5 store and require its receipts."""
+
+    store = application_run_store()
+    entries = read_snapshot_ledger(store, run_id)
+    receipts = store.read_receipts(run_id)
+    for entry in entries:
+        expected = _expected_snapshot_receipt(run_id, entry)
+        matches = tuple(
+            receipt for receipt in receipts if receipt.get("event_key") == expected["event_key"]
+        )
+        if matches != (expected,):
+            raise SnapshotError("M5 snapshot ledger record has no matching run receipt")
+    return entries
 
 
 class SnapshotWorkflow:
@@ -1160,55 +1286,10 @@ class SnapshotWorkflow:
             raise SnapshotError(f"cannot write snapshot ledger for run {run_id!r}") from exc
 
     def _read_entries(self, run_id: str) -> list[SnapshotEvidence | MissedSnapshot]:
-        path = self._ledger_path(run_id)
-        try:
-            raw = path.read_bytes()
-        except FileNotFoundError:
-            return []
-        except OSError as exc:
-            raise SnapshotError(f"cannot read snapshot ledger for run {run_id!r}") from exc
-        try:
-            text = raw.decode("utf-8")
-        except UnicodeDecodeError as exc:
-            raise SnapshotError("snapshot ledger is not valid UTF-8") from exc
-        entries: list[SnapshotEvidence | MissedSnapshot] = []
-        seen: set[tuple[int, str]] = set()
-        event_starts: dict[str, datetime] = {}
-        for line_number, line in enumerate(text.splitlines(), start=1):
-            if not line.strip():
-                raise SnapshotError(f"snapshot ledger has a blank line at {line_number}")
-            try:
-                item = json.loads(line)
-            except json.JSONDecodeError as exc:
-                raise SnapshotError(
-                    f"snapshot ledger has invalid JSON at line {line_number}"
-                ) from exc
-            if not isinstance(item, dict):
-                raise SnapshotError(f"snapshot ledger line {line_number} is not an object")
-            decoded = _decode_entry(item)
-            number = (
-                decoded.snapshot.number if isinstance(decoded, SnapshotEvidence) else decoded.number
-            )
-            key = decoded.candidate_key
-            entry_identity = (number, key)
-            if entry_identity in seen:
-                raise SnapshotError("snapshot ledger contains a duplicate slot and candidate key")
-            if isinstance(decoded, SnapshotEvidence):
-                known_start = event_starts.get(decoded.event_id)
-                if known_start is not None and decoded.event_start != known_start:
-                    raise SnapshotError("snapshot ledger event tipoff changed between slots")
-                event_starts[decoded.event_id] = decoded.event_start
-            seen.add(entry_identity)
-            entries.append(decoded)
-        _validate_ledger_order(entries)
-        return entries
+        return list(read_snapshot_ledger(self._store, run_id))
 
     def _ledger_path(self, run_id: str) -> Path:
-        run_directory = self._store.run_directory(run_id)
-        path = run_directory / SNAPSHOTS_DIRECTORY / SNAPSHOTS_FILENAME
-        if not path.resolve().is_relative_to(run_directory):
-            raise SnapshotError("snapshot ledger path escapes the run directory")
-        return path
+        return _snapshot_ledger_path(self._store, run_id)
 
     def _accepted_receipt(self, run_id: str, record: SnapshotEvidence) -> None:
         event = "SNAPSHOT_LATE" if record.late else "SNAPSHOT_ACCEPTED"
@@ -1406,6 +1487,47 @@ def _validate_ledger_order(entries: list[SnapshotEvidence | MissedSnapshot]) -> 
         elif entry.recorded_at < second_recorded_at or entry.recorded_at < first.event_start:
             raise SnapshotError("persisted missed Snapshot 3 is out of order")
         state[3] = entry
+
+
+def validate_snapshot_sequence(
+    snapshots: tuple[SnapshotEvidence, ...],
+    missed: tuple[MissedSnapshot, ...],
+) -> tuple[SnapshotEvidence | MissedSnapshot, ...]:
+    """Validate and order one candidate's records under the persisted M5 contract."""
+
+    if not isinstance(snapshots, tuple) or any(
+        not isinstance(item, SnapshotEvidence) for item in snapshots
+    ):
+        raise SnapshotError("snapshots must contain SnapshotEvidence records")
+    if not isinstance(missed, tuple) or any(
+        not isinstance(item, MissedSnapshot) for item in missed
+    ):
+        raise SnapshotError("missed must contain MissedSnapshot records")
+    event_starts = {item.event_start for item in snapshots}
+    if len(event_starts) > 1:
+        raise SnapshotError("snapshot event start changed between slots")
+    for item in snapshots:
+        observation = item.snapshot.observation
+        if (
+            observation.source != SOURCE_ID
+            or item.provenance.source != SOURCE_ID
+            or item.provenance.reference != f"{SOURCE_ID}:event:{item.event_id}"
+        ):
+            raise SnapshotError("snapshot provenance does not match the approved M5 board source")
+
+    entries = tuple(
+        sorted(
+            (*snapshots, *missed),
+            key=lambda item: (
+                item.snapshot.number if isinstance(item, SnapshotEvidence) else item.number,
+                item.snapshot.recorded_at
+                if isinstance(item, SnapshotEvidence)
+                else item.recorded_at,
+            ),
+        )
+    )
+    _validate_ledger_order(list(entries))
+    return entries
 
 
 def _entry_dict(entry: SnapshotEvidence | MissedSnapshot) -> dict[str, object]:
