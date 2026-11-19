@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from fifth_pick.evidence import EvidenceItem, EvidenceKind
 from fifth_pick.sources.base import MalformedPayloadError
@@ -17,6 +18,20 @@ from fifth_pick.sources.supporting_fixture import (
 _OFFICIAL = ("official-nba-injury-report", "nba-com")
 _EDITORIAL = "sports-illustrated-nba"
 _STATUSES = {"AVAILABLE", "PROBABLE", "QUESTIONABLE", "DOUBTFUL", "OUT"}
+
+
+def check_official_edition(
+    reference: str, published_at: datetime, retrieved_at: datetime, max_age: timedelta
+) -> None:
+    """Verify the exact publisher and edition timestamp of a normalized report."""
+    if published_at.utcoffset() is None:
+        raise MalformedPayloadError("official injury edition requires a timezone-aware publication")
+    require_fresh(published_at, retrieved_at, max_age)
+    edition = published_at.astimezone(ZoneInfo("America/New_York"))
+    suffix = edition.strftime("%Y-%m-%d_%I_%M%p")
+    expected = f"https://ak-static.cms.nba.com/referee/injury/Injury-Report_{suffix}.pdf"
+    if reference != expected or edition.second or edition.microsecond:
+        raise MalformedPayloadError("official injury report edition and publication time disagree")
 
 
 @dataclass(frozen=True, slots=True)

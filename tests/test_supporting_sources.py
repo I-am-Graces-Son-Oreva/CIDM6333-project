@@ -225,3 +225,54 @@ class SupportingSourceTests(unittest.TestCase):
             retrieved_at=NOW,
             max_age=timedelta(minutes=30),
         )
+
+    def test_official_edition_matches_eastern_timestamp_and_freshness(self):
+        from fifth_pick.sources.availability import check_official_edition
+
+        url = "https://ak-static.cms.nba.com/referee/injury/Injury-Report_2026-11-18_12_00PM.pdf"
+        age = timedelta(minutes=30)
+        check_official_edition(url, NOW, NOW + timedelta(minutes=10), age)
+        for ref, published, retrieved in (
+            (url.replace("nba.com", "example.com"), NOW, NOW),
+            (url, NOW - timedelta(minutes=1), NOW),
+            (url, NOW, NOW + timedelta(minutes=31)),
+            (url, NOW.replace(tzinfo=None), NOW),
+        ):
+            with self.assertRaises(SourceError):
+                check_official_edition(ref, published, retrieved, age)
+
+    def test_game_lines_replay_binds_request_and_digest_and_refuses_duplicate(self):
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from unittest.mock import Mock
+
+        from fifth_pick.sources.game_lines import replay_game_lines_request
+        from fifth_pick.sources.transport import HttpResponse
+        from fifth_pick.storage import RunStore
+
+        body = json.dumps(game_lines_payload()).encode()
+        transport = Mock(evidence_mode=EvidenceMode.FIXTURE)
+        transport.get.return_value = HttpResponse(200, {}, body)
+        with TemporaryDirectory() as temp:
+            store = RunStore(Path(temp))
+
+            def replay(source):
+                return replay_game_lines_request(
+                    store,
+                    "replay",
+                    transport=source,
+                    event=EVENT,
+                    phase="analysis",
+                    bookmaker="fixture-book",
+                    observed_at=NOW,
+                    max_age=timedelta(minutes=10),
+                )
+
+            result = replay(transport)
+            with self.assertRaises(SourceError):
+                replay(transport)
+            with self.assertRaises(SourceError):
+                replay(Mock(evidence_mode=EvidenceMode.LIVE))
+            transport.get.assert_called_once()
+            self.assertEqual(result.payload_sha256, hashlib.sha256(body).hexdigest())
+            self.assertEqual(len(store.read_receipts("replay")), 2)

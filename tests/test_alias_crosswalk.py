@@ -29,3 +29,26 @@ class AliasCrosswalkTests(unittest.TestCase):
         conflicting = replace(roster, canonical_id="outside-universe")
         with self.assertRaises(SourceError):
             join_event_aliases(scope, (roster, conflicting), (board,))
+
+    def test_history_binding_requires_unique_corroborated_id(self):
+        from fifth_pick.sources.alias_crosswalk import HistoryIdentity, join_history_identities
+
+        scope = LiveEventScope(
+            "event-1", "Home", "Away", datetime(2026, 11, 19, tzinfo=UTC), ("luka-doncic",)
+        )
+        roster = RosterIdentity("nba-1", "luka-doncic", "Home", "roster receipt")
+        history = HistoryIdentity("nba-1", 12, "Home", "history receipt")
+        self.assertEqual(
+            join_history_identities(scope, (roster,), (history,))[0], {"luka-doncic": 12}
+        )
+        self.assertEqual(
+            join_history_identities(scope, (roster,), (replace(history, stable_id="nba-2"),)),
+            ({}, {}),
+        )
+        for rows in (
+            (history, replace(history, provider_player_id=13)),
+            (history, replace(history, stable_id="nba-2")),
+            (replace(history, team="Away"),),
+        ):
+            with self.assertRaises(SourceError):
+                join_history_identities(scope, (roster,), rows)

@@ -1,11 +1,22 @@
 """Offline parser for the approved Odds API NBA sport-level spreads and totals."""
 
+from __future__ import annotations
+
 import math
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
 
 from fifth_pick.evidence import EvidenceItem, EvidenceKind
-from fifth_pick.sources.base import MalformedPayloadError, SourceEvent
+from fifth_pick.receipts import Receipt
+from fifth_pick.sources.base import (
+    EvidenceMode,
+    LiveAuthorizationError,
+    MalformedPayloadError,
+    SourceEvent,
+)
+from fifth_pick.sources.odds_api import validate_event_id
 from fifth_pick.sources.supporting_fixture import (
     aware_timestamp,
     decode_payload,
@@ -14,6 +25,76 @@ from fifth_pick.sources.supporting_fixture import (
     payload_hash,
     require_fresh,
 )
+from fifth_pick.sources.transport import Transport
+from fifth_pick.storage import RunStore, collection_lock
+
+
+def replay_game_lines_request(
+    store: RunStore,
+    run_id: str,
+    *,
+    transport: Transport,
+    event: SourceEvent,
+    phase: str,
+    bookmaker: str,
+    observed_at: datetime,
+    max_age: timedelta,
+) -> FixtureGameLines:
+    """Replay one bounded game-lines request, retaining its exact payload digest."""
+    if getattr(transport, "evidence_mode", None) is not EvidenceMode.FIXTURE:
+        raise LiveAuthorizationError("game-lines replay requires a fixture transport")
+    validate_event_id(event.event_id)
+    if phase not in ("analysis", "t20") or not re.fullmatch(r"[a-z][a-z0-9_-]*", bookmaker):
+        raise MalformedPayloadError("invalid game-lines phase or bookmaker scope")
+    if observed_at.utcoffset() is None or observed_at >= event.commence_time:
+        raise MalformedPayloadError("game-lines replay requires a pre-tipoff observation")
+    base_key = f"game-lines-fixture-{phase}-{event.event_id}"
+    query = urlencode(
+        {"eventIds": event.event_id, "bookmakers": bookmaker, "markets": "spreads,totals"}
+    )
+    url = f"https://api.the-odds-api.com/v4/sports/basketball_nba/odds?{query}"
+    with collection_lock(store, run_id):
+        if any(row["event_key"] == base_key for row in store.read_receipts(run_id)):
+            raise MalformedPayloadError("game-lines phase already attempted")
+        store.append_receipt(
+            Receipt(
+                observed_at.isoformat(),
+                "FIXTURE_GAME_LINES_REQUEST",
+                "ATTEMPTED",
+                event.event_id,
+                "synthetic-fixture",
+                url,
+                run_id,
+                base_key,
+            )
+        )
+        response = transport.get(url, {"Accept": "application/json"})
+        if response.status != 200:
+            raise MalformedPayloadError(f"game-lines replay returned HTTP {response.status}")
+        rows = parse_game_lines_fixture(
+            response.body,
+            expected_events=(event,),
+            retrieved_at=observed_at,
+            max_age=max_age,
+            bookmaker_keys=frozenset({bookmaker}),
+        )
+        if len(rows) != 1 or rows[0].total is None or rows[0].home_spread is None:
+            raise MalformedPayloadError(
+                "game-lines replay requires exact spread and total coverage"
+            )
+        store.append_receipt(
+            Receipt(
+                observed_at.isoformat(),
+                "FIXTURE_GAME_LINES_RESPONSE",
+                "VALIDATED",
+                event.event_id,
+                "synthetic-fixture",
+                rows[0].payload_sha256,
+                run_id,
+                f"{base_key}-response",
+            )
+        )
+    return rows[0]
 
 
 @dataclass(frozen=True, slots=True)

@@ -11,6 +11,8 @@ from unittest.mock import patch
 import fifth_pick.storage as storage
 from fifth_pick.cli import main
 from fifth_pick.models import Category
+from fifth_pick.product_review import review_material, review_status
+from fifth_pick.review_bridge import process_request
 from fifth_pick.snapshots import snapshot_2_target
 from tests.m6_support import EVENT_ID, TIPOFF, candidate_key, make_case
 
@@ -186,6 +188,18 @@ class FixtureCliTests(unittest.TestCase):
         code, _output, error = self.command(*args)
         self.assertEqual(code, 1)
         self.assertIn("receipt-verified", error)
+        store = storage.application_run_store()
+        bundle = review_material(store, RUN)
+        request = {key: value for key, value in bundle.items() if key != "review_material"}
+        request.update(
+            kind="VERDICT",
+            verdict_json=json.dumps(
+                {"status": "PASS", "summary": "Synthetic offline verdict", "findings": []}
+            ),
+        )
+        review = process_request(json.dumps(request), store, TIMES[2])
+        self.assertEqual(review.exit_code, 0, review.response)
+        self.assertEqual(review_status(store, RUN)["state"], "REVIEWED_FOR_JOSEPH")
         code, shown, error = self.command("decide", "--run-id", RUN, answers=("APPROVE",))
         self.assertEqual(code, 0, error)
         self.assertIn("STILL STRONG", shown)
@@ -207,6 +221,7 @@ class FixtureCliTests(unittest.TestCase):
         self.assertEqual(result["selection"]["candidate_key"], selection_id)
         self.assertEqual(result["t20_projection"], 9.5)
         self.assertTrue(result["fixture"])
+        self.assertIsInstance(json.loads(self.view("evaluate")), dict)
 
     def test_missing_third_observation_never_qualifies(self) -> None:
         write_fixtures(self.fixtures, projection=False)

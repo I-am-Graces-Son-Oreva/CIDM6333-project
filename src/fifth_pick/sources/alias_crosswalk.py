@@ -24,6 +24,42 @@ class BoardIdentity:
     reference: str
 
 
+@dataclass(frozen=True, slots=True)
+class HistoryIdentity:
+    stable_id: str
+    provider_player_id: int
+    team: str
+    reference: str
+
+
+def join_history_identities(
+    scope: LiveEventScope,
+    roster: tuple[RosterIdentity, ...],
+    history: tuple[HistoryIdentity, ...],
+) -> tuple[dict[str, int], dict[str, str]]:
+    """Bind a history ID only through the same corroborated roster identity."""
+    numeric = Counter(row.provider_player_id for row in history)
+    if any(
+        type(row.provider_player_id) is not int or row.provider_player_id < 1 for row in history
+    ):
+        raise SourceError("history provider IDs must be positive integers")
+    intermediate = tuple(
+        BoardIdentity(
+            row.stable_id, str(row.provider_player_id), scope.event_id, row.team, row.reference
+        )
+        for row in history
+    )
+    aliases, evidence = join_event_aliases(scope, roster, intermediate)
+    if any(numeric[int(provider_id)] != 1 for provider_id in aliases) or len(
+        set(aliases.values())
+    ) != len(aliases):
+        raise SourceError("history crosswalk does not provide one unambiguous ID per player")
+    return (
+        {canonical: int(provider_id) for provider_id, canonical in aliases.items()},
+        {canonical: evidence[provider_id] for provider_id, canonical in aliases.items()},
+    )
+
+
 def join_event_aliases(
     scope: LiveEventScope,
     roster: tuple[RosterIdentity, ...],
