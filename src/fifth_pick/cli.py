@@ -6,7 +6,7 @@ import json
 import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -43,8 +43,8 @@ USAGE = (
     "usage: fifth-pick <command>\n\ncommands:\n"
     "  health\n"
     "  board-smoke --run-id RUN_ID\n"
-    "  board-preflight\n"
-    "  board-status\n"
+    "  board-preflight [--date YYYY-MM-DD] [--expected-games COUNT]\n"
+    "  board-status [--date YYYY-MM-DD]\n"
     "  board-collect --run-id RUN_ID --scope FILE [--preflight FILE]"
     " [--series --snapshot {1,2,3}]\n"
     "  menu [--run-id RUN_ID]\n"
@@ -86,13 +86,25 @@ def main(
 
         return collect_live_board(arguments[1:], prompt or input)
 
-    if arguments == ["board-preflight"]:
-        return _board_preflight(prompt or input)
-
-    if arguments == ["board-status"]:
+    if arguments and arguments[0] in {"board-preflight", "board-status"}:
         from fifth_pick.live_board_cli import show_board_status
 
-        return show_board_status(application_run_store(), datetime.now(UTC))
+        command = arguments[0]
+        parser = argparse.ArgumentParser(prog=f"fifth-pick {command}", allow_abbrev=False)
+        parser.add_argument("--date", type=date.fromisoformat)
+        if command == "board-preflight":
+            parser.add_argument("--expected-games", type=int)
+        try:
+            options = parser.parse_args(arguments[1:])
+            if command == "board-preflight":
+                if options.expected_games is not None and options.expected_games <= 0:
+                    parser.error("--expected-games must be positive")
+                return _board_preflight(
+                    prompt or input, day=options.date, expected_games=options.expected_games
+                )
+            return show_board_status(application_run_store(), datetime.now(UTC), day=options.date)
+        except SystemExit as exc:
+            return 0 if exc.code == 0 else 2
 
     if len(arguments) == 3 and arguments[:2] == ["board-smoke", "--run-id"]:
         return _board_smoke_command(
@@ -174,7 +186,9 @@ def main(
     return 2
 
 
-def _board_preflight(read: Callable[[str], str]) -> int:
+def _board_preflight(
+    read: Callable[[str], str], *, day: date | None = None, expected_games: int | None = None
+) -> int:
     from zoneinfo import ZoneInfo
 
     from fifth_pick.live_board_cli import preflight_path
@@ -192,6 +206,12 @@ def _board_preflight(read: Callable[[str], str]) -> int:
     from fifth_pick.sources.transport import HttpResponse, TransportError, UrllibTransport
     from fifth_pick.storage import _atomic_write
 
+    timezone = ZoneInfo(SLATE_TIMEZONE)
+    today = datetime.now(timezone).date()
+    slate_date = today if day is None else day
+    if slate_date < today:
+        print("Board preflight stopped: the requested slate is in the past.", file=sys.stderr)
+        return 1
     response: HttpResponse | None = None
 
     def capture_response(
@@ -249,12 +269,22 @@ def _board_preflight(read: Callable[[str], str]) -> int:
             file=sys.stderr,
         )
         return 1
-    timezone = ZoneInfo(SLATE_TIMEZONE)
     now = datetime.now(timezone)
+    slate = [
+        event for event in events if event.commence_time.astimezone(timezone).date() == slate_date
+    ]
+    if expected_games is not None and len(slate) != expected_games:
+        print(
+            f"Board preflight stopped: expected {expected_games} games on {slate_date}, "
+            f"provider returned {len(slate)}. No manifest was saved.",
+            file=sys.stderr,
+        )
+        return 1
     report = json.dumps(
         {
             "mode": "LIVE_PROVIDER_DISCOVERY_ONLY",
-            "slate_date": now.date().isoformat(),
+            "slate_date": slate_date.isoformat(),
+            "expected_games": expected_games,
             "checked_at": now.isoformat(),
             "quota": asdict(quota),
             "events": [
@@ -264,13 +294,12 @@ def _board_preflight(read: Callable[[str], str]) -> int:
                     "away_team": event.away_team,
                     "tipoff": event.commence_time.isoformat(),
                 }
-                for event in events
-                if event.commence_time.astimezone(timezone).date() == now.date()
+                for event in slate
             ],
         },
         sort_keys=True,
     )
-    path = preflight_path(application_run_store(), now.date())
+    path = preflight_path(application_run_store(), slate_date)
     try:
         _atomic_write(path, (report + "\n").encode("utf-8"))
     except OSError:

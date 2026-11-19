@@ -12,6 +12,59 @@ EVENT = "2adabff2dca8b2ed4b39540a6a25ffb2"
 
 
 class LiveBoardCliTests(unittest.TestCase):
+    def test_future_preflight_saves_only_requested_complete_chicago_date(self):
+        import io
+        from contextlib import redirect_stdout
+
+        from fifth_pick.sources.transport import HttpResponse, UrllibTransport
+        from fifth_pick.storage import RunStore
+
+        events = [
+            {
+                "id": f"tomorrow-{index}",
+                "home_team": f"Home {index}",
+                "away_team": f"Away {index}",
+                "commence_time": "2026-11-20T01:00:00+00:00",
+            }
+            for index in range(4)
+        ]
+        events.append(dict(events[0], id="today", commence_time=TIPOFF))
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            patch("fifth_pick.cli.application_run_store", return_value=RunStore(directory)),
+            patch("fifth_pick.cli.datetime", wraps=datetime) as clock,
+            patch.dict("os.environ", {"THE_ODDS_API_KEY": "test-key"}),
+            patch.object(UrllibTransport, "get") as request,
+            redirect_stdout(io.StringIO()) as stdout,
+        ):
+            clock.now.return_value = datetime.fromisoformat("2026-11-18T20:30:00-06:00")
+            request.return_value = HttpResponse(
+                200,
+                {"x-requests-last": "0", "x-requests-remaining": "491", "x-requests-used": "9"},
+                json.dumps(events).encode(),
+            )
+            args = ["board-preflight", "--date", "2026-11-19", "--expected-games"]
+            future = Path(directory) / "preflight" / "2026-11-19.json"
+            self.assertEqual(main([*args, "5"], prompt=lambda _: "PREFLIGHT"), 1)
+            self.assertFalse(future.exists())
+            self.assertEqual(main([*args, "4"], prompt=lambda _: "PREFLIGHT"), 0)
+            saved = json.loads(future.read_text())
+            self.assertEqual(
+                [row["event_id"] for row in saved["events"]], [f"tomorrow-{i}" for i in range(4)]
+            )
+            self.assertEqual(main(["board-status", "--date", "2026-11-19"]), 0)
+            self.assertEqual(request.call_count, 2)
+            status = json.loads(stdout.getvalue().splitlines()[-1])
+            self.assertEqual(status["selection_ceiling"], 4)
+            self.assertEqual(status["events"][0]["snapshot_1_cutoff"], "2026-11-19T17:40:00-06:00")
+            self.assertEqual(
+                status["events"][0]["t20_review_closes_at"], "2026-11-19T18:45:00-06:00"
+            )
+            saved["events"][1]["event_id"] = saved["events"][0]["event_id"]
+            future.write_text(json.dumps(saved))
+            self.assertEqual(main(["board-status", "--date", "2026-11-19"]), 1)
+            self.assertEqual(request.call_count, 2)
+
     def test_requires_confirmed_scope_and_passes_only_slot_one(self):
         event = {
             "event_id": EVENT,

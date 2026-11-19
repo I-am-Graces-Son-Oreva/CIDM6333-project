@@ -640,44 +640,103 @@ class BoardCollector:
         completion: dict[str, str | None],
         responses: tuple[dict[str, str | None] | None, ...],
     ) -> tuple[SnapshotEvidence, ...]:
-        entries = tuple(
-            row
-            for row in read_receipted_snapshot_ledger(self._store, run_id)
-            if isinstance(row, SnapshotEvidence)
-            and row.event_id == event_id
-            and row.snapshot.number == snapshot
+        return _verify_completed_slot(
+            self._store, self._mode, run_id, snapshot, event_id, completion, responses
         )
-        try:
-            metadata = json.loads(completion.get("reason") or "")
-        except (ValueError, KeyError) as exc:
-            raise SourceError("invalid stored board completion") from exc
-        context = read_slate_run_context(self._store, run_id)
-        if (
-            not isinstance(metadata, dict)
-            or metadata.get("mode") != self._mode
-            or metadata.get("event_id") != event_id
-            or metadata.get("response_receipts_sha256") != _digest(responses)
-            or any(
-                response is None
-                or response.get("event") != "DFS_HTTP_RESPONSE"
-                or response.get("result") != "200"
-                or response.get("run_id") != run_id
-                or response.get("subject") != f"{snapshot}:{event_id}"
-                or response.get("source") != SOURCE_ID
-                for response in responses
+
+
+def _verify_completed_slot(
+    store: RunStore,
+    mode: EvidenceMode,
+    run_id: str,
+    snapshot: int,
+    event_id: str,
+    completion: dict[str, str | None],
+    responses: tuple[dict[str, str | None] | None, ...],
+) -> tuple[SnapshotEvidence, ...]:
+    entries = tuple(
+        row
+        for row in read_receipted_snapshot_ledger(store, run_id)
+        if isinstance(row, SnapshotEvidence)
+        and row.event_id == event_id
+        and row.snapshot.number == snapshot
+    )
+    try:
+        metadata = json.loads(completion.get("reason") or "")
+    except (ValueError, KeyError) as exc:
+        raise SourceError("invalid stored board completion") from exc
+    context = read_slate_run_context(store, run_id)
+    if (
+        not isinstance(metadata, dict)
+        or metadata.get("mode") != mode
+        or metadata.get("event_id") != event_id
+        or metadata.get("response_receipts_sha256") != _digest(responses)
+        or any(
+            response is None
+            or response.get("event") != "DFS_HTTP_RESPONSE"
+            or response.get("result") != "200"
+            or response.get("run_id") != run_id
+            or response.get("subject") != f"{snapshot}:{event_id}"
+            or response.get("source") != SOURCE_ID
+            for response in responses
+        )
+        or any(item.evidence_mode is not mode for item in context.event_boards)
+        or metadata.get("snapshots_sha256") != _digest([row.to_dict() for row in entries])
+        or not any(
+            board.snapshot_number == snapshot
+            and board.evidence_mode is mode
+            and board.payload_sha256 == metadata.get("payload_sha256")
+            and [event.event_id for event in board.events] == metadata.get("schedule_event_ids")
+            for board in context.event_boards
+        )
+    ):
+        raise SourceError("stored board completion does not match its manifest or snapshots")
+    return entries
+
+
+def live_slot_has_bound_aliases(run_id: str, snapshot: int, event_id: str) -> bool:
+    """Verify a complete LIVE collector receipt binds this event's exact snapshot bytes."""
+    store = application_run_store()
+    rows = store.read_receipts(run_id)
+    receipts = {row["event_key"]: row for row in rows}
+    if None in receipts or len(rows) != len(receipts):
+        return False
+    prefix = f"dfs-board-{snapshot}-{event_id}"
+    subject = f"{snapshot}:{event_id}"
+    required = (
+        (_POLICY, "DFS_BOARD_POLICY", "LIVE", None, None),
+        (f"{prefix}-reserved", _RESERVED, "RESERVED", subject, f"credits={_EVENT_COST}"),
+        (f"{prefix}-attempt-1", "DFS_HTTP_REQUEST", "ATTEMPTED", subject, events_url()),
+        (
+            f"{prefix}-attempt-2",
+            "DFS_HTTP_REQUEST",
+            "ATTEMPTED",
+            subject,
+            odds_url(event_id, OddsApiSourceConfig()),
+        ),
+        (f"{prefix}-collected", _COLLECTED, "LIVE", subject, None),
+    )
+    if any(
+        (row := receipts.get(key)) is None
+        or row["run_id"] != run_id
+        or row["event"] != event
+        or row["result"] != result
+        or row["source"] != SOURCE_ID
+        or (expected_subject is not None and row["subject"] != expected_subject)
+        or (reason is not None and row["reason"] != reason)
+        for key, event, result, expected_subject, reason in required
+    ):
+        return False
+    receipt = receipts[f"{prefix}-collected"]
+    responses = tuple(receipts.get(f"{prefix}-{kind}") for kind in ("events", "odds"))
+    try:
+        return bool(
+            _verify_completed_slot(
+                store, EvidenceMode.LIVE, run_id, snapshot, event_id, receipt, responses
             )
-            or any(item.evidence_mode is not self._mode for item in context.event_boards)
-            or metadata.get("snapshots_sha256") != _digest([row.to_dict() for row in entries])
-            or not any(
-                board.snapshot_number == snapshot
-                and board.evidence_mode is self._mode
-                and board.payload_sha256 == metadata.get("payload_sha256")
-                and [event.event_id for event in board.events] == metadata.get("schedule_event_ids")
-                for board in context.event_boards
-            )
-        ):
-            raise SourceError("stored board completion does not match its manifest or snapshots")
-        return entries
+        )
+    except (FifthPickError, OSError, ValueError):
+        return False
 
 
 def validate_projection_rows(

@@ -386,6 +386,51 @@ class BoardCollectorTests(unittest.TestCase):
         self.assertEqual(self.store.read_receipts(RUN), previous)
         self.assertEqual(self.calls, [events_url(), odds_url(EVENT, OddsApiSourceConfig())])
 
+    def test_live_crosswalk_alias_requires_fully_bound_collector_snapshot_bytes(self):
+        from fifth_pick.methodology import CandidateCase, MethodologyError, evaluate_candidate
+        from fifth_pick.models import ReasonCode
+
+        label = "Roster-linked provider label"
+        self.policy = replace(self.policy, aliases={**self.policy.aliases, label: ("luka-doncic",)})
+
+        def change_label(data):
+            for book in data["bookmakers"]:
+                for market in book["markets"]:
+                    for outcome in market["outcomes"]:
+                        if outcome.get("description") == "Luka Doncic":
+                            outcome["description"] = label
+
+        self.change_odds(change_label)
+        with (
+            patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.snapshots.application_run_store", return_value=self.store),
+            patch("fifth_pick.board_collection._application_clock", return_value=NOW),
+            patch.object(UrllibTransport, "get", side_effect=self.respond),
+        ):
+            collector = self.live_collector()
+            entries = collector.collect(RUN, 1, EVENT, request_authorized=True)
+            case = CandidateCase((entries[0],), snapshot_run_id=RUN)
+            self.assertNotIn(
+                ReasonCode.PLAYER_IDENTITY_UNRESOLVED, evaluate_candidate(case).exclusions
+            )
+            path = self.store.receipts_path(RUN)
+            original = path.read_text()
+            receipts = [json.loads(line) for line in original.splitlines()]
+            for event in ("DFS_BOARD_POLICY", "DFS_BOARD_RESERVED", "DFS_HTTP_REQUEST"):
+                path.write_text(
+                    "".join(json.dumps(row) + "\n" for row in receipts if row["event"] != event)
+                )
+                with self.assertRaisesRegex(MethodologyError, "not bound"):
+                    evaluate_candidate(case)
+            path.write_text(original)
+            completed = next(r for r in receipts if r["event"] == "DFS_BOARD_COLLECTED")
+            metadata = json.loads(completed["reason"])
+            metadata["snapshots_sha256"] = "0" * 64
+            completed["reason"] = json.dumps(metadata)
+            path.write_text("".join(json.dumps(row) + "\n" for row in receipts))
+            with self.assertRaisesRegex(MethodologyError, "not bound"):
+                evaluate_candidate(case)
+
     def test_live_slate_change_stops_before_odds(self):
         with (
             patch("fifth_pick.board_collection.application_run_store", return_value=self.store),

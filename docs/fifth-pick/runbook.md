@@ -265,3 +265,11 @@ Submit the returned revision-1 envelope to the native Reviewer. Inspect
 Joseph's decision. Original CONCERNS require explicit acknowledgement and
 reason, with the displayed findings bound to the decision receipt. A second
 FAIL stops without another correction.
+
+For a known upcoming Chicago-date slate, pass `--date YYYY-MM-DD` and
+`--expected-games COUNT` to `board-preflight`. It still makes exactly one
+quota-free request and saves only that date. A count mismatch leaves any
+existing manifest intact. Use `board-status --date YYYY-MM-DD` offline to
+display the saved event IDs, quota and deadlines. Snapshot 2's actual opening
+depends on the recorded Snapshot 1 timestamp. The date-level view reports
+only its latest permitted time.

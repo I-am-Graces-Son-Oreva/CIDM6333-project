@@ -13,11 +13,12 @@ from fifth_pick.board_collection import BoardCollector, BoardPolicy, LiveBoardGr
 from fifth_pick.errors import FifthPickError
 from fifth_pick.personal_readiness import LiveEventScope
 from fifth_pick.slate_manifest import SLATE_TIMEZONE
-from fifth_pick.snapshots import SNAPSHOT_2_T20_GAP, T20_OFFSET
+from fifth_pick.snapshots import SNAPSHOT_2_T20_GAP, SNAPSHOT_3_EARLY_WINDOW, T20_OFFSET
 from fifth_pick.sources.alias_crosswalk import BoardIdentity, RosterIdentity, join_event_aliases
 from fifth_pick.sources.odds_api import APPROVED_BOOKMAKERS, APPROVED_MARKETS, validate_event_id
 from fifth_pick.sources.transport import UrllibTransport
 from fifth_pick.storage import RunStore, application_run_store
+from fifth_pick.t20_review import LIVE_T20_REVIEW_GRACE
 
 _CREDIT_LIMIT = 5
 
@@ -26,10 +27,10 @@ def preflight_path(store: RunStore, day: date) -> Path:
     return store.root / "preflight" / f"{day.isoformat()}.json"
 
 
-def show_board_status(store: RunStore, now: datetime) -> int:
+def show_board_status(store: RunStore, now: datetime, *, day: date | None = None) -> int:
     """Show timing from the saved discovery without opening a connection."""
     chicago = ZoneInfo(SLATE_TIMEZONE)
-    day = now.astimezone(chicago).date()
+    day = now.astimezone(chicago).date() if day is None else day
     path = preflight_path(store, day)
     try:
         report = json.loads(path.read_text(encoding="utf-8"))
@@ -40,11 +41,19 @@ def show_board_status(store: RunStore, now: datetime) -> int:
         ):
             raise ValueError("unexpected preflight date or mode")
         rows = []
+        seen = set()
         for event in report["events"]:
+            event_id = event["event_id"]
+            validate_event_id(event_id)
+            if event_id in seen:
+                raise ValueError("duplicate event in saved preflight")
+            seen.add(event_id)
             tipoff = datetime.fromisoformat(event["tipoff"])
             if tipoff.utcoffset() is None or tipoff.astimezone(chicago).date() != day:
                 raise ValueError("unexpected event timestamp")
-            cutoff = tipoff - T20_OFFSET - SNAPSHOT_2_T20_GAP
+            local_tipoff = tipoff.astimezone(chicago)
+            t20 = local_tipoff - T20_OFFSET
+            cutoff = t20 - SNAPSHOT_2_T20_GAP
             if now >= tipoff:
                 timing = "SCHEDULED_TIPOFF_PASSED"
             elif now >= cutoff:
@@ -52,14 +61,30 @@ def show_board_status(store: RunStore, now: datetime) -> int:
             else:
                 timing = "SNAPSHOT_1_WINDOW_OPEN"
             rows.append(
-                dict(event, timing=timing, snapshot_1_cutoff=cutoff.astimezone(chicago).isoformat())
+                dict(
+                    event,
+                    timing=timing,
+                    snapshot_1_cutoff=cutoff.isoformat(),
+                    snapshot_2_latest_at=cutoff.isoformat(),
+                    snapshot_3_opens_at=(local_tipoff - SNAPSHOT_3_EARLY_WINDOW).isoformat(),
+                    snapshot_3_closes_at=t20.isoformat(),
+                    t20_review_opens_at=t20.isoformat(),
+                    t20_review_closes_at=(t20 + LIVE_T20_REVIEW_GRACE).isoformat(),
+                    decision_before=local_tipoff.isoformat(),
+                )
             )
     except FileNotFoundError:
         print("No saved preflight for this Chicago slate. Run board-preflight once.")
         return 1
-    except (OSError, KeyError, TypeError, ValueError):
+    except (FifthPickError, OSError, KeyError, TypeError, ValueError):
         print("Saved preflight could not be read or validated.", file=sys.stderr)
         return 1
+    expected = report.get("expected_games")
+    ceiling = (
+        (5 if len(rows) >= 5 else 4)
+        if type(expected) is int and 0 < expected == len(rows)
+        else None
+    )
     print(
         json.dumps(
             {
@@ -67,6 +92,8 @@ def show_board_status(store: RunStore, now: datetime) -> int:
                 "slate_date": day.isoformat(),
                 "checked_at": report.get("checked_at"),
                 "quota_at_preflight": report["quota"],
+                "manifest_game_count": len(rows),
+                "selection_ceiling": ceiling,
                 "events": rows,
             },
             sort_keys=True,

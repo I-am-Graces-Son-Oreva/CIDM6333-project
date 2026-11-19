@@ -361,6 +361,7 @@ def evaluate_candidate(
         ):
             raise MethodologyError("snapshot records do not identify one canonical candidate")
     configs = load_configs()
+    all_live = all(item.evidence_mode is EvidenceMode.LIVE for item in snapshots)
     registry_player = Registry.from_universe(configs.approved_universe).player_by_id(candidate_id)
     provider_names_match = registry_player is not None and all(
         item.source_excerpt["provider_player_name"]
@@ -371,7 +372,7 @@ def evaluate_candidate(
         registry_player is None
         or registry_player.canonical_name != candidate.player
         or candidate_id != canonical_player_id(candidate.player)
-        or not provider_names_match
+        or (not provider_names_match and not all_live)
     ):
         return CandidateAudit(
             candidate=candidate,
@@ -449,6 +450,16 @@ def evaluate_candidate(
         )
         if not snapshots_match or not missed_match:
             raise MethodologyError("LIVE snapshots do not match their validated M5 ledger records")
+        if not provider_names_match:
+            from fifth_pick.board_collection import live_slot_has_bound_aliases
+
+            if any(
+                not live_slot_has_bound_aliases(
+                    case.snapshot_run_id, item.snapshot.number, item.event_id
+                )
+                for item in snapshots
+            ):
+                raise MethodologyError("LIVE provider alias is not bound to a completed board slot")
         snapshot_run_id = case.snapshot_run_id
 
     try:
