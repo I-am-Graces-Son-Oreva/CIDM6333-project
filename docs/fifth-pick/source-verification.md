@@ -156,3 +156,24 @@ the report was not attached to a candidate or treated as a T-20 refresh.
 Automated ingestion and current LIVE supporting-source validation remain
 unavailable. The 12-game public schedule does not supply a full provider-ID
 manifest.
+
+## BALLDONTLIE NBA ALL-STAR documentation check
+
+The provider lists NBA ALL-STAR at USD 9.99 monthly and 60 requests per minute.
+Game Player Stats, Active Players, and Player Injuries are included. The
+documented stats contract supplies exact provider IDs, calendar dates, P/R/A,
+minutes, final status, postponed status, and cursor pagination. The game-detail
+start timestamp does not establish the completion or correction time. Missing
+rows do not identify DNP, and a complete cursor chain does not prove that all
+appearances were delivered. Official availability remains a separate source.
+
+The bounded history client and date-level selection are exercised with injected
+responses. Real transports are disabled until an independently verified
+provider identity binding is available. They do not confer M6 evidence
+authority. Account entitlement, actual
+season coverage, crosswalks, and correction freshness remain unverified. Public
+terms permit lawful analysis and retention of lawfully obtained data, subject
+to their applicable restrictions. No purchase or provider request was made.
+
+See the [NBA API documentation](https://docs.balldontlie.io/) and
+[provider terms](https://www.balldontlie.io/terms.html).
