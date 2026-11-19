@@ -56,6 +56,7 @@ class LiveBoardCliTests(unittest.TestCase):
             self.assertEqual(request.call_count, 2)
             status = json.loads(stdout.getvalue().splitlines()[-1])
             self.assertEqual(status["selection_ceiling"], 4)
+            self.assertEqual(status["events"][0]["timing"], "SNAPSHOT_1_WINDOW_NOT_YET_OPEN")
             self.assertEqual(status["events"][0]["snapshot_1_cutoff"], "2026-11-19T17:40:00-06:00")
             self.assertEqual(
                 status["events"][0]["t20_review_closes_at"], "2026-11-19T18:45:00-06:00"

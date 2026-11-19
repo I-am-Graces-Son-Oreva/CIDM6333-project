@@ -54,7 +54,9 @@ def show_board_status(store: RunStore, now: datetime, *, day: date | None = None
             local_tipoff = tipoff.astimezone(chicago)
             t20 = local_tipoff - T20_OFFSET
             cutoff = t20 - SNAPSHOT_2_T20_GAP
-            if now >= tipoff:
+            if now.astimezone(chicago).date() < day:
+                timing = "SNAPSHOT_1_WINDOW_NOT_YET_OPEN"
+            elif now >= tipoff:
                 timing = "SCHEDULED_TIPOFF_PASSED"
             elif now >= cutoff:
                 timing = "SNAPSHOT_1_WINDOW_CLOSED"
