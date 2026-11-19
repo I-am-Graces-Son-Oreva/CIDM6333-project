@@ -2606,3 +2606,38 @@ On 2026-11-18 Joseph explicitly accepted M10 **WITH QUALIFICATION** under the ap
 - **Live second-FAIL/CONCERNS escalation UNVERIFIED**, with offline regression coverage.
 
 The final implementation gate run remains the recorded four-gate PASS with 510 unit tests and independent remediation PASS. The isolated correction-path and Route B evidence remain indexed above. Earlier FAIL, CONCERNS, BLOCKED, and unsuccessful runtime records were retained as historical evidence. This decision does not change the frozen architecture, native permissions, or the version-scoped addendum. It does not authorize course closeout work, a commit, or a push.
+
+## M11 offline course closeout — November 18, 2026
+
+The implementation checkpoint is commit `f39cf8296387e7e253ab8229178553ba0b5d636b`.
+A clean local clone of that commit had empty porcelain status before and after
+verification. Gates used the existing environment with dependency sync and
+package networking disabled. Python imported the clone's committed sources.
+The implementation commit and the documentation-only closeout evidence are
+separate so the gate record can name the exact tested implementation.
+
+| Gate | Result |
+| --- | --- |
+| `uv run ruff check` | Exit 0 |
+| `uv run ruff format --check` | Exit 0, 133 files already formatted |
+| `uv run ty check` | Exit 0 |
+| `uv run python -m unittest discover -s tests` | Exit 0, 595 tests passed |
+| Focused committed-checkout workflow and receipt checks | Exit 0, 4 tests passed |
+
+The fresh fixture workflow is documented in [demo.md](demo.md), with its
+[30-receipt audit trail](evidence/course-demo-f39cf82.jsonl). The exact reviewed
+fixture proposal preceded the explicit owner decision and synthetic settlement.
+The earlier settlement attempt exited 1. The LIVE replay test verified correct
+blocking without an additional transport request or new receipt. The independent
+review of the staged implementation passed and confirmed that no Evolution or
+runtime paths entered the implementation commit.
+
+The initial full M11 checkpoint returned CONCERNS for missing final records,
+the current-commit demo evidence, and incomplete gate evidence while the suite
+was running. This record, the actual fixture audit, and the updates to
+architecture and assurance address those findings. This is offline course
+evidence. The independent, mechanically read-only documentation recheck
+returned PASS and matched the demo receipt hash to the captured checkout
+artifact. No paid pilot was authorized, no provider request was made, and LIVE
+analysis is not operational. M10's formal acceptance and qualifications are
+unchanged.

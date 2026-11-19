@@ -42,3 +42,17 @@ These fresh-context checks exercise the written procedures on offline scenarios.
 The dated OpenCode 1.18.20 addendum preserves the original request-to-denial criterion and permits correlated proof of native withholding. In bounded challenge `m10-native-withholding-2b089c988436`, the host catalog included edit, write, and Bash. Native Reviewer filtering disabled them, and the actual provider requests confirmed their absence. Exact sentinel bytes, the full 6,711-entry workspace inventory, and production and disposable Reviewer permission files matched before and after.
 
 Both write routes are **NATIVE TOOL WITHHOLDING VERIFIED** under the addendum. **REQUEST-TO-DENIAL BEHAVIOR UNVERIFIED** for both. A separate native read-only assessment returned PASS. Its wording error about the exposed tools and the exact provider evidence are recorded in the [gate evidence](gates.md#m10-native-reviewer-tool-withholding-evidence). Read-oriented tools were exposed, while write-capable tools were withheld. Live second-FAIL/CONCERNS escalation remains **UNVERIFIED**, with offline regression coverage. The [final implementation gate record](gates.md#m10-final-remediation-gate-run) identifies the four passing gates and 510-test baseline separately from the earlier FAIL checkpoint. The final Task 7 independent recheck returned PASS. Joseph accepted M10 **WITH QUALIFICATION**, retaining the limits above. See the [formal acceptance record](gates.md#m10-formal-acceptance-with-qualification).
+
+## M11 product and course controls
+
+| Risk | Mechanical control | Offline evidence |
+| --- | --- | --- |
+| Fixture evidence used for a LIVE recommendation | LIVE analysis checks application storage, LIVE manifests, and receipt-backed observations. Missing authorized supporting-source ingestion blocks analysis and T-20 before a review or proposal is written. | `test_live_analysis_checks_replayed_board_without_creating_review_or_network_calls` and `test_live_commands_without_fixture_route_to_the_receipt_backed_gate`. |
+| Repeated or untimely collection consumes credits | Run lock, pinned scope and budget, stored reservation, replay verification, and event-local timing checks precede dispatch. | `test_live_series_reuses_one_policy_and_only_collects_due_slots` and `test_live_series_skips_third_request_when_second_window_was_missed`. |
+| A stale or corrected version is released | The Controller confirms one revision attempt. Correction, finalization, and Joseph decisions share a per-run lock. An exact corrected version requires a matching PASS. Expired LIVE selections cannot be approved. | `test_one_product_correction_requires_exact_corrected_pass` and `test_live_approval_deadline_does_not_write_a_decision`. |
+| An unapproved line is graded | M9 verifies the exact receipt-bound approved candidate and result provenance. Demo records are explicitly synthetic. | `test_complete_workflow` and the course demo receipt linked from [demo.md](demo.md). |
+
+These controls support offline course verification. They do not establish
+LIVE player-history coverage, verified production aliases, or a successful
+live NBA recommendation. M10's historical security qualifications remain in
+force.

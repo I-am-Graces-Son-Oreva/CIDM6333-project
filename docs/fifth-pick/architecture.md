@@ -257,3 +257,16 @@ Last-8 summaries use the latest eight canonical game samples; same-season H2H su
 - M11: closeout, demo, and assurance.
 
 Those milestones consume the M2 vocabulary and storage but are not implemented here.
+
+## Course closeout product path
+
+The terminal demo uses the provider-response fixtures through the M4 adapter,
+M5 ledger, M6 evaluation, M7 review, M8 exact proposal approval, and M9
+settlement. The demo and LIVE CLI share the domain controls while keeping
+their evidence modes separate. The LIVE collector saves provider discovery
+and uses one scoped run, exact identity bindings, and receipt-backed credit
+reservations. LIVE analysis reads only application-owned, receipt-verified
+observations and stops with a named reason while supporting-evidence
+ingestion is unavailable. It creates no positive review or proposal under
+that condition. The approved November 18 amendment governs event-local
+timing and one frozen pool. See the runbook and source-verification record.

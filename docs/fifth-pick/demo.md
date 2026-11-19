@@ -25,3 +25,14 @@ uv run --offline --no-sync python -m unittest -v tests.test_fixture_cli.FixtureC
 The product matrix and gate record explain the separate LIVE and M10
 qualification boundaries. The release candidate excludes local credentials,
 tool caches, installed environments and operational runtime artifacts.
+
+## Clean-checkout demonstration — commit f39cf82
+
+The `course-closeout-f39cf82` fixture run loaded the bundled producer
+responses, showed a provisional watchlist after slots 1 and 2, then reviewed
+the actual fixture movement through slot 3. The proposed projection was
+`9.5`, confidence `HIGH`, and status `STILL STRONG`. An initial settlement
+attempt exited 1. Explicit fixture approval, synthetic settlement, audit
+and evaluation each exited 0. The [30-receipt fixture trail](evidence/course-demo-f39cf82.jsonl)
+has SHA-256 `7627c5e3375a14775aa980217082f23f945781f3a48af72bb23d56e3285b5182`.
+The approval and outcome are demonstration records only.
