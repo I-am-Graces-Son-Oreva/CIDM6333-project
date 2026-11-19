@@ -304,9 +304,35 @@ class BoardCollectorTests(unittest.TestCase):
         )
 
     def test_live_series_reuses_one_policy_and_only_collects_due_slots(self):
+        from unittest.mock import Mock
+
+        from fifth_pick.evidence import EvidenceKind
+        from fifth_pick.live_analysis import live_analysis_view, read_live_supporting_items
+        from fifth_pick.live_judgment import read_live_judgment, record_live_judgment
+        from fifth_pick.methodology import (
+            CandidateCase,
+            Confidence,
+            MethodologyDisposition,
+            MethodologyJudgment,
+            evaluate_candidate,
+        )
+        from fifth_pick.models import ReasonCode
+        from fifth_pick.snapshots import SnapshotEvidence, read_receipted_snapshot_ledger
+        from fifth_pick.sources.base import EvidenceMode, SourceEvent
+        from fifth_pick.sources.game_lines import (
+            GameLinesGrant,
+            acquire_game_lines,
+            record_game_lines_grant,
+        )
+        from fifth_pick.sources.quota import QuotaSnapshot
+        from fifth_pick.sources.transport import HttpResponse
+        from tests.test_supporting_sources import game_lines_payload
+
         odds = odds_url(EVENT, OddsApiSourceConfig())
         with (
             patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.live_analysis.application_run_store", return_value=self.store),
+            patch("fifth_pick.snapshots.application_run_store", return_value=self.store),
             patch("fifth_pick.board_collection._application_clock", return_value=NOW) as clock,
             patch.object(UrllibTransport, "get", side_effect=self.respond),
         ):
@@ -349,6 +375,151 @@ class BoardCollectorTests(unittest.TestCase):
                 self.assertTrue(rows)
                 self.assertTrue(all(row.snapshot.number == slot and not row.late for row in rows))
             self.assertEqual(collector.collect(RUN, 3, EVENT, request_authorized=True), rows)
+            manifest_event = next(
+                event
+                for event in read_slate_run_context(self.store, RUN).event_boards[0].events
+                if event.event_id == EVENT
+            )
+            event = SourceEvent(
+                EVENT,
+                manifest_event.home_team,
+                manifest_event.away_team,
+                manifest_event.commence_time,
+                (),
+            )
+            analysis_at = datetime(2026, 11, 15, 21, 30, tzinfo=UTC)
+            t20_at = event.commence_time - timedelta(minutes=20)
+            grant = GameLinesGrant(RUN, EVENT, "fixture-book", ("analysis", "t20"), 4)
+            record_game_lines_grant(self.store, grant, analysis_at)
+            for phase, when in (("analysis", analysis_at), ("t20", t20_at)):
+                (payload,) = game_lines_payload()
+                payload.update(
+                    id=EVENT,
+                    home_team=event.home_team,
+                    away_team=event.away_team,
+                    commence_time=event.commence_time.isoformat(),
+                )
+                book = payload["bookmakers"][0]
+                book["last_update"] = when.isoformat()
+                book["markets"][0]["outcomes"][0]["name"] = event.home_team
+                book["markets"][0]["outcomes"][1]["name"] = event.away_team
+                transport = Mock(evidence_mode=EvidenceMode.LIVE)
+                transport.get.return_value = HttpResponse(
+                    200,
+                    {"x-requests-last": "2", "x-requests-used": "12", "x-requests-remaining": "8"},
+                    json.dumps([payload]).encode(),
+                )
+                acquire_game_lines(
+                    self.store,
+                    grant,
+                    transport=transport,
+                    phase=phase,
+                    event=event,
+                    quota_before=QuotaSnapshot(10, 10),
+                    max_age=timedelta(minutes=10),
+                    clock=lambda at=when: at,
+                    environ={API_KEY_ENV_VAR: SECRET},
+                    authorized=True,
+                )
+            first_view = live_analysis_view(self.store, RUN, review=False, snapshot=1)
+            first_candidates = first_view["candidates"]
+            assert isinstance(first_candidates, list)
+            self.assertTrue(first_candidates)
+            self.assertTrue(all(row["timely_snapshot_slots"] == [1] for row in first_candidates))
+            self.assertTrue(all(not row["supporting_evidence"] for row in first_candidates))
+            second_view = live_analysis_view(
+                self.store,
+                RUN,
+                review=False,
+                snapshot=2,
+                as_of=analysis_at,
+            )
+            second_candidates = second_view["candidates"]
+            assert isinstance(second_candidates, list)
+            self.assertTrue(
+                any(row["timely_snapshot_slots"] == [1, 2] for row in second_candidates)
+            )
+            self.assertTrue(
+                all(
+                    item["evidence_id"].startswith("game-lines-analysis-")
+                    for row in second_candidates
+                    for item in row["supporting_evidence"]
+                )
+            )
+            status = live_analysis_view(self.store, RUN, review=True, as_of=t20_at)
+            candidates = status["candidates"]
+            assert isinstance(candidates, list)
+            self.assertTrue(any(row["board_sequence_complete"] for row in candidates))
+            self.assertEqual(
+                {item["kind"] for row in candidates for item in row["supporting_evidence"]},
+                {EvidenceKind.GAME_TOTAL.value, EvidenceKind.POINT_SPREAD.value},
+            )
+            self.assertEqual(status["status"], "BLOCKED")
+            key = rows[0].candidate_key
+            observations = tuple(
+                row
+                for row in read_receipted_snapshot_ledger(self.store, RUN)
+                if isinstance(row, SnapshotEvidence) and row.candidate_key == key
+            )
+            facts = read_live_supporting_items(RUN, key, EVENT, slot=3, as_of=t20_at)
+            case = CandidateCase(
+                observations,
+                evidence=facts,
+                snapshot_run_id=RUN,
+                supporting_slot=3,
+                supporting_as_of=t20_at,
+            )
+            self.assertEqual(
+                evaluate_candidate(case).evidence,
+                tuple(
+                    sorted(
+                        facts,
+                        key=lambda item: item.evidence_id,
+                    )
+                ),
+            )
+            tampered = replace(facts[0], facts={"total": 999})
+            audit = evaluate_candidate(replace(case, evidence=(tampered, *facts[1:])))
+            self.assertIn(ReasonCode.SOURCE_CONFLICT_UNRESOLVED, audit.exclusions)
+            third = observations[-1]
+            self.assertIsNone(read_live_judgment(self.store, RUN, third, facts, as_of=t20_at))
+            judgment = MethodologyJudgment(
+                MethodologyDisposition.ANALYSIS_ONLY,
+                Confidence.LOW,
+                "Controlled replay has no qualifying history.",
+                (),
+                (),
+                False,
+            )
+            record_live_judgment(
+                self.store,
+                RUN,
+                third,
+                facts,
+                judgment,
+                observed_at=t20_at,
+                controller_confirmed=True,
+            )
+            self.assertEqual(
+                read_live_judgment(self.store, RUN, third, facts, as_of=t20_at),
+                judgment,
+            )
+            before_review = self.store.read_receipts(RUN)
+            self.assertEqual(
+                live_analysis_view(self.store, RUN, review=True, as_of=t20_at)["status"],
+                "BLOCKED",
+            )
+            self.assertEqual(self.store.read_receipts(RUN), before_review)
+            with self.assertRaisesRegex(ValueError, "phase or time"):
+                read_live_judgment(
+                    self.store,
+                    RUN,
+                    third,
+                    facts,
+                    as_of=t20_at - timedelta(seconds=1),
+                )
+            with self.assertRaisesRegex(ValueError, "source state"):
+                read_live_judgment(self.store, RUN, third, (tampered, *facts[1:]), as_of=t20_at)
         self.assertEqual(self.calls, [events_url(), odds] * 3)
         receipts = self.store.read_receipts(RUN)
         self.assertEqual(sum(row["event"] == "DFS_BOARD_RESERVED" for row in receipts), 3)
@@ -382,7 +553,12 @@ class BoardCollectorTests(unittest.TestCase):
             previous = self.store.read_receipts(RUN)
             result = live_analysis_view(self.store, RUN, review=True)
         self.assertEqual(result["reason"], "T20_CHECK_UNAVAILABLE")
-        self.assertTrue(result["candidates"])
+        candidates = result["candidates"]
+        assert isinstance(candidates, list)
+        self.assertTrue(candidates)
+        for candidate in candidates:
+            self.assertEqual(candidate["timely_snapshot_slots"], [1])
+            self.assertFalse(candidate["board_sequence_complete"])
         self.assertEqual(self.store.read_receipts(RUN), previous)
         self.assertEqual(self.calls, [events_url(), odds_url(EVENT, OddsApiSourceConfig())])
 

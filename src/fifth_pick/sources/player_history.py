@@ -1,12 +1,14 @@
 """Provider-neutral offline fixture for normalized completed player game history."""
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from fifth_pick.evidence import EvidenceItem, EvidenceKind, PerformanceSample
 from fifth_pick.models import Category
 from fifth_pick.sources.base import MalformedPayloadError
+from fifth_pick.sources.bdl_history import HistoryGameRow
 from fifth_pick.sources.supporting_fixture import (
     aware_timestamp,
     decode_payload,
@@ -40,6 +42,63 @@ class CompletedPlayerGame:
         if category not in values:
             raise MalformedPayloadError("history category is outside the approved five")
         return PerformanceSample(self.played_at, values[category], self.opponent, self.season)
+
+
+@dataclass(frozen=True, slots=True)
+class HistoryGameTiming:
+    game_date: date
+    played_at: datetime
+    completed_at: datetime
+    season: int
+    opponent_id: int
+    canonical_opponent: str
+
+
+def reconcile_history_timing(
+    rows: tuple[HistoryGameRow, ...],
+    timings: Mapping[int, HistoryGameTiming],
+    *,
+    provider_player_id: int,
+    retrieved_at: datetime,
+) -> tuple[CompletedPlayerGame, ...]:
+    """Join already corroborated game timing to date-only history without inventing times."""
+    ids = {row.game_id for row in rows}
+    if (
+        retrieved_at.utcoffset() is None
+        or len(ids) != len(rows)
+        or any(row.provider_player_id != provider_player_id for row in rows)
+        or ids != timings.keys()
+    ):
+        raise MalformedPayloadError("history timing does not match the requested games")
+    games = []
+    for row in rows:
+        timing = timings[row.game_id]
+        if (
+            timing.game_date != row.game_date
+            or timing.season != row.season
+            or timing.opponent_id != row.opponent_id
+            or not timing.canonical_opponent.strip()
+            or timing.played_at.utcoffset() is None
+            or timing.completed_at.utcoffset() is None
+            or not timing.played_at < timing.completed_at < retrieved_at
+        ):
+            raise MalformedPayloadError("history game timing is missing or inconsistent")
+        games.append(
+            CompletedPlayerGame(
+                str(row.game_id),
+                timing.played_at,
+                timing.completed_at,
+                f"{row.season}-{(row.season + 1) % 100:02d}",
+                timing.canonical_opponent,
+                row.points,
+                row.rebounds,
+                row.assists,
+                row.minutes,
+            )
+        )
+    if len({game.played_at for game in games}) != len(games):
+        raise MalformedPayloadError("history has ambiguous game start times")
+    return tuple(sorted(games, key=lambda game: game.played_at, reverse=True))
 
 
 @dataclass(frozen=True, slots=True)

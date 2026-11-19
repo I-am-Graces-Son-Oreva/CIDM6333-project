@@ -33,6 +33,8 @@ from fifth_pick.results import (
     ResultError,
     record_result,
 )
+from fifth_pick.slate_manifest import read_slate_run_context
+from fifth_pick.sources.base import EvidenceMode
 from fifth_pick.sources.fixtures import FIXTURE_LABEL
 from fifth_pick.storage import application_run_store
 
@@ -45,6 +47,9 @@ USAGE = (
     "  board-smoke --run-id RUN_ID\n"
     "  board-preflight [--date YYYY-MM-DD] [--expected-games COUNT]\n"
     "  board-status [--date YYYY-MM-DD]\n"
+    "  game-lines-grant --run-id RUN_ID --event-id EVENT_ID --bookmaker KEY"
+    " --phase {analysis,t20} [--phase {analysis,t20}] --max-credits COUNT\n"
+    "  bdl-validate [--auth-only | --identity-only | --stats-only] --confirm\n"
     "  board-collect --run-id RUN_ID --scope FILE [--preflight FILE]"
     " [--series --snapshot {1,2,3}]\n"
     "  menu [--run-id RUN_ID]\n"
@@ -81,10 +86,42 @@ def main(
         print(json.dumps(HEALTH, sort_keys=True))
         return 0
 
+    if arguments in (
+        ["bdl-validate", "--confirm"],
+        ["bdl-validate", "--auth-only", "--confirm"],
+        ["bdl-validate", "--identity-only", "--confirm"],
+        ["bdl-validate", "--stats-only", "--confirm"],
+    ):
+        from fifth_pick.sources.base import SourceError
+        from fifth_pick.sources.bdl_history import BdlHistoryClient
+        from fifth_pick.sources.transport import TransportError, UrllibTransport
+
+        try:
+            client = BdlHistoryClient(UrllibTransport())
+            if "--auth-only" in arguments:
+                result = client.probe_authentication()
+            elif "--identity-only" in arguments:
+                result = client.validate_curry_identity()
+            elif "--stats-only" in arguments:
+                result = client.validate_verified_curry_stats()
+            else:
+                result = client.validate_curry_history()
+        except TransportError as exc:
+            print(f"BALLDONTLIE validation stopped: {exc.category}", file=sys.stderr)
+            return 1
+        except SourceError as exc:
+            print(f"BALLDONTLIE validation stopped: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
     if arguments and arguments[0] == "board-collect":
         from fifth_pick.live_board_cli import collect_live_board
 
         return collect_live_board(arguments[1:], prompt or input)
+
+    if arguments and arguments[0] == "game-lines-grant":
+        return _game_lines_grant(arguments[1:], prompt or input)
 
     if arguments and arguments[0] in {"board-preflight", "board-status"}:
         from fifth_pick.live_board_cli import show_board_status
@@ -387,6 +424,54 @@ def _board_smoke_command(
     return 0
 
 
+def _game_lines_grant(arguments: list[str], read: Callable[[str], str]) -> int:
+    from fifth_pick.board_collection import live_slot_has_bound_aliases
+    from fifth_pick.sources.game_lines import GameLinesGrant, record_game_lines_grant
+
+    parser = argparse.ArgumentParser(prog="fifth-pick game-lines-grant", allow_abbrev=False)
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--event-id", required=True)
+    parser.add_argument("--bookmaker", required=True)
+    parser.add_argument("--phase", choices=("analysis", "t20"), action="append", required=True)
+    parser.add_argument("--max-credits", type=int, required=True)
+    try:
+        args = parser.parse_args(arguments)
+    except SystemExit as exc:
+        return 0 if exc.code == 0 else 2
+    try:
+        store = application_run_store()
+        grant = GameLinesGrant(
+            args.run_id, args.event_id, args.bookmaker, tuple(args.phase), args.max_credits
+        )
+        scope = grant.scope()
+        context = read_slate_run_context(store, args.run_id)
+        if not context.event_boards or any(
+            board.evidence_mode is not EvidenceMode.LIVE for board in context.event_boards
+        ):
+            raise ValueError("a receipt-bound LIVE slate is required")
+        event = next(
+            (row for row in context.event_boards[0].events if row.event_id == args.event_id), None
+        )
+        if event is None or event.commence_time <= datetime.now(UTC):
+            raise ValueError("the scoped event is absent or has already started")
+        if not live_slot_has_bound_aliases(args.run_id, 1, args.event_id):
+            raise ValueError("the event requires an authorized, receipt-bound Snapshot 1")
+        print(scope)
+        if read("Joseph only. Type AUTHORIZE GAME LINES to record this grant: ") != (
+            "AUTHORIZE GAME LINES"
+        ):
+            return 1
+        now = datetime.now(UTC)
+        if event.commence_time <= now:
+            raise ValueError("the scoped event started before confirmation")
+        record_game_lines_grant(store, grant, now)
+    except (FifthPickError, ValueError, OSError, EOFError) as exc:
+        print(f"Game-lines authorization stopped: {exc}", file=sys.stderr)
+        return 1
+    print("Game-lines authorization recorded. No request was made.")
+    return 0
+
+
 def _fixture_command(command: str, arguments: list[str]) -> int:
     parser = argparse.ArgumentParser(prog=f"fifth-pick {command}", allow_abbrev=False)
     parser.add_argument("--run-id", required=True)
@@ -411,8 +496,12 @@ def _fixture_command(command: str, arguments: list[str]) -> int:
             else:
                 from fifth_pick.live_analysis import live_analysis_view
 
-                output = live_analysis_view(store, args.run_id, review=command == "t20")
-                blocked = True
+                output = (
+                    live_analysis_view(store, args.run_id, review=True)
+                    if command == "t20"
+                    else live_analysis_view(store, args.run_id, review=False, snapshot=number)
+                )
+                blocked = output["status"] == "BLOCKED"
         elif command == "final":
             if is_fixture_workflow(store, args.run_id):
                 output, blocked = final_view(store, args.run_id)

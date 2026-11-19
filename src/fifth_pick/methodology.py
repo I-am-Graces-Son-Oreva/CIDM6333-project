@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
+from datetime import datetime
 from enum import StrEnum
 
 from fifth_pick.authorization import AuthorizationGate
@@ -15,8 +16,8 @@ from fifth_pick.evidence import (
     EvidenceKind,
     EvidenceSignificance,
     HistorySummary,
+    _validate_evidence_items,
     summarize_history,
-    validate_evidence_items,
 )
 from fifth_pick.models import Candidate, Category, Direction, ReasonCode
 from fifth_pick.receipts import redact_text
@@ -72,6 +73,8 @@ class CandidateCase:
     gaps: tuple[EvidenceGap, ...] = ()
     judgment: "MethodologyJudgment | None" = None
     snapshot_run_id: str | None = None
+    supporting_slot: int | None = None
+    supporting_as_of: datetime | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -336,7 +339,16 @@ def evaluate_candidate(
         raise MethodologyError("candidate snapshots contain a duplicate slot")
     snapshots = tuple(snapshots_by_number[number] for number in sorted(snapshots_by_number))
     latest = snapshots[-1]
-    observation = latest.snapshot.observation
+    # Prior LIVE judgments are evaluated against the projection they actually saw.
+    # The later snapshot remains in the case so M5 can verify the complete sequence.
+    prior_live = case.supporting_slot == 2 and all(
+        row.evidence_mode is EvidenceMode.LIVE for row in snapshots
+    )
+    baseline = snapshots_by_number.get(2, latest) if prior_live else latest
+    observation = baseline.snapshot.observation
+    movement_snapshots = (
+        tuple(item for item in snapshots if item.snapshot.number <= 2) if prior_live else snapshots
+    )
     candidate = Candidate(
         player=observation.player,
         platform=observation.platform,
@@ -509,7 +521,38 @@ def evaluate_candidate(
         + tuple(item.evidence_mode for item in case.evidence)
     )
     try:
-        evidence = validate_evidence_items(case.evidence, candidate_key=candidate_key)
+        verified_live = ()
+        if all_live and any(item.evidence_mode is EvidenceMode.LIVE for item in case.evidence):
+            supporting_snapshot = snapshots_by_number.get(case.supporting_slot or 0)
+            if (
+                snapshot_run_id is None
+                or case.supporting_slot not in (2, 3)
+                or not isinstance(case.supporting_as_of, datetime)
+                or supporting_snapshot is None
+                or supporting_snapshot.late
+                or any(
+                    item.evidence.provenance.retrieved_at
+                    < supporting_snapshot.snapshot.observation.retrieved_at
+                    for item in case.evidence
+                )
+            ):
+                raise EvidenceError("LIVE supporting evidence requires an exact run and stage")
+            from fifth_pick.live_analysis import read_live_supporting_items
+
+            verified_live = read_live_supporting_items(
+                snapshot_run_id,
+                candidate_key,
+                latest.event_id,
+                slot=case.supporting_slot,
+                as_of=case.supporting_as_of,
+                player_id=candidate_id,
+                category=candidate.category,
+            )
+        evidence = _validate_evidence_items(
+            case.evidence,
+            candidate_key=candidate_key,
+            verified_live=verified_live,
+        )
     except EvidenceError as exc:
         return CandidateAudit(
             candidate=candidate,
@@ -518,7 +561,7 @@ def evaluate_candidate(
             status=EvaluationStatus.INSUFFICIENT_EVIDENCE,
             confidence=None,
             evidence_mode=evidence_mode,
-            movement=_projection_movement(snapshots),
+            movement=_projection_movement(movement_snapshots),
             history=(),
             evidence=(),
             gaps=canonical_gaps,
@@ -580,7 +623,7 @@ def evaluate_candidate(
             )
         )
     gaps = _canonicalize_gaps(gaps)
-    movement = _projection_movement(snapshots)
+    movement = _projection_movement(movement_snapshots)
     rules.extend(("SNAPSHOT_INTEGRITY_VALIDATED", "SUPPORTING_EVIDENCE_VALIDATED"))
     if is_senior and candidate.direction is Direction.HIGHER:
         rules.append("SENIOR_PRIORITY")

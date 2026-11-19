@@ -29,7 +29,7 @@ class ProductWorkflowTests(unittest.TestCase):
         ):
             view.return_value = {"status": "BLOCKED", "reason": "T20_CHECK_UNAVAILABLE"}
             self.assertEqual(main(["analyze", "--run-id", self.run_id, "--snapshot", "1"]), 1)
-            view.assert_called_with(self.store, self.run_id, review=False)
+            view.assert_called_with(self.store, self.run_id, review=False, snapshot=1)
             self.assertEqual(main(["t20", "--run-id", self.run_id]), 1)
             view.assert_called_with(self.store, self.run_id, review=True)
         self.assertEqual(self.store.read_receipts(self.run_id), ())

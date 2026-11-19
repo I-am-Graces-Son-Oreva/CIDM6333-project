@@ -6,7 +6,8 @@ from dataclasses import asdict
 from datetime import timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+from zoneinfo import ZoneInfo
 
 import fifth_pick.storage as storage
 from fifth_pick.cli import main
@@ -14,7 +15,13 @@ from fifth_pick.models import Category
 from fifth_pick.product_review import review_material, review_status
 from fifth_pick.review_bridge import process_request
 from fifth_pick.snapshots import snapshot_2_target
+from fifth_pick.sources.availability import replay_official_document, replay_official_edition
+from fifth_pick.sources.base import EvidenceMode, SourceEvent
+from fifth_pick.sources.game_lines import replay_game_lines_request, verify_game_lines_replay
+from fifth_pick.sources.injury_pdf import read_injury_status
+from fifth_pick.sources.transport import HttpResponse
 from tests.m6_support import EVENT_ID, TIPOFF, candidate_key, make_case
+from tests.test_supporting_sources import game_lines_payload
 
 RUN = "offline-demo"
 START = TIPOFF - timedelta(hours=6)
@@ -152,9 +159,125 @@ class FixtureCliTests(unittest.TestCase):
             if p.is_file()
         }
 
+    def attach_replayed_sources(self, slot: int) -> tuple[str, str]:
+        observed_at = TIMES[slot - 1]
+        event = SourceEvent(EVENT_ID, "Synthetic Home", "Synthetic Away", TIPOFF, ())
+        phase = "analysis" if slot == 2 else "t20"
+        (payload,) = game_lines_payload()
+        payload.update(
+            id=event.event_id,
+            commence_time=TIPOFF.isoformat(),
+            home_team=event.home_team,
+            away_team=event.away_team,
+        )
+        book = payload["bookmakers"][0]
+        book["last_update"] = observed_at.isoformat()
+        for outcome, team in zip(
+            book["markets"][0]["outcomes"], (event.home_team, event.away_team), strict=True
+        ):
+            outcome["name"] = team
+        body = json.dumps([payload]).encode()
+        transport = Mock(evidence_mode=EvidenceMode.FIXTURE)
+        transport.get.return_value = HttpResponse(200, {}, body)
+        lines = replay_game_lines_request(
+            self.store,
+            RUN,
+            transport=transport,
+            event=event,
+            phase=phase,
+            bookmaker="fixture-book",
+            observed_at=observed_at,
+            max_age=timedelta(minutes=10),
+        )
+        self.assertEqual(
+            lines,
+            verify_game_lines_replay(
+                self.store,
+                RUN,
+                body,
+                event=event,
+                phase=phase,
+                bookmaker="fixture-book",
+                as_of=observed_at,
+                max_age=timedelta(minutes=10),
+            ),
+        )
+        stamp = observed_at.astimezone(ZoneInfo("America/New_York"))
+        reference = (
+            "https://ak-static.cms.nba.com/referee/injury/"
+            f"Injury-Report_{stamp:%Y-%m-%d_%I_%M%p}.pdf"
+        )
+        transport.get.return_value = HttpResponse(
+            200,
+            {"Content-Type": "application/pdf"},
+            f"%PDF-1.7\nfixture-{slot}\n%%EOF".encode(),
+        )
+        document = replay_official_document(
+            transport,
+            reference=reference,
+            published_at=observed_at,
+            retrieved_at=observed_at,
+            max_age=timedelta(minutes=10),
+        )
+        tipoff = TIPOFF.astimezone(ZoneInfo("America/New_York"))
+        status = read_injury_status(
+            document,
+            tipoff=TIPOFF,
+            matchup="AWY@HME",
+            team=event.home_team,
+            verified_label="Doncic, Luka",
+            extract=lambda _body: (
+                f"Injury Report: {stamp:%m/%d/%y %I:%M %p}\n"
+                f"{tipoff:%m/%d/%Y}  {tipoff:%I:%M} (ET)  AWY@HME  "
+                f"{event.home_team}  Doncic, Luka  Available  Synthetic\n"
+            ),
+        )
+        availability = replay_official_edition(
+            json.dumps(
+                [
+                    {
+                        "player_id": "luka-doncic",
+                        "event_id": EVENT_ID,
+                        "status": status,
+                        "role": "official-nba-injury-report",
+                        "last_update": observed_at.isoformat(),
+                    }
+                ]
+            ).encode(),
+            reference=document.reference,
+            published_at=document.published_at,
+            retrieved_at=document.retrieved_at,
+            max_age=timedelta(minutes=10),
+            player_id="luka-doncic",
+            event_id=EVENT_ID,
+        )
+        assert availability.selected is not None
+        path = self.fixtures / str(slot) / "stage.json"
+        checkpoint = json.loads(path.read_bytes())
+        (candidate,) = checkpoint["evidence"].values()
+        for item in candidate["items"]:
+            if item["kind"] == "AVAILABILITY":
+                item["facts"] = {
+                    "status": availability.selected.status,
+                    "synthetic_document_sha256": document.payload_sha256,
+                }
+            if item["kind"] == "GAME_TOTAL":
+                item["facts"] = {
+                    "total": lines.total,
+                    "synthetic_response_sha256": lines.payload_sha256,
+                }
+            if item["kind"] == "POINT_SPREAD":
+                item["facts"] = {
+                    "spread": lines.home_spread,
+                    "synthetic_response_sha256": lines.payload_sha256,
+                }
+        path.write_text(json.dumps(checkpoint), encoding="utf-8")
+        return document.payload_sha256, lines.payload_sha256
+
     def test_complete_workflow(self) -> None:
         write_fixtures(self.fixtures)
         self.stage(1)
+        self.attach_replayed_sources(2)
         self.stage(2)
         before = self.inventory()
         watchlist = self.view("candidates")
@@ -169,6 +292,7 @@ class FixtureCliTests(unittest.TestCase):
         }
         self.assertTrue({"IDENTITY_UNRESOLVED", "NOT_AUTHORIZED"} <= rejected)
         self.assertEqual(self.inventory(), before)
+        source_digests = self.attach_replayed_sources(3)
         stage = json.loads(self.stage(3))
         self.assertEqual(
             stage["m6_ranked_candidate_keys"],
@@ -190,6 +314,8 @@ class FixtureCliTests(unittest.TestCase):
         self.assertIn("receipt-verified", error)
         store = storage.application_run_store()
         bundle = review_material(store, RUN)
+        for digest in source_digests:
+            self.assertIn(digest, str(bundle["review_material"]))
         request = {key: value for key, value in bundle.items() if key != "review_material"}
         request.update(
             kind="VERDICT",

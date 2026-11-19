@@ -277,13 +277,15 @@ def _redacted_samples(samples: tuple[PerformanceSample, ...]) -> tuple[Performan
     )
 
 
-def _validate_source(item: EvidenceItem) -> None:
+def _validate_source(item: EvidenceItem, verified_live: tuple[EvidenceItem, ...]) -> None:
     source_id = item.evidence.provenance.source
     reference = item.evidence.provenance.reference
     parsed = urlparse(reference)
     if "stats.nba.com" in parsed.netloc.lower() or parsed.path.lower().startswith("/stats/"):
         raise EvidenceError("NBA statistical endpoints are not an approved evidence source")
     if item.evidence_mode is EvidenceMode.LIVE:
+        if item in verified_live:
+            return
         raise EvidenceError("live supporting-source retrieval is unavailable in M6")
     if (
         source_id != _FIXTURE_SOURCE
@@ -299,7 +301,17 @@ def validate_evidence_items(
     *,
     candidate_key: str,
 ) -> tuple[EvidenceItem, ...]:
-    """Validate provenance for fixture evidence without retrieving any source."""
+    """Validate untrusted supporting items without granting LIVE source authority."""
+    return _validate_evidence_items(items, candidate_key=candidate_key)
+
+
+def _validate_evidence_items(
+    items: Sequence[EvidenceItem],
+    *,
+    candidate_key: str,
+    verified_live: tuple[EvidenceItem, ...] = (),
+) -> tuple[EvidenceItem, ...]:
+    """Validate items after the caller independently reopens any LIVE source receipts."""
 
     if not isinstance(candidate_key, str) or len(candidate_key) != _SHA256_LENGTH:
         raise EvidenceError("candidate_key must be a SHA-256 digest")
@@ -332,7 +344,7 @@ def validate_evidence_items(
             raise EvidenceError("evidence payload_hash must be a SHA-256 digest")
         if item.evidence.excerpt is None:
             raise EvidenceError("supporting evidence requires an auditable excerpt")
-        _validate_source(item)
+        _validate_source(item, verified_live)
         validated.append(
             EvidenceItem(
                 evidence_id=evidence_id,

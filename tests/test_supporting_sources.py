@@ -91,6 +91,32 @@ def parse_history(payload):
 
 
 class SupportingSourceTests(unittest.TestCase):
+    def test_history_join_demands_independent_completed_game_timing(self):
+        from dataclasses import replace
+
+        from fifth_pick.sources.bdl_history import HistoryGameRow
+        from fifth_pick.sources.player_history import HistoryGameTiming, reconcile_history_timing
+
+        played = NOW - timedelta(days=1, hours=2)
+        completed = NOW - timedelta(days=1)
+        row = HistoryGameRow(12, 9, played.date(), 2026, 4, 11, 5, 7, 28)
+        timing = HistoryGameTiming(played.date(), played, completed, 2026, 4, "Boston")
+
+        def reconcile(timings):
+            return reconcile_history_timing(
+                (row,), timings, provider_player_id=12, retrieved_at=NOW
+            )
+
+        (game,) = reconcile({9: timing})
+        self.assertEqual((game.played_at, game.completed_at, game.assists), (played, completed, 7))
+        for timings in (
+            {},
+            {9: replace(timing, opponent_id=7)},
+            {9: replace(timing, completed_at=NOW)},
+        ):
+            with self.assertRaises(SourceError):
+                reconcile(timings)
+
     def test_game_lines_bind_bookmaker_event_and_fixture_receipt_material(self):
         body = json.dumps(game_lines_payload()).encode()
         (lines,) = parse_lines(game_lines_payload())
@@ -246,7 +272,10 @@ class SupportingSourceTests(unittest.TestCase):
         from tempfile import TemporaryDirectory
         from unittest.mock import Mock
 
-        from fifth_pick.sources.game_lines import replay_game_lines_request
+        from fifth_pick.sources.game_lines import (
+            replay_game_lines_request,
+            verify_game_lines_replay,
+        )
         from fifth_pick.sources.transport import HttpResponse
         from fifth_pick.storage import RunStore
 
@@ -276,3 +305,120 @@ class SupportingSourceTests(unittest.TestCase):
             transport.get.assert_called_once()
             self.assertEqual(result.payload_sha256, hashlib.sha256(body).hexdigest())
             self.assertEqual(len(store.read_receipts("replay")), 2)
+
+            def verify(payload, bookmaker="fixture-book", as_of=NOW):
+                return verify_game_lines_replay(
+                    store,
+                    "replay",
+                    payload,
+                    event=EVENT,
+                    phase="analysis",
+                    bookmaker=bookmaker,
+                    max_age=timedelta(minutes=10),
+                    as_of=as_of,
+                )
+
+            self.assertEqual(verify(body), result)
+            for payload, bookmaker in ((body + b" ", "fixture-book"), (body, "other")):
+                with self.assertRaises(SourceError):
+                    verify(payload, bookmaker)
+            with self.assertRaises(SourceError):
+                verify(body, as_of=NOW + timedelta(minutes=11))
+
+    def test_exact_game_lines_acquisition_rejects_an_extra_event_or_bookmaker(self):
+        from tempfile import TemporaryDirectory
+        from unittest.mock import Mock
+
+        from fifth_pick.sources.game_lines import replay_game_lines_request
+        from fifth_pick.sources.transport import HttpResponse
+        from fifth_pick.storage import RunStore
+
+        for extra in ("event", "bookmaker"):
+            with self.subTest(extra=extra), TemporaryDirectory() as directory:
+                payload = game_lines_payload()
+                if extra == "event":
+                    payload.append(dict(payload[0], id="outside"))
+                else:
+                    book = payload[0]["bookmakers"][0]
+                    payload[0]["bookmakers"].append(dict(book, key="outside"))
+                transport = Mock(evidence_mode=EvidenceMode.FIXTURE)
+                transport.get.return_value = HttpResponse(200, {}, json.dumps(payload).encode())
+                store = RunStore(directory)
+                with self.assertRaises(SourceError):
+                    replay_game_lines_request(
+                        store,
+                        "scope",
+                        transport=transport,
+                        event=EVENT,
+                        phase="analysis",
+                        bookmaker="fixture-book",
+                        observed_at=NOW,
+                        max_age=timedelta(minutes=10),
+                    )
+                self.assertEqual(
+                    [row["result"] for row in store.read_receipts("scope")], ["ATTEMPTED"]
+                )
+
+    def test_official_edition_replay_requires_exact_player_event_and_publication(self):
+        from fifth_pick.sources.availability import replay_official_edition
+
+        def replay(row):
+            return replay_official_edition(
+                json.dumps([row]).encode(),
+                reference="https://ak-static.cms.nba.com/referee/injury/Injury-Report_2026-11-18_12_00PM.pdf",
+                published_at=NOW,
+                retrieved_at=NOW + timedelta(minutes=10),
+                max_age=timedelta(minutes=20),
+                player_id="p1",
+                event_id=EVENT.event_id,
+            )
+
+        row = dict(
+            player_id="p1",
+            event_id=EVENT.event_id,
+            role="official-nba-injury-report",
+            last_update=NOW.isoformat(),
+            status="OUT",
+        )
+        self.assertIsNotNone(replay(row).selected)
+        for change in (
+            {"player_id": "p2"},
+            {"event_id": "other"},
+            {"role": "nba-com"},
+            {"last_update": (NOW - timedelta(minutes=1)).isoformat()},
+        ):
+            with self.assertRaises(SourceError):
+                replay(row | change)
+
+    def test_injury_edition_acquisition_checks_origin_and_pdf_shape(self):
+        from unittest.mock import Mock
+
+        from fifth_pick.sources.availability import replay_official_document
+        from fifth_pick.sources.transport import HttpResponse
+
+        url = "https://ak-static.cms.nba.com/referee/injury/Injury-Report_2026-11-18_12_00PM.pdf"
+        body = b"%PDF-1.7\nsynthetic test bytes\n%%EOF"
+        transport = Mock(evidence_mode=EvidenceMode.FIXTURE)
+        transport.get.return_value = HttpResponse(200, {"Content-Type": "application/pdf"}, body)
+
+        def replay(ref, source=transport):
+            return replay_official_document(
+                source,
+                reference=ref,
+                published_at=NOW,
+                retrieved_at=NOW,
+                max_age=timedelta(minutes=15),
+            )
+
+        with self.assertRaises(SourceError):
+            replay(url.replace("nba.com", "example.com"))
+        transport.get.assert_not_called()
+        self.assertEqual(replay(url).payload_sha256, hashlib.sha256(body).hexdigest())
+        transport.get.assert_called_once_with(url, {"Accept": "application/pdf"})
+        transport.get.return_value = HttpResponse(200, {"Content-Type": "application/pdf"}, b"html")
+        with self.assertRaises(SourceError):
+            replay(url)
+        live = Mock(evidence_mode=EvidenceMode.LIVE)
+        with self.assertRaises(SourceError):
+            replay(url, live)
+        live.get.assert_not_called()
