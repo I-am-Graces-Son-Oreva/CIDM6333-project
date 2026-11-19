@@ -29,5 +29,11 @@
       "*.env": "deny",
       "*.env.*": "deny"
     }
+  },
+  "formatter": {
+    "after-edit-guard": {
+      "command": ["uv", "run", "python", "guard/after_edit.py", "$FILE"],
+      "extensions": [".py"]
+    }
   }
 }

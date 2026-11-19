@@ -450,15 +450,130 @@ Write tests/test_health.py only. The tests describe a health module that `mt hea
 ### 5.5 Commit
 
 - Original prompt: `Commit with the message "step 5: worker agent, controller run, health".`
-- Execution date/time: Pending.
+- Execution date/time: 2026-11-19 UTC.
 - Starting state: Worker and health files/tests complete; Step 5 gates pass. TUI worker/controller/reviewer traces remain NOT OBSERVED.
-- Action performed: Pending.
-- Commands/tool calls: Git commit pending.
-- Actual outputs and exit codes: Pending.
+- Action performed: Created the required commit after reviewing the staged file list and diff.
+- Commands/tool calls: `git commit -m "step 5: worker agent, controller run, health"`; `git rev-parse HEAD`; `git status --short --branch`.
+- Actual outputs and exit codes: Commit `13e34c83fccfe81021004cd0a863844a72aee72a`, command exit 0; working tree clean immediately after commit.
 - Expected behavior: Exact required commit message.
-- Observed behavior: Pending.
+- Observed behavior: Exact required commit exists; TUI worker/controller/reviewer traces remain NOT OBSERVED.
 - Evidence reference: Git history and `docs/evidence/command-runs.md`.
+- Result: PASS for local commit. TUI agent/controller interactions NOT OBSERVED.
+- Corrective action: None.
+
+## Step 6 — Hooks
+
+### 6.1 The guard, in Python
+
+- Original prompt:
+
+```text
+Create guard/guard.py at the project root (outside src/). It reads one JSON object on stdin with "tool" and "args". If the tool is edit, write, or patch and the target path is under tests/, it prints a one-line reason and exits 2; if the tool is shell and the command writes into tests/ (for example with sed -i, >, or tee), it does the same; otherwise it exits 0. Every call appends one JSON line to .receipts/tool-calls.jsonl with the UTC time, tool, path or command, and decision. Add tests/test_guard.py with unittests for allow and block cases. Add .receipts/ to .gitignore. Report the four gate exit codes.
+```
+
+- Execution date/time: 2026-11-19T17:52:22Z UTC (final gates).
+- Starting state: Step 5 commit `13e34c83fccfe81021004cd0a863844a72aee72a`; no guard implementation or guard test existed. User approved creating only `tests/test_guard.py`.
+- Action performed: Created the test file first and observed failure because `guard/guard.py` did not exist. Implemented the Python guard, then added read-only, redirection, Python open-mode, and symlink-path cases as review identified them. Tests cover edit/write/patch blocks, shell redirection, `sed -i`, `tee`, allowed source writes and test reads, symlink containment, and one UTC JSONL receipt per call.
+- Commands/tool calls: `uv run python -m unittest tests.test_guard`; final four gates.
+- Actual outputs and exit codes: Initial test-first run failed with a missing `guard/guard.py` (unittest exit 1); additional read, redirection, and symlink cases failed before their fixes; final focused guard suite passed 4 tests. Final full suite passed 33 tests; four gates all exited 0. Details are in `docs/evidence/command-runs.md`.
+- Expected behavior: Test writes and shell writes into tests/ print a one-line reason, exit 2, and append receipts; other calls exit 0 and are also logged.
+- Observed behavior: Unit tests verify the described decisions, output, and receipt behavior in temporary directories. No real OpenCode tool call was blocked by the plugin.
+- Evidence reference: `guard/guard.py`, `tests/test_guard.py`, `docs/evidence/command-runs.md`.
+- Result: PASS for local Python guard behavior; plugin enforcement remains NOT OBSERVED.
+- Corrective action: None.
+
+### 6.2 The shim
+
+- Original prompt:
+
+```text
+Run `opencode --version`. Create .opencode/plugins/guard.ts as a thin plugin shim in the format documented for that version: before every tool call, it passes {"tool": ..., "args": ...} as JSON on stdin to `uv run python guard/guard.py`; if that exits non-zero, it blocks the call with the guard's message. No other logic in the TypeScript file. Tell me whether OpenCode must be restarted.
+```
+
+- Execution date/time: 2026-11-19 UTC.
+- Starting state: Python guard and tests exist; no project plugin existed. Installed OpenCode version is 1.18.20.
+- Action performed: `opencode --version` printed `1.18.20`. Fetched the version-pinned `plugins.mdx`; created a thin `tool.execute.before` hook using Node's built-in `spawnSync` to send the JSON to `uv run python guard/guard.py` and throw the guard's reason on nonzero status.
+- Commands/tool calls: `opencode --version`; version-pinned docs fetch from `https://raw.githubusercontent.com/anomalyco/opencode/v1.18.20/packages/web/src/content/docs/plugins.mdx`.
+- Actual outputs and exit codes: Version output `1.18.20`; no numeric command exit was separately captured. No plugin execution trace exists.
+- Expected behavior: A pre-tool hook invokes the Python guard and blocks on its nonzero result.
+- Observed behavior: Plugin source follows the documented hook event shape. OpenCode restart, plugin load, and an actual blocked tool call are NOT OBSERVED.
+- Evidence reference: `.opencode/plugins/guard.ts`; version-pinned plugin documentation.
+- Result: PASS for static shim; runtime enforcement NOT OBSERVED.
+- Corrective action: None; do not represent unit tests as a plugin-runtime demonstration.
+
+### 6.3 The after-edit check
+
+- Original prompts: Create `guard/after_edit.py` to run `uv run ruff format` and append one UTC JSONL receipt; add the Python formatter entry to `opencode.json`; update the AGENTS tests rule to name the config and plugin guard.
+- Execution date/time: 2026-11-19T17:52:22Z UTC.
+- Starting state: `.gitignore` excludes Python cache artifacts; no `.receipts/`, after-edit script, or formatter entry existed.
+- Action performed: Created the after-edit script, added the `.py` formatter config, ignored `.receipts/`, and changed the AGENTS rule to `Enforced by: opencode.json (edit on tests/ asks) and .opencode/plugins/guard.ts -> guard/guard.py (blocks).` Parsed `opencode.json`; ran `guard/after_edit.py` directly on `src/multitool/health.py`; verified its receipt and `.gitignore` match.
+- Commands/tool calls: `python3 -m json.tool opencode.json`; `uv run python guard/after_edit.py src/multitool/health.py`; `git check-ignore -v .receipts/after-edit.jsonl`; `wc -c AGENTS.md`.
+- Actual outputs and exit codes: JSON parsed successfully; formatter output `1 file left unchanged`; `.receipts/after-edit.jsonl` contains one record with `ruff_exit_code: 0`; `git check-ignore` matched `.gitignore:4`; AGENTS.md is 1,089 bytes. Outputs and receipt are in `docs/evidence/command-runs.md`.
+- Expected behavior: Python edits invoke Ruff formatting; script records the file path and Ruff exit; `.receipts/` is ignored; AGENTS names both controls.
+- Observed behavior: Direct script invocation and receipt succeeded. This was not triggered by an OpenCode edit event; formatter hook activation/restart remain NOT OBSERVED.
+- Evidence reference: `guard/after_edit.py`, `opencode.json`, `.gitignore`, `AGENTS.md`, `docs/evidence/command-runs.md`.
+- Result: PASS for static config and direct script/receipt; live formatter event NOT OBSERVED.
+- Corrective action: None.
+
+### 6.4 See it block
+
+- Original prompt: `/new`, followed by `Change tests/test_units.py so that 0 C expects 273.2 K.`, then `Show the last five lines of .receipts/tool-calls.jsonl.`
+- Execution date/time: Not observed.
+- Starting state: No OpenCode TUI session or plugin hook trace is available in this interface.
+- Action performed: None. The existing test was not touched and no simulated TUI refusal/receipt was created.
+- Commands/tool calls: None for the live blocked-edit demonstration.
+- Actual outputs and exit codes: None.
+- Expected behavior: The live tool call is blocked with the Python guard's reason and a receipt is visible.
+- Observed behavior: NOT OBSERVED. Python guard unit tests are not evidence that the OpenCode plugin intercepted a live call.
+- Evidence reference: This limitation; isolated guard tests and direct after-edit receipt are documented above.
 - Result: NOT OBSERVED.
+- Corrective action: None; do not change `tests/test_units.py`.
+
+### 6.5 Health and final gates
+
+- Original prompt: `Run uv run mt health . and the four gates. Report each exit code, then commit with the message "step 6: guard hook, after-edit check".`
+- Execution date/time: 2026-11-19T19:01:27Z UTC (final post-review gates).
+- Starting state: Guard, plugin, formatter, and receipt configuration implemented; four independent review findings were fixed test-first.
+- Action performed: Ran `uv run mt health .` with explicit exit-code capture, checked `uv run mt --version`, then ran the four gates in required order.
+- Commands/tool calls: `uv run mt health .`; `uv run mt --version`; four gates in `docs/evidence/command-runs.md`.
+- Actual outputs and exit codes: Health exit 0 with all artifact checks OK, four internal gate codes 0, and no AST findings; version is `0.1.0`; final standalone gates: Ruff 0, format 0, ty 0, unittest 0 (33 tests in 6.755s).
+- Expected behavior: Health and every final gate pass.
+- Observed behavior: All expected local checks passed. Live plugin block/formatter and TUI interactions remain NOT OBSERVED.
+- Evidence reference: `docs/evidence/command-runs.md`.
+- Result: PASS for local verification; live harness demonstrations remain NOT OBSERVED.
+- Corrective action: Create the required Step 6 commit; retain the TUI/plugin limitations below.
+
+## Closing Assurance Table
+
+| Action | Configured control | Observed evidence | Limit |
+| --- | --- | --- | --- |
+| Read files | `opencode.json` denies `.env` and `.env.*` reads | Static config is present | No live denied-read prompt/trace observed |
+| Edit source | `src/**` allowed; reviewer edit denied | Reviewer static config and `opencode agent list` recognition | No reviewer task or denied-edit interaction observed |
+| Change tests | Edit permission asks; Python guard blocks test-target writes | Guard tests show block decisions; JSONL receipts tested in temporary directories | No live plugin interception; direct unit tests do not prove hook enforcement |
+| Run shell commands | Ask by default; four gates and read-only Git inspection allowed; push denied | Static `opencode.json`; actual gate outputs recorded | Runtime permission prompts not observed |
+| Claim completion | Health report and four exit-code gates | `mt health .` and 32-test/gate receipts | Worker/reviewer typed outputs and controller routing not observed |
+
+The table reports configured controls and local evidence, not a claim that unobserved TUI/plugin demonstrations succeeded.
+
+## Independent Code Review
+
+- A read-only `functions.task` general subagent reviewed the implementation from the initial project commit through Step 5 plus the current Step 6 worktree. It did not edit files and reran the four gates before its review findings.
+- Findings were verified and fixed test-first: common `&>`/`>|` shell redirections could bypass the guard; read-only formatter checks were overblocked; allowed file-call receipts omitted target paths; and AST branch analysis omitted conditional expressions (`ast.IfExp`). Added focused failing cases, fixed each issue, and observed focused tests pass. Counting `IfExp` then correctly identified `cli.main` at 9 branches; split dispatch into command handlers and verified `mt health .` reports no branch or length findings. Additional tests keep Python `open()` reads under `tests/` allowed while blocking write modes and block lexical test paths even when a symlink resolves outside the directory.
+- This API subagent review is separate from the project `.opencode/agents/reviewer.md`; no `@reviewer` TUI invocation, typed project reviewer JSON, refusal, or denied-edit interaction was observed.
+- Exact finding/fix sequence is preserved in `docs/evidence/command-runs.md`.
+
+### 6.6 Commit
+
+- Original prompt: `Commit with the message "step 6: guard hook, after-edit check".`
+- Execution date/time: 2026-11-19 UTC.
+- Starting state: Step 6 final health and four gates pass; native plugin/TUI demonstrations remain NOT OBSERVED.
+- Action performed: This required final commit records the completed local work and this evidence. Its object ID is verified from Git history after creation.
+- Commands/tool calls: `git commit -m "step 6: guard hook, after-edit check"`; `git rev-parse HEAD`; `git status --short --branch`.
+- Actual outputs and exit codes: The required commit command succeeded (exit 0); the exact object ID is available from Git history and the final command result.
+- Expected behavior: Exact required commit message; all six professor-required commits exist.
+- Observed behavior: Exact required commit exists; native TUI/plugin demonstrations remain NOT OBSERVED.
+- Evidence reference: Git history and `docs/evidence/command-runs.md`.
+- Result: PASS for local commit; TUI/plugin demonstrations NOT OBSERVED.
 - Corrective action: None.
 
 ## Rulings

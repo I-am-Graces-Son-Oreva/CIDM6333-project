@@ -90,6 +90,8 @@ class HealthTests(unittest.TestCase):
             source = ["def too_complex():"]
             for _ in range(9):
                 source.extend(("    if True:", "        pass"))
+            source.extend(("", "def too_many_ternaries():"))
+            source.extend("    value = 1 if True else 2" for _ in range(9))
             source.extend(("", "def too_long():"))
             source.extend("    value = 1" for _ in range(50))
             (root / "src" / "sample.py").write_text("\n".join(source) + "\n")
@@ -98,7 +100,10 @@ class HealthTests(unittest.TestCase):
 
         self.assertEqual(
             report["branch_violations"],
-            ["src/sample.py:too_complex (9 branches)"],
+            [
+                "src/sample.py:too_complex (9 branches)",
+                "src/sample.py:too_many_ternaries (9 branches)",
+            ],
         )
         self.assertEqual(report["long_functions"], ["src/sample.py:too_long (51 lines)"])
         self.assertEqual(report["exit_code"], 1)

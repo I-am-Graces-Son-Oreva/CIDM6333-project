@@ -670,3 +670,128 @@ EXIT_CODE=0
 ```
 
 The `git diff --stat` output lists tracked changes only; new untracked files are not included in Git's default diff stat.
+
+## Step 5.5: worker and health commit
+
+Command: `git commit -m "step 5: worker agent, controller run, health"`
+
+Actual output:
+
+```text
+[main 13e34c8] step 5: worker agent, controller run, health
+8 files changed, 472 insertions(+), 17 deletions(-)
+```
+
+Exit code: 0. `git rev-parse HEAD` returned `13e34c83fccfe81021004cd0a863844a72aee72a`; `git status --short --branch` returned `## main`.
+
+## Step 6: guard, plugin, formatter, and assurance
+
+After human approval to create only `tests/test_guard.py`, the first focused run failed before `guard/guard.py` existed. All 5 blocked/allowed assertions failed; the subprocess reported it could not open the missing script, and unittest exited 1.
+
+The initial guard implementation then passed the 3 focused tests. An additional read-only test for `tests/test_units.py` exposed overblocking because the path check was applied to all tools, not just edit/write/patch; that test failed with exit status 2 instead of 0. Restricted path blocking to edit/write/patch tools. The focused guard suite passed 3 tests at that stage; later review added shell/Python and symlink-path cases.
+
+OpenCode and configuration checks:
+
+```text
+$ opencode --version
+1.18.20
+
+$ python3 -m json.tool opencode.json
+Valid JSON; formatter command is ["uv", "run", "python", "guard/after_edit.py", "$FILE"] for [".py"].
+
+$ wc -c AGENTS.md
+1089 AGENTS.md
+
+$ git check-ignore -v .receipts/after-edit.jsonl
+.gitignore:4:.receipts/    .receipts/after-edit.jsonl
+```
+
+Version-pinned `v1.18.20` plugin and formatter docs are recorded in `docs/closeout-evidence.md`. The after-edit script was invoked directly on `src/multitool/health.py`:
+
+```text
+$ uv run python guard/after_edit.py src/multitool/health.py
+1 file left unchanged
+```
+
+It appended this actual receipt:
+
+```json
+{"path": "src/multitool/health.py", "ruff_exit_code": 0, "time": "2026-11-19T17:44:18.082187+00:00"}
+```
+
+This verifies the Python script/receipt directly, not an OpenCode formatter event. No project TUI restart, plugin hook execution, or live blocked-test edit was observed.
+
+Pre-review Step 6 health output:
+
+```text
+pyproject.toml: OK
+uv.lock: OK
+tests/: OK
+ruff configuration: OK
+ruff_check: 0
+ruff_format: 0
+ty: 0
+unittest: 0
+functions with >8 branches:
+  none
+functions longer than 50 lines:
+  none
+analysis errors:
+  none
+```
+
+Pre-review gate outputs:
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| `uv run ruff check` | `All checks passed!` | 0 |
+| `uv run ruff format --check` | `28 files already formatted` | 0 |
+| `uv run ty check` | `All checks passed!` | 0 |
+| `uv run python -m unittest discover -s tests` | `Ran 32 tests ... OK` | 0 |
+
+## Step 6 post-review corrections
+
+A read-only general subagent reviewed the committed work from the initial setup plus the current Step 6 worktree. This was not an OpenCode `@reviewer` TUI invocation. It found:
+
+- Shell write redirections `&>` and `>|` were not blocked. New tests failed (exit 1); the guard now blocks these and `&>>` as well.
+- `ruff format --check tests/test_units.py` was incorrectly treated as a write. The allowed-command test failed (exit 1); non-mutating `--check`/`--diff` formatter calls are now allowed.
+- Allowed file tool receipts omitted their target. New receipt assertions failed with `KeyError`; allowed read/write path targets are now recorded.
+- AST analysis omitted `ast.IfExp`. A test with nine ternary expressions failed to find the function; `IfExp` is now counted as a branch.
+
+Each correction was preceded by a failing test and followed by a passing focused test. The independent reviewer also reran all four gates before these corrections (32 tests); final post-correction gates are recorded separately below.
+
+Adding `ast.IfExp` to the branch counter then made `uv run mt health .` report `src/multitool/cli.py:main (9 branches)`. Split command handling into small helpers and reran `uv run mt health .`; it reported all gates as 0 and no branch/length findings. The post-review final gate run follows after the evidence update.
+
+Further guard review added paired cases for Python `open()` calls: reads from `tests/` must remain allowed while write modes are blocked. The read test failed under the broad `open(` marker; narrowed detection to write-capable modes, then both read and write cases passed. A symlink path lexically under `tests/` but resolving outside was also initially allowed; a new test failed with exit 0, so path checks now block both lexical test paths and paths resolving into tests/.
+
+## Step 6.5: post-review final verification
+
+Timestamp: 2026-11-19T19:01:27Z (UTC)
+
+`uv run mt --version` printed `0.1.0`. The final health command and explicit exit capture returned:
+
+```text
+$ uv run mt health .; health_result=$?; printf 'health exit code: %s\n' "$health_result"; exit 0
+pyproject.toml: OK
+uv.lock: OK
+tests/: OK
+ruff configuration: OK
+ruff_check: 0
+ruff_format: 0
+ty: 0
+unittest: 0
+functions with >8 branches:
+  none
+functions longer than 50 lines:
+  none
+analysis errors:
+  none
+health exit code: 0
+```
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| `uv run ruff check` | `All checks passed!` | 0 |
+| `uv run ruff format --check` | `28 files already formatted` | 0 |
+| `uv run ty check` | `All checks passed!` | 0 |
+| `uv run python -m unittest discover -s tests` | `Ran 33 tests in 6.755s ... OK` | 0 |

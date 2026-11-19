@@ -15,7 +15,7 @@ Multitool is a local Python command-line toolkit; it must never edit tests/ to m
 - New modules: use the add-module skill.
 
 # Rules that must hold (enforced)
-- Never edit files under tests/ to make a gate pass. Enforced by: opencode.json, edit on tests/ asks.
+- Never edit files under tests/ to make a gate pass. Enforced by: opencode.json (edit on tests/ asks) and .opencode/plugins/guard.ts -> guard/guard.py (blocks).
 
 # Where the truth lives
 - Toolchain and lint configuration: `pyproject.toml`; resolved versions: `uv.lock`.

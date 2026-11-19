@@ -32,35 +32,55 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _handle_codec(args: argparse.Namespace) -> str:
+    return (
+        encode(args.scheme, args.text)
+        if args.direction == "encode"
+        else decode(args.scheme, args.text)
+    )
+
+
+def _handle_units(args: argparse.Namespace) -> str:
+    return format(convert(args.value, args.from_unit, args.to_unit), ".15g")
+
+
+def _handle_hash(args: argparse.Namespace, parser: argparse.ArgumentParser) -> tuple[str, int]:
+    if (args.text is None) == (args.file is None):
+        parser.error("provide exactly one of text or --file")
+    result = (
+        hash_file(args.algorithm, args.file)
+        if args.file is not None
+        else hash_text(args.algorithm, args.text)
+    )
+    return result, int(args.verify is not None and result != args.verify.lower())
+
+
+def _handle_net(args: argparse.Namespace) -> str:
+    return "\n".join(f"{key}: {value}" for key, value in network_info(args.cidr).items())
+
+
+def _handle_health(args: argparse.Namespace) -> tuple[str, int]:
+    report = inspect_project(args.path)
+    return format_report(report), report["exit_code"]
+
+
+def _execute(args: argparse.Namespace, parser: argparse.ArgumentParser) -> tuple[str, int]:
+    if args.command == "codec":
+        return _handle_codec(args), 0
+    if args.command == "units":
+        return _handle_units(args), 0
+    if args.command == "hash":
+        return _handle_hash(args, parser)
+    if args.command == "net":
+        return _handle_net(args), 0
+    return _handle_health(args)
+
+
 def main() -> int:
     parser = _build_parser()
     args = parser.parse_args()
-    exit_code = 0
-
     try:
-        if args.command == "codec":
-            result = (
-                encode(args.scheme, args.text)
-                if args.direction == "encode"
-                else decode(args.scheme, args.text)
-            )
-        elif args.command == "units":
-            result = format(convert(args.value, args.from_unit, args.to_unit), ".15g")
-        elif args.command == "hash":
-            if (args.text is None) == (args.file is None):
-                parser.error("provide exactly one of text or --file")
-            result = (
-                hash_file(args.algorithm, args.file)
-                if args.file is not None
-                else hash_text(args.algorithm, args.text)
-            )
-            exit_code = int(args.verify is not None and result != args.verify.lower())
-        elif args.command == "net":
-            result = "\n".join(f"{key}: {value}" for key, value in network_info(args.cidr).items())
-        else:
-            report = inspect_project(args.path)
-            result = format_report(report)
-            exit_code = report["exit_code"]
+        result, exit_code = _execute(args, parser)
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
     print(result)

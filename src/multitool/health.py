@@ -31,6 +31,7 @@ class _BranchCounter(ast.NodeVisitor):
             node,
             (
                 ast.If,
+                ast.IfExp,
                 ast.For,
                 ast.AsyncFor,
                 ast.While,

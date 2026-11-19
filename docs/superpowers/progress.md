@@ -5,7 +5,8 @@
 - Task 3: complete; commit `e48922f7a79a51f081302b7a5040dbdcff74c66a`; final gates 0, 0, 0, 0. Rounding failure preserved and test unchanged; live permission prompt NOT OBSERVED.
 - Task 4: complete; commit `f9fdca8ed384982f4ddbba749ec16d94a91ff712`; Step 3 focused tests and four gates pass. Project-local skill invocation, scoped test approval, initial failure, regression failure/fix, and native TUI limitations are recorded in `docs/closeout-evidence.md`.
 - Task 5: complete; Step 4 commit `2ff98d489e77db5ad7b1aa02afc23587963132ee`; net tests and gates pass. TUI plan/build and reviewer interactions remain NOT OBSERVED.
-- Task 6: in progress; Step 5 worker and health files/tests complete; 29-test suite, `mt health .`, and four gates pass. Native worker/controller/reviewer TUI traces remain NOT OBSERVED. Step 5 commit is pending.
+- Task 6: complete; Step 5 commit `13e34c83fccfe81021004cd0a863844a72aee72a`; health tests, 29-test suite, `mt health .`, and four gates pass. Native worker/controller/reviewer TUI traces remain NOT OBSERVED.
+- Task 7: complete in the required final commit; Step 6 guard, plugin, formatter, and assurance table are implemented. Independent review findings were fixed test-first; post-review health and four gates pass (33 tests). Native plugin/TUI demonstrations remain NOT OBSERVED.
 - Pre-flight: all implementation is in the same repository; the CLI is shared by all five modules. Each subcommand will register a parser/handler with the common argparse entry point. No separate task commits beyond the six professor-required commits.
 - Workspace: `/Users/orevisco/multitool` is a standalone Git checkout (git-dir equals common-dir), not a linked worktree or submodule. User explicitly requires implementation in this directory; remain here.
 - Baseline: no project or tests existed before design and plan documentation; no test command is available yet.
