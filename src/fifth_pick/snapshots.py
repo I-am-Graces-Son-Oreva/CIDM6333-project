@@ -619,7 +619,14 @@ def read_application_snapshot_ledger(
 ) -> tuple[SnapshotEvidence | MissedSnapshot, ...]:
     """Read LIVE evidence from the configured M5 store and require its receipts."""
 
-    store = application_run_store()
+    return read_receipted_snapshot_ledger(application_run_store(), run_id)
+
+
+def read_receipted_snapshot_ledger(
+    store: RunStore, run_id: str
+) -> tuple[SnapshotEvidence | MissedSnapshot, ...]:
+    """Verify accepted and missed M5 ledger entries against their run receipts."""
+
     entries = read_snapshot_ledger(store, run_id)
     receipts = store.read_receipts(run_id)
     for entry in entries:
@@ -655,7 +662,9 @@ class SnapshotWorkflow:
         self._registry = Registry.from_universe(load_configs().approved_universe)
         self._clock = (lambda: datetime.now(UTC)) if clock is None else clock
 
-    def collect(self, run_id: str, number: int, board: SourceBoard) -> tuple[SnapshotEvidence, ...]:
+    def collect(
+        self, run_id: str, number: int, board: SourceBoard, *, event_scope: str | None = None
+    ) -> tuple[SnapshotEvidence, ...]:
         """Persist a slot from one legitimate M4 board; never overwrite a prior slot."""
 
         if isinstance(number, bool) or not isinstance(number, int) or number not in (1, 2, 3):
@@ -665,13 +674,21 @@ class SnapshotWorkflow:
         now = self._clock()
         _require_aware(now, "clock")
         self._validate_board(board, now)
+        events = {event.event_id: event for event in board.events}
+        if event_scope is not None and (
+            event_scope not in events
+            or any(projection.event_id != event_scope for projection in board.projections)
+        ):
+            raise SnapshotError("board projections do not match the collection event scope")
         persist_m4_event_board(self._store, run_id, number, board, now)
         entries = self._read_entries(run_id)
-        events = {event.event_id: event for event in board.events}
+        scoped_entries = [
+            entry for entry in entries if event_scope is None or entry.event_id == event_scope
+        ]
         if not board.projections:
             self._reject(run_id, number, "no-projections", now, result="PROJECTION_UNAVAILABLE")
             if number in (2, 3):
-                self._record_absent_candidates(run_id, number, now, events, entries, set())
+                self._record_absent_candidates(run_id, number, now, events, scoped_entries, set())
             return ()
 
         collected: list[SnapshotEvidence] = []
@@ -988,7 +1005,11 @@ class SnapshotWorkflow:
                 number,
                 now,
                 events,
-                entries,
+                [
+                    entry
+                    for entry in entries
+                    if event_scope is None or entry.event_id == event_scope
+                ],
                 seen_keys,
             )
         return tuple(collected)

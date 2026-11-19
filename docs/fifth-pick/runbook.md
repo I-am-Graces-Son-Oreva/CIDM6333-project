@@ -68,3 +68,200 @@ Use the existing `fifth-pick result record --run-id RUN_ID --selection SELECTION
 Accepted statuses use M2's closed `ResultStatus` vocabulary. `DNP` and `VOID` are not `MISS`; do not remap PUSH, VOID, DNP, or stat corrections using an invented rule. Do not treat team scores as player results. If the result, source, or documented settlement rule cannot be trusted, record `RESULT UNAVAILABLE` with `RESULT_UNAVAILABLE`; never claim HIT or MISS without trustworthy evidence.
 
 M9 tests use deterministic offline fixtures and manual typed results only. No player-result source is fetched automatically, no paid or unofficial provider is added, and no M10 work begins until M9's independent read-only reviewer returns PASS.
+
+## Product CLI fixture workflow
+
+Use a fresh run ID and three explicitly selected fixture directories. Run each command
+separately. Use the exact candidate key returned by `final` for settlement.
+
+```sh
+fifth-pick health
+fifth-pick analyze --run-id RUN_ID --snapshot 1 --fixture SNAPSHOT_1_DIRECTORY
+fifth-pick analyze --run-id RUN_ID --snapshot 2 --fixture SNAPSHOT_2_DIRECTORY
+fifth-pick candidates --run-id RUN_ID
+fifth-pick t20 --run-id RUN_ID --fixture SNAPSHOT_3_DIRECTORY
+fifth-pick final --run-id RUN_ID
+fifth-pick decide --run-id RUN_ID
+fifth-pick result record --run-id RUN_ID --selection CANDIDATE_KEY
+fifth-pick audit --run-id RUN_ID
+```
+
+Each directory contains `events.json`, the corresponding `odds-<eventId>.json`
+files in the existing M4 fixture format, and a `stage.json` descriptor with these fields.
+
+| Field | Input |
+| --- | --- |
+| `mode` | The literal `"fixture"` |
+| `observed_at` | The timestamp of that synthetic observation in timezone-aware ISO 8601 |
+| `aliases` | The same explicit provider-name-to-canonical-ID-list mapping at every stage |
+| `evidence` | An object keyed by the exact M5 candidate keys from `candidates`. Use `{}` at Snapshot 1 or when supporting evidence is unavailable. |
+
+Each evidence value contains `items` and `judgment`. An item supplies
+`evidence_id`, `kind`, `effect`, `significance`, `claim`, and `excerpt`.
+Include `samples` for history or `facts` for structured context as required by
+the existing M6 evidence types. A sample supplies `played_at`, `value`, `opponent`,
+and `season`. The judgment is either `null` or the existing
+`MethodologyJudgment` fields, with citations represented as arrays. The selected
+stage time is the simulated evidence retrieval time. Supply the actual rows of
+the synthetic observation, and leave unavailable evidence absent.
+
+Snapshot 2 is the prior evidence state. Until Snapshot 3, `candidates` shows a
+provisional watchlist. The `t20` command collects Snapshot 3, ranks against the
+prior supporting evidence, and reviews the current evidence using the same
+three legitimate snapshots. Use the event's T-20 target for a positive review.
+The fixture CLI takes one board and one observation time per stage. Events with
+different T-20 targets cannot all receive a positive review in that fixture run.
+
+The commands use local fixture transport. An identical stage replay returns
+the recorded checkpoint without changing receipts. Conflicting replays,
+unfinished stages, and mismatched receipts stop the run. Preserve its artifacts
+and use a fresh run ID if a new fixture scenario is needed. `candidates` and
+`audit` are read-only views and `final` reuses an existing verified proposal.
+After explicit approval, use `synthetic-fixture` for the result source. If
+providing settlement provenance, use a `fixture:` reference containing the exact
+candidate key and confirm the supplied excerpt against the reviewed selection.
+
+For the reproducible synthetic success and failure paths, run
+`uv run python -m unittest tests.test_fixture_cli`. The suite builds the
+fixture directories in a temporary location from the accepted synthetic
+test data and uses a separate run store.
+
+### Interactive terminal Demo Mode
+
+From the project directory, launch `uv run fifth-pick menu`. A fresh run ID appears
+in the header. To reopen its evidence, launch
+`uv run fifth-pick menu --run-id RUN_ID` with the same ID. The menu uses the
+bundled synthetic fixture and a macOS or Linux terminal.
+
+Use **↑ / ↓** to move, **Enter** to select, **Esc** to cancel or go back,
+and **Q** to exit from a menu or results screen. In a text form, type your
+answer and press Enter, or press Esc to cancel. Confirmation screens start on
+**Cancel**. To continue, select **Continue** explicitly.
+
+1. Choose **Analyze NBA Slate** twice, confirming Snapshot 1 and then Snapshot 2.
+2. Open **View Candidates and Rankings** for the provisional watchlist.
+3. Choose **Run T-20 Review**, then **View Final Recommendations**. Confirm
+   creation of the proposal the first time you open final recommendations.
+4. Try **Record Results** before approval to see settlement blocked.
+5. Open **Approve / Reject / Modify**. Joseph reviews the displayed selection
+   and types his decision explicitly.
+6. Inspect **View Audit and Receipts**. The screen shows the receipt trail and
+   gives the command for the full evidence.
+
+To demonstrate settlement after approval, select the approved pick under
+**Record Results**. The synthetic example uses outcome `HIT`, source
+`synthetic-fixture`, timestamp `2026-11-15T20:00:00+00:00`, and a
+`fixture:results/CANDIDATE_KEY` reference with the displayed candidate key.
+The fixture excerpt is `Synthetic PrizePicks Luka Doncic Assists Higher 9.5 settled HIT.`
+Review the excerpt against the displayed pick before entering `YES`.
+
+The fixture is bundled under `src/fifth_pick/demo/` and uses the same synthetic
+inputs as the deterministic CLI integration tests.
+
+### Product evidence and live board preparation
+
+Launch with `uv run --offline --no-sync fifth-pick menu`. Demo stays the default.
+**L Open Live Mode** shows saved slate timing and offers the quota-free preflight.
+It requires the exact `PREFLIGHT` confirmation before sending a request. Paid
+collection uses the separate owner confirmation in `board-collect`.
+See the [product coverage and decisions](product-completion.md) for live source
+and timing decisions.
+
+After creating a fixture proposal, the following read-only commands use
+the same persisted evidence.
+
+```sh
+fifth-pick schedule --run-id RUN_ID
+fifth-pick review-material --run-id RUN_ID
+fifth-pick review-status --run-id RUN_ID
+fifth-pick evaluate --run-id RUN_ID
+```
+
+`review-material` emits the JSON argument object for the existing
+`/fifth-pick-review` command in OpenCode. The artifact SHA-256 binds the exact
+proposal and audit material. `review-status` reads matching M10 controller
+receipts. A status obtained from the fixture bridge test is test evidence.
+It does not constitute a native review of a production NBA run. After approval
+and settlement, `evaluate` reports process checks and outcomes separately.
+
+### Personal live preflight and collection
+
+With `THE_ODDS_API_KEY` set securely in the process environment, run
+`uv run fifth-pick board-preflight` and confirm with `PREFLIGHT`. It calls the
+NBA events endpoint once, verifies that the provider reports zero credits
+charged, and atomically saves the sanitized report to
+`var/fifth-pick/preflight/YYYY-MM-DD.json`. It creates no LIVE slate or snapshots.
+Use `fifth-pick board-status` to recompute the current timing classifications
+offline from the saved report. Confirm the full official slate and verified
+roster scope before requesting paid collection. The Python transport uses the
+macOS system CA file if its default CA paths are missing and no explicit CA
+override is configured. Keep the API key in the process environment.
+
+The personal forecast uses exact canonical roster IDs and existing grants. It
+shows both the complete official slate count and eligible collection scope.
+It omits from a fresh three-snapshot budget any event whose first observation
+can no longer precede the last valid Snapshot 2 time.
+
+The run-wide LIVE collector accepts a separate owner grant at the application
+boundary. The grant binds the run, policy digest, verified full-slate provider
+IDs, exact event/team/tipoff and roster scope, allowed slots, and expiry. It uses
+the application clock and storage, verifies provider quotas, reserves up to five
+credits before each event observation, and makes no automatic retry. It checks
+the selected event and window before paid dispatch. Source responses are hashed,
+and verified in-scope grants are filtered before projection parsing and before
+snapshot output or retention. A scoped response cannot mark another game's
+observations missing. The public CLI supplies no paid grant by default.
+
+`board-collect --run-id RUN_ID --scope FILE` reads the saved preflight for the
+current Chicago date. Use `--preflight FILE` to reuse an existing successful
+response saved elsewhere. The reviewed scope must contain the exact
+selected `event` row, `slate_game_count`, canonical `player_ids`, and verified
+provider `aliases` (provider label to canonical ID) with a matching
+`alias_evidence` reference for each label. It previews the scope and waits
+for Joseph's exact terminal confirmation before creating a slot-1-only grant.
+It does not run a separate preflight before confirmation. After confirmation the
+collector performs its required quota-free schedule and quota check before odds.
+The odds response receipt records approved provider-reported market pairs and
+quota counters. Collected coverage and accepted observation counts are separate.
+
+An explicitly approved one-event validation can add `--series --snapshot 1`
+and use the same run, scope, saved manifest and `--series` flag for slots 2 and 3.
+The terminal asks for the displayed, exact 15-credit series approval at each
+invocation. Each invocation can dispatch at most one five-credit odds request.
+Use `schedule --run-id RUN_ID` to see event-local due status. Early or missed
+slots stop before sending a request. This command captures board observations.
+It does not activate pending supporting sources or change M7's review timing.
+
+The first paid LIVE verification is a separately approved board-only smoke for
+one verified event, with at most one free discovery request and one event-odds
+request, five credits maximum, and zero retries. A completed board smoke does
+not establish player-history access, compliant T-20 review, or a live proposal.
+
+## Approved LIVE review and identity preparation
+
+The [November 18 operational amendment](live-operational-amendment.md)
+defines the review window and staggered release policy. `schedule` displays
+the event-local close time. `audit` and `evaluate` read receipt-verified
+product evidence without changing it.
+
+`board-collect` can join separately verified identity inputs using
+`--roster FILE --board-identities FILE`. Roster rows carry `stable_id`,
+`canonical_id`, `team`, and `reference`. Board identity rows carry
+`stable_id`, `provider_label`, `event_id`, `team`, and `reference`.
+The terminal displays the scoped result for Joseph's review. The inputs
+must come from corroborated sources approved for this purpose. The collector
+does not infer a stable ID from a name or enable a new endpoint.
+
+The native Controller dispatch command remains the sole Builder launch
+authority. After its fresh revision-attempt confirmation and a Builder
+correction specifying removals, the Controller records the bounded correction:
+
+```sh
+fifth-pick review-correct --run-id RUN_ID --remove CANDIDATE_KEY --reason REASON
+```
+
+Submit the returned revision-1 envelope to the native Reviewer. Inspect
+`review-status` before making a decision. An exact corrected PASS permits
+Joseph's decision. Original CONCERNS require explicit acknowledgement and
+reason, with the displayed findings bound to the decision receipt. A second
+FAIL stops without another correction.

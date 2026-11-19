@@ -3,7 +3,7 @@
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Final
 
@@ -19,10 +19,19 @@ from fifth_pick.methodology import (
 from fifth_pick.models import ReasonCode
 from fifth_pick.receipts import Receipt
 from fifth_pick.snapshots import SnapshotEvidence
+from fifth_pick.sources.base import EvidenceMode
 from fifth_pick.sources.odds_api import SOURCE_ID
 from fifth_pick.storage import RunStore, _atomic_write, application_run_store
 
 T20_REVIEW_FILENAME: Final[str] = "t20-reviews.jsonl"
+LIVE_T20_REVIEW_GRACE: Final[timedelta] = timedelta(minutes=5)
+
+
+def review_window_allows(target: datetime, reviewed_at: datetime, *, live: bool) -> bool:
+    """Apply the approved LIVE operational window while retaining fixture replay."""
+    return target <= reviewed_at <= target + (LIVE_T20_REVIEW_GRACE if live else timedelta())
+
+
 _T20_AVAILABILITY_KINDS: Final[frozenset[EvidenceKind]] = frozenset({EvidenceKind.AVAILABILITY})
 _T20_ROLE_KINDS: Final[frozenset[EvidenceKind]] = frozenset(
     {EvidenceKind.ROLE_MINUTES, EvidenceKind.TEAMMATE_ABSENCE}
@@ -358,13 +367,15 @@ def _t20_review_readiness(
             gaps.append("Snapshot 3 is late; its recorded timestamps are preserved.")
         if (
             target_at is None
-            or reviewed_at != target_at
+            or not review_window_allows(
+                target_at, reviewed_at, live=snapshot_3.evidence_mode is EvidenceMode.LIVE
+            )
             or snapshot_3.snapshot.recorded_at > reviewed_at
             or snapshot_3.snapshot.observation.retrieved_at > reviewed_at
             or reviewed_at >= snapshot_3.event_start
         ):
             reasons.append(ReasonCode.T20_CHECK_UNAVAILABLE)
-            gaps.append("The review did not occur at the frozen Snapshot 3 T-20 target.")
+            gaps.append("The review did not occur within its authorized T-20 target window.")
 
         prior_snapshot_3 = (
             None
@@ -524,11 +535,12 @@ def review_t20(
     if type(store) is not RunStore:
         raise T20ReviewError("M7 requires the M5 RunStore")
     live_cases = (prior_case, case)
-    if any(
+    live = any(
         snapshot.evidence_mode.value == "live"
         for candidate_case in live_cases
         for snapshot in candidate_case.snapshots
-    ):
+    )
+    if live:
         if any(candidate_case.snapshot_run_id != run_id for candidate_case in live_cases):
             raise T20ReviewError("LIVE M7 review must use the M5 snapshot run ID")
         if store.root != application_run_store().root:
@@ -545,6 +557,9 @@ def review_t20(
     except MethodologyError:
         current_audit = None
 
+    if live:
+        # The application owns LIVE review time. Caller timestamps are for fixture replay.
+        reviewed_at = datetime.now(UTC)
     readiness = _t20_review_readiness(
         prior_audit,
         current_audit,

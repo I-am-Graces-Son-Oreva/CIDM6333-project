@@ -146,3 +146,13 @@ The adapter follows the documented The Odds API v4 request shape:
 
 No other provider is substituted. If a future verification fails, the project returns to
 Joseph rather than silently changing the source.
+
+## November 18 public availability check
+
+The official November 18, 2026 index exposed a [9:00 p.m. Eastern NBA Injury Report](https://ak-static.cms.nba.com/referee/injury/Injury-Report_2026-11-18_09_00PM.pdf).
+The edition was inspected by 8:21 p.m. Central. This records its source and
+publication time only. Tonight's fresh Snapshot 1 windows had closed, and
+the report was not attached to a candidate or treated as a T-20 refresh.
+Automated ingestion and current LIVE supporting-source validation remain
+unavailable. The 12-game public schedule does not supply a full provider-ID
+manifest.

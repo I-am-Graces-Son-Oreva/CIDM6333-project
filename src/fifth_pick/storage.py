@@ -3,9 +3,10 @@
 import json
 import os
 import re
+import stat
 import tempfile
-from collections.abc import Iterable
-from contextlib import suppress
+from collections.abc import Generator, Iterable
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
@@ -172,3 +173,26 @@ def application_run_store() -> RunStore:
     """Construct the application-owned operational store for `var/fifth-pick`."""
 
     return RunStore(APPLICATION_STORAGE_ROOT)
+
+
+@contextmanager
+def collection_lock(store: RunStore, run_id: str) -> Generator[None]:
+    try:
+        import fcntl
+    except ImportError as exc:
+        raise StorageError("safe collection locking is unavailable") from exc
+    store.run_directory(run_id)
+    directory = store.root / ".fixture-locks"
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    info = directory.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid() or info.st_mode & 0o077:
+        raise StorageError("fixture lock directory must be private")
+    with os.fdopen(
+        os.open(directory / f"{run_id}.lock", os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600),
+        "rb+",
+    ) as handle:
+        info = os.fstat(handle.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid() or info.st_mode & 0o077:
+            raise StorageError("fixture lock must be a private regular file")
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        yield

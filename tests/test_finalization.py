@@ -121,6 +121,29 @@ def with_critical_t20_gap(case: CandidateCase) -> CandidateCase:
 
 
 class FinalizationTests(unittest.TestCase):
+    def test_live_pool_receipt_replays_but_rejects_replacement(self):
+        from fifth_pick.finalization import FinalizationError, _pin_live_pool
+        from fifth_pick.ranking import RankingResult
+
+        ranking = RankingResult(ranked=(), audits=())
+        for offset in (0, 1):
+            _pin_live_pool(
+                self.store,
+                RUN_ID,
+                ranking=ranking,
+                keys=("first",),
+                at=datetime(2026, 11, 18, 22, offset, tzinfo=UTC),
+            )
+        with self.assertRaisesRegex(FinalizationError, "cannot change the frozen"):
+            _pin_live_pool(
+                self.store,
+                RUN_ID,
+                ranking=ranking,
+                keys=("replacement",),
+                at=datetime(2026, 11, 18, 22, 2, tzinfo=UTC),
+            )
+        self.assertEqual(len(self.store.read_receipts(RUN_ID)), 1)
+
     def setUp(self) -> None:
         self.temporary = TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)

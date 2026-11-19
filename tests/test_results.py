@@ -14,9 +14,13 @@ import fifth_pick.results as results_module
 import fifth_pick.storage as storage_module
 import tests.test_finalization as finalization_tests
 from fifth_pick.cli import main
+from fifth_pick.evidence import EvidenceEffect
+from fifth_pick.finalization import _append_proposal_receipt
+from fifth_pick.methodology import Confidence
 from fifth_pick.models import Provenance, ReasonCode, Result, ResultStatus
 from fifth_pick.storage import RunStore
 from fifth_pick.t20_review import review_t20
+from tests.m6_support import make_case
 
 NOW = datetime(2026, 11, 17, 18, 0, tzinfo=UTC)
 RUN_ID = finalization_tests.RUN_ID
@@ -41,6 +45,7 @@ class ResultWorkflowTests(unittest.TestCase):
         names: tuple[str, ...] = ("Luka Doncic",),
         *,
         approve: bool = True,
+        changed_at_t20: bool = False,
     ) -> dict[str, Any]:
         finalization_tests.record_run_slate(
             self.temporary.name,
@@ -49,6 +54,27 @@ class ResultWorkflowTests(unittest.TestCase):
         )
         prior_cases = tuple(finalization_tests.make_candidate(name) for name in names)
         current_cases = tuple(finalization_tests.make_t20_case(case) for case in prior_cases)
+        if changed_at_t20:
+            current = finalization_tests.make_t20_case(make_case(projections=(32.5, 33.0, 36.0)))
+            assert current.judgment is not None
+            current_cases = (
+                replace(
+                    current,
+                    evidence=tuple(
+                        replace(item, effect=EvidenceEffect.CONCERN)
+                        if item.evidence_id == "role"
+                        else item
+                        for item in current.evidence
+                    ),
+                    judgment=replace(
+                        current.judgment,
+                        confidence=Confidence.MEDIUM,
+                        supporting_evidence_ids=("last8",),
+                        meaningful_risk_ids=("role", "blowout-risk"),
+                        rationale="T-20 role evidence is now concerning.",
+                    ),
+                ),
+            )
         for prior, current in zip(prior_cases, current_cases, strict=True):
             review_t20(
                 prior,
@@ -149,6 +175,91 @@ class ResultWorkflowTests(unittest.TestCase):
         return json.loads(
             (self.store.run_directory(RUN_ID) / "results.json").read_text(encoding="utf-8")
         )
+
+    def test_changed_t20_values_are_displayed_approved_and_settled(self) -> None:
+        final = self.create_run(approve=False, changed_at_t20=True)
+        proposed = final["proposed"][0]
+        audit_path = self.store.run_directory(RUN_ID) / results_module.AUDIT_FILENAME
+        audit = json.loads(audit_path.read_text(encoding="utf-8"))
+        review = audit["m7_reviews"][0]
+        self.assertEqual(review["conclusion"], "DOWNGRADED")
+        self.assertEqual(review["previous_audit"]["candidate"]["projection"], 33.5)
+        self.assertEqual(review["previous_audit"]["confidence"], "HIGH")
+        ranked = audit["m6_ranking"]["ranked"][0]
+        self.assertEqual(proposed["rank"], ranked["rank"])
+        self.assertEqual(proposed["reason"], ranked["reason"])
+        self.assertEqual(
+            ranked["audit"]["methodology_rationale"],
+            review["previous_audit"]["methodology_rationale"],
+        )
+        self.assertEqual(proposed["projection"], 36.0)
+        self.assertEqual(proposed["confidence"], "MEDIUM")
+        self.assertEqual(proposed["t20_status"], "DOWNGRADED")
+        self.assertEqual(proposed["t20_event_key"], review["event_key"])
+
+        exit_code, stdout, stderr = self.decide("APPROVE")
+        self.assertEqual(exit_code, 0, stderr)
+        for value in ("36.0", "MEDIUM", "DOWNGRADED", "T-20 role evidence is now concerning."):
+            self.assertIn(value, stdout)
+        self.assertIn("Synthetic fixture evidence role.", proposed["material_risks"])
+        for risk in proposed["material_risks"]:
+            self.assertIn(risk, stdout)
+        selection_id = proposed["candidate_key"]
+        self.record(selection_id, self.result(selection_id, ResultStatus.HIT))
+        result = self.result_artifact()["results"][0]
+        self.assertEqual(result["selection"], proposed)
+        self.assertEqual(result["t20_review_event_key"], review["event_key"])
+        self.assertEqual(result["t20_projection"], 36.0)
+
+    def test_pending_decision_refuses_mismatched_t20_receipt(self) -> None:
+        self.create_run(approve=False)
+        receipts_path = self.store.receipts_path(RUN_ID)
+        receipts = self.store.read_receipts(RUN_ID)
+        next(item for item in receipts if item["event"] == "T20_REVIEW")["reason"] = "MISMATCH"
+        receipts_path.write_text(
+            "".join(json.dumps(item) + "\n" for item in receipts), encoding="utf-8"
+        )
+        run_dir = self.store.run_directory(RUN_ID)
+        before = {path: path.read_bytes() for path in run_dir.iterdir() if path.is_file()}
+
+        exit_code, _stdout, stderr = self.decide("APPROVE")
+
+        self.assertNotEqual(exit_code, 0)
+        self.assertIn("recreate", stderr)
+        self.assertEqual(
+            {path: path.read_bytes() for path in run_dir.iterdir() if path.is_file()}, before
+        )
+
+    def test_pending_stale_projection_is_blocked_even_with_matching_proposal_receipt(self) -> None:
+        final = self.create_run(approve=False, changed_at_t20=True)
+        path = self.store.run_directory(RUN_ID) / "final.json"
+        final["proposed"][0].update(projection=33.5, confidence="HIGH")
+        _append_proposal_receipt(self.store, final, result="AWAITING_JOSEPH")
+        path.write_text(json.dumps(final), encoding="utf-8")
+        before = path.read_bytes(), self.store.read_receipts(RUN_ID)
+
+        exit_code, stdout, stderr = self.decide("APPROVE")
+
+        self.assertNotEqual(exit_code, 0)
+        self.assertNotIn("Proposed final set", stdout)
+        self.assertIn("recreate", stderr)
+        self.assertEqual((path.read_bytes(), self.store.read_receipts(RUN_ID)), before)
+
+    def test_substituted_proposal_receipt_cannot_rebind_approval(self) -> None:
+        final = self.create_run(changed_at_t20=True)
+        path = self.store.run_directory(RUN_ID) / "final.json"
+        proposed = final["proposed"][0]
+        selection_id = proposed["candidate_key"]
+        proposed["confidence"] = "HIGH"
+        final["approval"]["official_final"] = final["proposed"]
+        _append_proposal_receipt(self.store, final, result="AWAITING_JOSEPH")
+        path.write_text(json.dumps(final), encoding="utf-8")
+        receipts_before = self.store.read_receipts(RUN_ID)
+
+        with self.assertRaisesRegex(results_module.ResultError, "receipt-verified APPROVE"):
+            self.record(selection_id, self.result(selection_id, ResultStatus.HIT))
+
+        self.assertEqual(self.store.read_receipts(RUN_ID), receipts_before)
 
     def test_hit_and_miss_require_trustworthy_result(self) -> None:
         final = self.create_run(("Luka Doncic", "Derrick White"))

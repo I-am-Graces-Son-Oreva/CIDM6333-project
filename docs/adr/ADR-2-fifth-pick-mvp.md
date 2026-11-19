@@ -61,3 +61,15 @@ uv run python -m unittest discover -s tests
 - Historical code remains available and untouched, but it is outside the Fifth Pick quality gate.
 - Fifth Pick tests are automatically discovered by the required unittest command; no test module needs manual registration.
 - Legacy MCP and pytest packages are compatibility dependencies only. They are not Fifth Pick runtime dependencies and do not change the test framework.
+
+## Personal CLI and course packaging closeout
+
+The M1 decisions above are historical. The product reuses the M2–M10 receipt,
+authorization, source, snapshot, analysis, and governance boundaries. Demo
+acceptance is fixture-based. LIVE discovery persists a sanitized manifest and
+keeps the complete official slate separate from scoped event odds requests.
+Board collection uses a pinned budget, explicit owner confirmation, exact alias
+evidence references, independently recorded slot timestamps, and no retries.
+No supporting source was newly authorized by this implementation. The approved
+M10 OpenCode 1.18.20 qualifications remain in the gate and assurance records.
+See the product coverage matrix for open LIVE decisions.

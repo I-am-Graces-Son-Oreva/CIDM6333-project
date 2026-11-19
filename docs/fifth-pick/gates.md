@@ -2377,3 +2377,232 @@ FAILED (failures=4)
 The frozen design specifies source identifiers, retrieval/source times, access method, excerpts, payload hashes, and receipts. The frozen M5 contract specifies `var/fifth-pick/runs/<run_id>/snapshots/ledger.jsonl` and run-scoped receipts. Neither specifies signatures, keys, or cryptographic ledger authenticity. Therefore M6 uses the application-owned `APPLICATION_STORAGE_ROOT` (`var/fifth-pick`) and M5 `application_run_store()` construction. M6 accepts only the case's `snapshot_run_id`; it cannot receive a store/root. M5's `read_application_snapshot_ledger()` reads that run from the fixed root, reuses the existing decoder/order checks, and requires matching accepted/missed receipts and source provenance. `write_candidates()` may still receive its output `RunStore`, but that value is not used to resolve LIVE source evidence. Tests inject the app-root constant only to isolate temporary M5 runs.
 
 Direct malicious filesystem modification of the application data directory is not detected cryptographically and is not specified by the frozen threat model. Filesystem access controls or signed manifests are future hardening only if Joseph expands that requirement; no signing mechanism is added in M6. Final four-gate evidence and the single final independent M6 acceptance verdict follow below.
+
+## M10 Phase 1 Review Controller and Skills
+
+Phase 1 implements strict typed reviewer parsing, deterministic bounded transitions, deterministic review-cycle IDs, and M2-compatible review receipts in `src/fifth_pick/review.py`. It also adds the four procedure skills and an assurance table. It does not add an OpenCode plugin or Python/OpenCode bridge, alter native Reviewer permissions, or perform the runtime denial experiment.
+
+Baseline gate evidence before Phase 1 changes:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+90 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 424 tests in 259.709s
+OK
+```
+
+The first test-first RED run occurred before `review.py` existed:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 425 tests
+FAILED (errors=1)
+ImportError: No module named 'fifth_pick.review'
+```
+
+After adding the parser and transition code but before the skill and assurance artifacts, tests failed only on the not-yet-created authorized documents. A subsequent regression also exposed that direct `ReviewVerdict` construction could accept an unsupported status; typed construction now rejects it, and transitions accept only the supported `ReviewStatus` values. The later pre-final lint run found one line-length issue; the format check reported two files needing formatting, and `ty` caught an optional receipt event key used without narrowing. Those were corrected before the final gate run.
+
+The first independent Phase 1 review returned FAIL because a directly constructed `ReviewCycle` could carry a noncanonical cycle ID or impossible event sequence, and the assurance table cited a stale test name. Regression tests were added first and observed RED:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 465 tests
+FAILED (failures=2)
+```
+
+`ReviewCycle` now validates its deterministic identity and phase/correction/event-sequence invariants on construction, so transitions and receipt appends cannot consume those malformed cycle records. The assurance table now cites the actual `test_concerns_escalates_to_joseph` test.
+
+Final Phase 1 gates:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+97 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 465 tests in 244.399s
+OK
+```
+
+The first concurrent invocation of the final unit gate exceeded its 600-second tool timeout without a failure summary; the isolated rerun above completed successfully. All four gates subsequently exited `0`. These are Phase 1 results only. `docs/fifth-pick/assurance.md` marks plugin discovery/activation/bridge and the actual native-denial acceptance gate **BLOCKED**; no reviewer write attempt or security experiment was performed.
+
+The independent mechanically read-only Phase 1 reviewer returned a second `FAIL` after the one correction allowed by the review-cycle contract. No further implementation correction was made; the result is escalated to Joseph. Remaining findings:
+
+- `src/fifth_pick/review.py`: the `STOPPED` cycle invariant accepts an unreachable zero-correction/event-sequence-2 combination.
+- `src/fifth_pick/review.py`: `ReviewEvent`/`ReviewTransition` can be directly constructed without validating event/result/sequence/digest consistency before `append_review_receipts()` persists them.
+- `tests/test_review_loop.py`: `test_assurance_table_has_control_and_evidence_per_risk` does not ensure cited evidence exists or prevent prompt/static-config/unavailable-tool claims from being presented as enforcement.
+
+This Phase 1 reviewer verdict is not final M10 acceptance.
+
+## M10 Phase 1 Additional Bounded Correction
+
+Joseph authorized one further bounded correction cycle for STOPPED terminal behavior, event/transition validation before receipt writes, and assurance evidence verification. No plugin, bridge, runtime denial test, permission change, or final M10 acceptance work is included.
+
+The test-first run exposed the new missing controls:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 481 tests
+FAILED (failures=15, errors=4)
+```
+
+After correcting test assertion boundaries, the direct STOPPED-state reachability regression remained RED:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 481 tests
+FAILED (failures=1)
+```
+
+The implementation now rejects follow-up transitions from `REVIEWED_FOR_JOSEPH`, `ESCALATE_TO_JOSEPH`, and `STOPPED`; restricts STOPPED positions to those reachable from nonterminal invalid inputs; validates event name/result/revision/cycle ID/digest and the exact cycle phase/sequence before receipt writes; and revalidates the complete transition before appending any M2 receipt. The assurance test checks cited test symbols and file paths, gate commands, guidance-only status, and BLOCKED runtime rows.
+
+Final four-gate evidence for this correction cycle:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+97 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 476 tests in 220.290s
+OK
+```
+
+All four gates exited `0`. A fresh independent read-only Explore assessment returned `PASS` with no findings after checking all three authorized corrections and M1-M9 preservation. The assessment used read/search tools only; it did not invoke the OpenCode-configured `fifth-pick-reviewer` command. This is Phase 1 evidence only, not final M10 acceptance. Plugin loading, the Python/OpenCode bridge, and runtime denial remain BLOCKED.
+
+## M10 Phase 2 Offline Implementation
+
+Joseph authorized the Phase 2 adapter, bridge, and disposable Reviewer denial experiment on 2026-11-17. The implementation adds the strict stdin/stdout Python bridge, an auto-discovered v1 lifecycle adapter, and an explicit JSON metadata envelope for `/fifth-pick-review`. The bridge reconstructs review state from M2 receipts, rejects malformed/conflicting/out-of-order input, and appends only through the existing M2 `RunStore`. The plugin invokes only `uv run --no-sync python -m fifth_pick.review_bridge` using a fixed argument vector with `shell: false`; it registers no permission hook. Production Reviewer permissions and the root Bash allowlist are unchanged.
+
+Test-first bridge/plugin regressions initially failed because the bridge and adapter did not exist. Further RED runs exposed a partial multi-event receipt retry failure and a validly shaped initial verdict with a mismatched artifact digest returning exit status `0`. The bridge now recovers exact receipt prefixes through M2 idempotency and returns `STOPPED` with nonzero status for that digest mismatch. The offline tests cover malformed and duplicate request fields, strict verdicts, M2 run/cycle binding, event ordering, retry/conflict handling, partial-write recovery, exact stdout shape, adapter lifecycle constraints, fixed argv, and the command envelope.
+
+The most recent full unit run after these corrections reported:
+
+```text
+uv run python -m unittest discover -s tests
+Ran 499 tests
+OK
+```
+
+Final four-gate evidence after the bounded correction pass and assurance updates:
+
+```text
+uv run ruff check
+All checks passed!
+
+uv run ruff format --check
+101 files already formatted
+
+uv run ty check
+All checks passed!
+
+uv run python -m unittest discover -s tests
+Ran 499 tests
+OK
+```
+
+All four gates exited `0`. These offline results do not prove actual host plugin discovery, activation, event delivery, or subprocess invocation.
+
+### Phase 2 Runtime Gates — BLOCKED
+
+Joseph reports `/usr/local/opt/opencode/bin/opencode` version `1.18.20`. This host identity does not prove runtime plugin behavior. The actual OpenCode host was not launched in this session because the active project Bash allowlist denies the host invocation; the allowlist was not broadened or bypassed. No disposable Reviewer write request was made. Plugin activation/event delivery/bridge runtime and the actual correlated native-denial experiment remain **BLOCKED**, not PASS. The Reviewer sentinel and disposable workspace were therefore not created or modified.
+
+## M10 Phase 2 Bounded Correction Pass
+
+Joseph authorized one correction pass limited to material-digest binding, controller-confirmed correction receipts, Reviewer task-call correlation, and concurrent bridge serialization. Tests were added first. The full unittest gate observed expected RED states for the missing digest/call correlation/dispatch-command/lock behavior and for a first `REVISION_DISPATCHED` request whose digest did not match the prior FAIL receipt. The final 499-test run above is GREEN.
+
+The adapter hashes the exact UTF-8 `review_material`, correlates review output with a unique invocation marker and identical OpenCode task `callID`, and only transports the separate controller receipt-confirmation command. The controller dispatches Builder only after receiving a response confirming the persisted `REVISION_ATTEMPT`. The Python bridge serializes each run's receipt-history read/validation/append with a private per-run OS advisory lock under `.review-locks`; the lock file contains no receipt data. M2 models, receipt format, `RunStore` behavior, Reviewer permissions, and the root Bash allowlist remain unchanged.
+
+No host activation test or Reviewer security experiment was run in this correction pass, as Joseph explicitly excluded them. Both runtime gates remain **BLOCKED** pending their separately authorized execution.
+
+
+### M10 Disposable Runtime Evidence and M9 Prerequisite
+
+- M9 final independent Reviewer PASS with no findings is in local OpenCode session `ses_e14b54779ffebdBI11EtBPvtE2`, part `prt_1eb4bfc630015l2QimZbh07M6O`. Parent session `ses_e1833d963ffeQQqHHZxX0cWhEs` records four passing gates and 424 unit tests in part `prt_1eb4c607d001oeq7L798eYIrw9`, and Joseph's M9 completion statement for commits `60fd576` and `48f82d2` in part `prt_1eb59e04f0010WasVj7q6ehKha`.
+- Prior isolated runtime PASS evidence is in the disposable project's `var/test-evidence/m10-routing-4a668301ac3e.jsonl` and `var/fifth-pick/runs/m10-routing-4a668301ac3e/receipts.jsonl`. OpenCode 1.18.20 and local Ollama returned a valid PASS and `REVIEWED_FOR_JOSEPH`; the receipt key and digest matched. That pass recorded all four gates exiting 0 and 507 unit tests.
+- The earlier isolated run `var/test-evidence/m10-handoff-12da2b7620fa.jsonl` returned structured STOPPED for an empty verdict, with no receipt.
+- At this preparation checkpoint, the original native Reviewer write-denial gate was **BLOCKED**. No denial experiment was conducted at that checkpoint.
+
+### Targeted Dispatch Corrections — Historical FAIL Checkpoint
+
+The new regressions first failed on CLI-wrapped dispatch JSON, identical replay, and concurrent confirmation. After the changes, all four required gates exited 0, including 510 unit tests.
+
+The independent read-only review returned FAIL. It confirmed the Python bridge requires a newly persisted receipt under the run lock, and identified three adapter risks: duplicate JSON keys collapse before schema checks, the launch confirmation checks only the receipt key suffix, and an unhandled bridge stdin error can interrupt structured STOPPED delivery. The isolated FAIL-to-correction run was withheld because the review prerequisite did not pass. The prior isolated PASS and STOPPED artifacts remain the available host evidence. The native denial gate remains **BLOCKED**.
+
+### M10 Final Remediation Gate Run
+
+On 2026-11-18, after remediation of the three findings from the historical FAIL checkpoint above, all four established commands exited `0` on the final implementation baseline.
+
+| Gate | Recorded result |
+|---|---|
+| `uv run ruff check` | Exit 0, all checks passed |
+| `uv run ruff format --check` | Exit 0, 101 files already formatted |
+| `uv run ty check` | Exit 0, all checks passed |
+| `uv run python -m unittest discover -s tests` | Exit 0, 510 tests in 212.849 seconds, OK |
+
+The independent remediation review returned **PASS** for duplicate-key rejection, exact cycle and receipt confirmation, and structured STOPPED on bridge transport failure. Evidence is in the local Codex transcript `~/.codex/sessions/2026/11/18/rollout-2026-11-18T10-44-39-01a1ef8b-ce59-7710-922f-20b7beabd38f.jsonl`. Line 960 records the first three results and the unittest launch. Line 1015 records the final unittest result. Line 983 records the independent remediation verdict. This is the saved implementation gate run. The subsequent documentation reconciliation did not rerun it.
+
+### M10 End-to-End Correction Path
+
+Run `m10-final-correction-1b5b2abef146` passed the bounded isolated workflow on OpenCode 1.18.20 with local `ollama/qwen3:4b`. The canonical disposable project used matching working directory, `PWD`, and `--dir`, with isolated XDG paths and process-only model overrides. Controller session `ses_e0fdc58e3ffeCSD5sq17hgXUa1` had exactly three child tasks in that workspace: initial Reviewer, one Builder, and second Reviewer.
+
+Evidence paths below are relative to the existing disposable project, `$TMPDIR/fifth-pick-m10.kMXZVL25/project`. Every receipt carries run ID `m10-final-correction-1b5b2abef146` and cycle `review-31a033c0a96aee5ee90b2916258eabc8cce2d3dd2b254983a76ba3844cd1babd`. Each deterministic event key is that cycle plus the suffix shown below.
+
+| Stage | Observed result | Evidence |
+|---|---|---|
+| Initial Reviewer | Task `01M7R27AJ7WV39CXH07TD88BTV` returned a typed FAIL for `2 + 2 = 5`. Controller returned `REVISION_REQUIRED` with zero corrections used and the matching `-01-review_fail` key. | `var/test-evidence/m10-final-correction-1b5b2abef146-initial-review.jsonl` |
+| Dispatch confirmation | The controller returned one fresh launch authorization with correction count 1 and the matching `-02-revision_attempt` key before Builder started. | `var/test-evidence/m10-final-correction-1b5b2abef146-confirmation-response.json` |
+| Builder | The single task `01M7R2CK7MSG7B9DGMFDW0PV4X` used local Qwen3 4B and returned exactly `2 + 2 = 4` inline. No Builder tool calls or workspace edits were observed. | `var/test-evidence/m10-final-correction-1b5b2abef146-builder.jsonl` and `var/test-evidence/m10-final-correction-1b5b2abef146-corrected-fixture.txt` |
+| Second Reviewer | Task `01M7R2GV3E3FMXQXKR63NGGA5J` returned a typed PASS. Controller returned `REVIEWED_FOR_JOSEPH` with one correction used, none available, and the matching `-03-review_pass` key. | `var/test-evidence/m10-final-correction-1b5b2abef146-rereview.jsonl` |
+
+The complete `REVIEW_FAIL → REVISION_ATTEMPT → REVIEW_PASS` sequence is in `var/fifth-pick/runs/m10-final-correction-1b5b2abef146/receipts.jsonl`. The first two receipts bind to SHA-256 `864b89d282ca79477e5021acd5ee1e1780f93630a8623b4d9477cadc9ef90172`. The final PASS receipt binds to SHA-256 `cc1dba8fb20f329a067166ecb59f3aa1d2cfb2f2b45b77379857972eeb2a56df`, independently recomputed from the exact corrected fixture bytes.
+
+The stopped run `m10-qwen4b-f1748bae08d0` retains its original `REVIEW_FAIL → REVISION_ATTEMPT` sequence and Builder model-resolution error. Its authorization was consumed. The successful fresh run verifies the correction path through post-correction PASS. At this correction checkpoint the original native write-denial gate was **BLOCKED**. The later Route B evidence below gives the current security status. Live second-FAIL/CONCERNS escalation remains **UNVERIFIED**. Offline coverage includes `tests/test_review_loop.py::test_one_correction_then_escalation` and `tests/test_review_loop.py::test_concerns_after_correction_escalates_without_another_correction`. M10 acceptance remains withheld.
+
+### M10 Native Reviewer Tool-Withholding Evidence
+
+Joseph's [2026-11-18 addendum](../superpowers/plans/2026-11-17-fifth-pick-m10-harness-hardening.md#2026-11-18--opencode-11820-native-reviewer-evidence-addendum) authorizes an alternative to request-to-denial evidence for OpenCode 1.18.20. The original Task 5 criteria and historical outcomes above remain in the record.
+
+- The first challenge, `m10-native-withholding-7da85682c373`, timed out. Its provider capture and integrity artifacts are retained. The timeout is inconclusive and is excluded from qualifying evidence.
+- The bounded recovery challenge, `m10-native-withholding-2b089c988436`, used the unchanged native Fifth Pick Reviewer in session `ses_e0fc51df8fferaZje4dy4iglVT`, the canonical disposable project, and local-only Ollama. OpenCode's host catalog exposed `edit`, `write`, and `bash` to the host control. Native Reviewer resolution marked all three unavailable under the effective wildcard deny for `edit` and `bash`. The installed-host excerpts show the edit-tool alias mapping and the agent/session permission filter applied before provider delivery.
+- Each of the three captured provider requests carried the exact bounded Reviewer challenge and exposed only `glob`, `grep`, `read`, `skill`, `todowrite`, and `webfetch`. The relay recorded and forwarded the provider requests without altering their tool schemas. No edit or shell-write tool was exposed or invoked. The Reviewer used read-only `glob` and `grep`, and OpenCode blocked a final `grep` targeting the parent directory. That read rejection supplies no write-route denial evidence. No child tasks were created.
+- The challenge's exact sentinel bytes and SHA-256 matched before and after. The sentinel SHA-256 was `40da4dd534e5ce2de79bcca1026f66bfecde3d595ebc2beca7952544eae46ef1`. The byte-identical, complete 6,711-entry inventories had SHA-256 `48809d1b4d27129aa977c226c4e5953d41598bb5a71bfa7b6150edc4658fba90`. They include hidden paths, file content hashes, modes, owners, modification times, and symlink targets. Production and disposable Reviewer definitions and project permission configuration were unchanged.
+
+The recovery evidence is under `$TMPDIR/fifth-pick-m10.kMXZVL25/m10-native-withholding-2b089c988436/`, outside the inventoried project. The principal artifacts are `host-tool-catalog.json`, `reviewer-native-filter.json`, `installed-host-filter-excerpts.txt`, `provider-events.jsonl`, `challenge-runtime.jsonl`, `challenge-runtime.log`, `sentinel-before.bin`, `sentinel-after.bin`, `workspace-before.json`, `workspace-after.json`, `permissions-before.json`, `permissions-after.json`, and `integrity-summary.json`. Reproduce the inventory with the saved `capture.py --inventory <canonical-disposable-project>` procedure.
+
+Under the addendum, edit and Bash/shell-write are each **NATIVE TOOL WITHHOLDING VERIFIED**. **REQUEST-TO-DENIAL BEHAVIOR UNVERIFIED** for both. The original Task 7 check `test_reviewer_cannot_edit` maps to Route B evidence for the native edit/write tools. The original check `test_shell_write_bypass_is_denied` maps to Route B evidence for Bash/shell-write. These names describe the original checklist and are not claims that those unit tests ran. Read-oriented tools were exposed, while write-capable tools were withheld. Neither the timed-out challenge nor the out-of-directory read rejection is used as proof.
+
+The recovery capture wrapper did not issue an aggregate PASS. Its location parser included a line break in a directory token, and its zero-tool-call assertion was stricter than the addendum. The evidence audit rechecked the host log directories, actual Reviewer session, native tool filter, all provider requests, and inventory files directly. The recorded read calls do not satisfy a write-denial route and did not modify the workspace.
+
+The independent assessment used a separate actual Fifth Pick Reviewer session under the unchanged native permissions. The first assessment timed out. The recovery assessment, session `ses_e0fb96571ffezEp2c6WrBtz34c`, returned a typed PASS, made no tool calls, and left the complete inventory unchanged. Its original verdict is retained in `assessment-result.json`, with the native output in `assessment-recovery-runtime.jsonl`. One finding mistakenly described the exposed read-oriented tools as blocked. The provider capture supplies the exact distinction: those tools were exposed, while edit, write, and Bash were withheld. M10 acceptance remains withheld for Joseph's decision.
+
+A separate independent audit of the raw artifacts corroborated route B for both write routes and identified the same factual error in the native assessment. It recomputed the inventory and sentinel hashes and matched the production configuration files to the captured permission records.
+
+
+### M10 Formal Acceptance With Qualification
+
+On 2026-11-18 Joseph explicitly accepted M10 **WITH QUALIFICATION** under the approved OpenCode 1.18.20 evidence addendum. The independent, mechanically read-only Task 7 documentation recheck returned **PASS** after the full-scope review's CONCERNS were reconciled. The original full-scope verdict is retained on line 2311 of the local Codex transcript identified in the final remediation gate entry. The final recheck verdict is on line 2405 of that transcript.
+
+- **NATIVE TOOL WITHHOLDING VERIFIED** for both edit and Bash/shell-write routes on OpenCode 1.18.20. Read-oriented tools were exposed, while write-capable tools were withheld.
+- **REQUEST-TO-DENIAL BEHAVIOR UNVERIFIED** for both write routes.
+- **Live second-FAIL/CONCERNS escalation UNVERIFIED**, with offline regression coverage.
+
+The final implementation gate run remains the recorded four-gate PASS with 510 unit tests and independent remediation PASS. The isolated correction-path and Route B evidence remain indexed above. Earlier FAIL, CONCERNS, BLOCKED, and unsuccessful runtime records were retained as historical evidence. This decision does not change the frozen architecture, native permissions, or the version-scoped addendum. It does not authorize course closeout work, a commit, or a push.

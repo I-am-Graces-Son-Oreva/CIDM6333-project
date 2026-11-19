@@ -139,6 +139,13 @@ def _validate_result(result: Result, selection_id: str) -> bool:
         ):
             raise ResultError("team-score data is not an adjudicated player result")
 
+    if (
+        result.source == "synthetic-fixture"
+        and result.outcome is ResultStatus.RESULT_UNAVAILABLE
+        and provenance is None
+    ):
+        return True
+
     fixture_markers = (
         result.source == "synthetic-fixture",
         provenance is not None and provenance.source == "synthetic-fixture",
@@ -253,7 +260,7 @@ def _approved_context(
     store: RunStore,
     run_id: str,
     selection_id: str,
-) -> tuple[dict[str, object], dict[str, object], str, int | float]:
+) -> tuple[dict[str, object], dict[str, object], str, int | float, str, bool]:
     try:
         final = load_approved_final(store, run_id)
     except (ApprovalError, StorageError, ValueError) as exc:
@@ -321,7 +328,15 @@ def _approved_context(
         selection_id,
         receipts,
     )
-    return final, selections[0], event_key, t20_projection
+    selection = selections[0]
+    if "t20_event_key" in selection and (
+        selection["t20_event_key"] != event_key or selection.get("projection") != t20_projection
+    ):
+        raise ResultError("approved selection does not match its bound M7 review")
+    fixture_workflow = any(
+        receipt.get("event_key") == "fixture-stage-3-completed" for receipt in receipts
+    )
+    return final, selection, event_key, t20_projection, board["evidence_mode"], fixture_workflow
 
 
 def _read_results(
@@ -644,7 +659,7 @@ def record_result(
     )
 
     try:
-        final, selection, t20_event_key, t20_projection = _approved_context(
+        final, selection, t20_event_key, t20_projection, mode, fixture_workflow = _approved_context(
             store,
             run_id,
             selection_id,
@@ -653,6 +668,9 @@ def record_result(
         raise ResultError("approved result context could not be read") from exc
     approval = final["approval"]
     assert isinstance(approval, dict)
+    if (mode == "live" and fixture) or (fixture_workflow and not fixture):
+        raise ResultError("settlement evidence mode does not match the approved workflow")
+
     slate_version = final["slate_version"]
     assert isinstance(slate_version, int)
     decision_receipt_key = approval["decision_receipt_key"]

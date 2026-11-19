@@ -24,7 +24,7 @@ from fifth_pick.methodology import (
 from fifth_pick.models import Category, Direction, ReasonCode
 from fifth_pick.snapshots import MissedSnapshot
 from fifth_pick.storage import RunStore
-from fifth_pick.t20_review import T20Conclusion, review_t20
+from fifth_pick.t20_review import T20Conclusion, review_t20, review_window_allows
 from tests.m6_support import make_case as make_m6_case
 from tests.m6_support import make_evidence_item, make_evidence_set, make_judgment
 from tests.test_methodology import make_case_from_m5_records, make_live_ledger
@@ -166,6 +166,16 @@ def changed_event(case, event_id: str):
 
 
 class T20ReviewTests(unittest.TestCase):
+    def test_approved_live_review_window_boundaries(self):
+        from datetime import UTC, datetime
+
+        target = datetime(2026, 11, 18, 22, tzinfo=UTC)
+        for offset, allowed in ((-1, False), (0, True), (300, True), (301, False)):
+            with self.subTest(offset=offset):
+                at = target + timedelta(seconds=offset)
+                self.assertEqual(review_window_allows(target, at, live=True), allowed)
+                self.assertEqual(review_window_allows(target, at, live=False), offset == 0)
+
     def setUp(self) -> None:
         self.temporary = TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)

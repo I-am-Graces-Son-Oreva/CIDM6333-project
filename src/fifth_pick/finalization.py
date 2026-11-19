@@ -2,13 +2,15 @@
 
 import hashlib
 import json
+import math
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
 from typing import Final
 from zoneinfo import ZoneInfo
 
+from fifth_pick.config import DEFAULT_CONFIG_DIR
 from fifth_pick.errors import StorageError
 from fifth_pick.methodology import AuditEvidenceMode, CandidateCase
 from fifth_pick.models import ReasonCode
@@ -238,12 +240,139 @@ def _load_t20_reviews(store: RunStore, run_id: str) -> tuple[dict[str, object], 
     return tuple(reviews)
 
 
+def _reviewed_selection_fields(review: dict[str, object]) -> dict[str, object]:
+    """Extract the decision-facing facts from a validated M7 record."""
+
+    current = review.get("current_audit")
+    if not isinstance(current, dict):
+        raise FinalizationError("M7 review has no current candidate audit")
+    candidate = current.get("candidate")
+    projection = review.get("projection")
+    line = projection.get("at_t20") if isinstance(projection, dict) else None
+    confidence = review.get("current_confidence")
+    status = review.get("conclusion")
+    if (
+        not isinstance(candidate, dict)
+        or isinstance(line, bool)
+        or not isinstance(line, int | float)
+        or not math.isfinite(line)
+        or candidate.get("projection") != line
+        or confidence not in ("HIGH", "MEDIUM")
+        or confidence != current.get("confidence")
+        or not isinstance(status, str)
+        or status not in _POSITIVE_T20_CONCLUSIONS
+        or review.get("readiness_passed") is not True
+        or review.get("blocked") is not False
+    ):
+        raise FinalizationError("M7 review does not bind current selection values")
+
+    risk_ids = current.get("meaningful_risk_ids")
+    evidence = current.get("evidence")
+    rationale = current.get("methodology_rationale")
+    disclosure = current.get("senior_lower_disclosure")
+    if (
+        not isinstance(risk_ids, list)
+        or not isinstance(evidence, list)
+        or not isinstance(rationale, str)
+        or not isinstance(disclosure, str)
+    ):
+        raise FinalizationError("M7 review has invalid rationale or risk evidence")
+    risks = [
+        item["claim"]
+        for item in evidence
+        if isinstance(item, dict)
+        and item.get("evidence_id") in risk_ids
+        and isinstance(item.get("claim"), str)
+    ]
+    if len(risks) != len(risk_ids):
+        raise FinalizationError("M7 review has missing cited risk evidence")
+    if disclosure:
+        risks.append(disclosure)
+    return {
+        "projection": line,
+        "confidence": confidence,
+        "t20_status": status,
+        "t20_event_key": review["event_key"],
+        "t20_rationale": rationale,
+        "material_risks": risks,
+    }
+
+
+def _validate_pending_t20(store: RunStore, run_id: str, final: dict[str, object]) -> None:
+    proposed = final["proposed"]
+    assert isinstance(proposed, list)
+    if not proposed:
+        return
+    try:
+        reviews = _load_t20_reviews(store, run_id)
+        audit_path = store.run_directory(run_id) / AUDIT_FILENAME
+        audit = json.loads(audit_path.read_text(encoding="utf-8"))
+        audit_reviews = audit.get("m7_reviews") if isinstance(audit, dict) else None
+        if not isinstance(audit_reviews, list) or audit.get("run_id") != run_id:
+            raise FinalizationError("proposal audit has no run-bound M7 review records")
+        for selection in proposed:
+            if not isinstance(selection, dict):
+                raise FinalizationError("malformed proposal selection")
+            matching = [
+                review
+                for review in reviews
+                if review["candidate_key"] == selection.get("candidate_key")
+            ]
+            audit_matching = [
+                review
+                for review in audit_reviews
+                if isinstance(review, dict)
+                and review.get("candidate_key") == selection.get("candidate_key")
+            ]
+            if len(matching) != 1 or audit_matching != matching:
+                raise FinalizationError(
+                    "proposal has no unique matching M7 audit and ledger review"
+                )
+            fields = _reviewed_selection_fields(matching[0])
+            if _canonical_json(
+                {field: selection.get(field) for field in fields}
+            ) != _canonical_json(fields):
+                raise FinalizationError("proposal values do not match the receipt-bound M7 review")
+    except (FinalizationError, StorageError, OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise FinalizationError(
+            "Pending proposal has inconsistent or unverified T-20 values. "
+            "Preserve this run and explicitly recreate the proposal after verifying its evidence."
+        ) from exc
+
+
 def _case_audit(case: CandidateCase) -> dict[str, object]:
     try:
         result = rank_candidates((case,))
     except (RankingError, StorageError, ValueError) as exc:
         raise FinalizationError("M6 candidate case could not be re-evaluated") from exc
     return result.audits[0].to_dict()
+
+
+def _pin_live_pool(
+    store: RunStore,
+    run_id: str,
+    *,
+    ranking: RankingResult,
+    keys: tuple[str, ...],
+    at: datetime,
+) -> None:
+    digest = hashlib.sha256(_canonical_json(ranking.to_dict()).encode()).hexdigest()
+    receipt = Receipt(
+        at.isoformat(),
+        "LIVE_FROZEN_POOL",
+        "PINNED",
+        digest,
+        SOURCE_ID,
+        _canonical_json(keys),
+        run_id,
+        "live-finalization-frozen-pool",
+    )
+    try:
+        store.append_receipt(receipt)
+    except StorageError as exc:
+        raise FinalizationError(
+            "LIVE finalization cannot change the frozen candidate pool"
+        ) from exc
 
 
 def _review_for_candidate(
@@ -361,11 +490,14 @@ def _existing_result(store: RunStore, run_id: str) -> FinalizationResult | None:
             raise FinalizationError("blocked M8 state has no matching application receipt")
     else:
         try:
-            from fifth_pick.approval import ApprovalError, _read_final
+            from fifth_pick.approval import ApprovalError, _read_final, load_pending_proposal
 
-            _read_final(store, run_id)
+            if state is FinalizationState.AWAITING_JOSEPH:
+                load_pending_proposal(store, run_id)
+            else:
+                _read_final(store, run_id)
         except (ApprovalError, StorageError) as exc:
-            raise FinalizationError("existing final.json has no valid decision trail") from exc
+            raise FinalizationError(f"existing final.json cannot be reused: {exc}") from exc
 
     if state in (
         FinalizationState.APPROVED_BY_JOSEPH,
@@ -387,11 +519,35 @@ def finalize_slate(
     run_id: str,
     store: RunStore,
     tie_breaks: tuple[NearTieDecision, ...] = (),
+    expected_ranking_digest: str | None = None,
 ) -> FinalizationResult:
     """Create one auditable proposal; never treat it as Joseph's official decision."""
+    from fifth_pick.review_bridge import _run_lock
 
     if type(store) is not RunStore:
         raise FinalizationError("finalization requires the M2 RunStore")
+    store.run_directory(run_id)
+    with _run_lock(store, run_id):
+        return _finalize_locked_slate(
+            cases,
+            current_cases,
+            run_id=run_id,
+            store=store,
+            tie_breaks=tie_breaks,
+            expected_ranking_digest=expected_ranking_digest,
+        )
+
+
+def _finalize_locked_slate(
+    cases: tuple[CandidateCase, ...],
+    current_cases: tuple[tuple[CandidateCase, CandidateCase], ...],
+    *,
+    run_id: str,
+    store: RunStore,
+    tie_breaks: tuple[NearTieDecision, ...],
+    expected_ranking_digest: str | None,
+) -> FinalizationResult:
+
     if not isinstance(run_id, str) or not run_id.strip():
         raise FinalizationError("run_id must be non-empty")
     if not isinstance(cases, tuple) or any(not isinstance(case, CandidateCase) for case in cases):
@@ -416,6 +572,13 @@ def finalize_slate(
         ranking: RankingResult = rank_candidates(cases, tie_breaks=tie_breaks)
     except (RankingError, StorageError, ValueError) as exc:
         raise FinalizationError("M6 ranking could not be reproduced") from exc
+
+    if (
+        expected_ranking_digest is not None
+        and expected_ranking_digest
+        != hashlib.sha256(_canonical_json(ranking.to_dict()).encode("utf-8")).hexdigest()
+    ):
+        raise FinalizationError("M6 ranking does not match the ranking pinned before T-20 review")
 
     run_directory = store.run_directory(run_id)
     final_path = run_directory / FINAL_FILENAME
@@ -506,6 +669,15 @@ def finalize_slate(
         else ()
     )
     frozen_keys = {item.audit.candidate_key for item in frozen_pool}
+    evaluated_at = datetime.now(UTC)
+    if has_manifest and slate_evidence_mode is EvidenceMode.LIVE and not evidence_mode_blocked:
+        _pin_live_pool(
+            store,
+            run_id,
+            ranking=ranking,
+            keys=tuple(item.audit.candidate_key for item in frozen_pool),
+            at=evaluated_at,
+        )
     m7_reviews_required = False
     for ranked in frozen_pool:
         candidate_case = next(
@@ -563,6 +735,16 @@ def finalize_slate(
                     }
                 )
                 continue
+            tipoff = slate_events[candidate_audit.candidate.event].commence_time
+            if slate_evidence_mode is EvidenceMode.LIVE and evaluated_at >= tipoff:
+                exclusions.append(
+                    {
+                        "candidate_key": candidate_audit.candidate_key,
+                        "player": candidate_audit.candidate.player,
+                        "reasons": ["PRETIPOFF_DECISION_WINDOW_CLOSED"],
+                    }
+                )
+                continue
             review = _review_for_candidate(
                 key=candidate_audit.candidate_key,
                 prior_case=case,
@@ -570,6 +752,12 @@ def finalize_slate(
                 reviews=reviews,
             )
             if review is None:
+                if slate_evidence_mode is EvidenceMode.LIVE and evaluated_at <= tipoff - timedelta(
+                    minutes=15
+                ):
+                    raise FinalizationError(
+                        "A frozen-pool event is still awaiting its event-specific T-20 review."
+                    )
                 exclusions.append(
                     {
                         "candidate_key": candidate_audit.candidate_key,
@@ -618,12 +806,7 @@ def finalize_slate(
                     "category": candidate_audit.candidate.category.value,
                     "direction": candidate_audit.candidate.direction.value,
                     "event": candidate_audit.candidate.event,
-                    "projection": candidate_audit.candidate.projection,
-                    "confidence": (
-                        None
-                        if candidate_audit.confidence is None
-                        else candidate_audit.confidence.value
-                    ),
+                    **_reviewed_selection_fields(review),
                     "reason": ranked.reason,
                 }
             )
@@ -633,6 +816,22 @@ def finalize_slate(
                 "No receipt-bound M7 T-20 review matches the frozen M6 ceiling pool."
             )
 
+    proposal_at = datetime.now(UTC)
+    if slate_evidence_mode is EvidenceMode.LIVE:
+        still_open = []
+        for item in proposed:
+            event = slate_events[str(item["event"])]
+            if proposal_at < event.commence_time:
+                still_open.append(item)
+            else:
+                exclusions.append(
+                    {
+                        "candidate_key": item["candidate_key"],
+                        "player": item["player"],
+                        "reasons": ["PRETIPOFF_DECISION_WINDOW_CLOSED"],
+                    }
+                )
+        proposed = still_open
     if not blocking_reasons and not proposed:
         recommendation = NO_ENTRY_RECOMMENDATION
         result_state = FinalizationState.NO_ENTRY
@@ -643,7 +842,7 @@ def finalize_slate(
         recommendation = "RECOMMENDED FINAL SLATE FOR JOSEPH'S REVIEW."
         result_state = FinalizationState.AWAITING_JOSEPH
 
-    now = datetime.now(UTC).isoformat()
+    now = proposal_at.isoformat()
     final_record: dict[str, object] = {
         "schema_version": 1,
         "run_id": run_id,
@@ -680,6 +879,19 @@ def finalize_slate(
         "blocking_reasons": blocking_reasons,
         "stop_reason": recommendation,
         "joseph_decisions": [],
+        "rule_versions": {
+            "recorded_config_sha256": {
+                filename: hashlib.sha256((DEFAULT_CONFIG_DIR / filename).read_bytes()).hexdigest()
+                for filename in (
+                    "approved-universe.yaml",
+                    "methodology.yaml",
+                    "governance.yaml",
+                    "trust-tiers.yaml",
+                    "category-map.yaml",
+                    "approved-sources.yaml",
+                )
+            },
+        },
     }
     _write_json(audit_path, audit_record)
     if blocking_reasons:

@@ -5,6 +5,7 @@ must never be presented as such.
 """
 
 import json
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Final
@@ -57,8 +58,8 @@ class FixtureTransport:
 def load_board_fixture(directory: str | Path) -> FixtureTransport:
     """Load ``events.json`` and per-event ``odds-<id>.json`` bodies from a directory."""
 
-    root = Path(directory)
-    events_path = root / _EVENTS_FILENAME
+    root = Path(directory).resolve()
+    events_path = _fixture_path(root, _EVENTS_FILENAME)
     try:
         events_body = events_path.read_bytes()
     except FileNotFoundError as exc:
@@ -75,10 +76,19 @@ def load_board_fixture(directory: str | Path) -> FixtureTransport:
         if not isinstance(event, dict) or not isinstance(event.get("id"), str):
             raise MalformedPayloadError(f"{events_path} has an event without a valid id")
         event_id = event["id"]
-        odds_path = root / f"{_ODDS_PREFIX}{event_id}.json"
+        if re.fullmatch(r"[A-Za-z0-9_-]+", event_id) is None or event_id in odds_bodies:
+            raise MalformedPayloadError(f"{events_path} contains an unsafe or duplicate event id")
+        odds_path = _fixture_path(root, f"{_ODDS_PREFIX}{event_id}.json")
         try:
             odds_bodies[event_id] = odds_path.read_bytes()
         except FileNotFoundError as exc:
             raise SourceError(f"missing fixture: {odds_path}") from exc
 
     return FixtureTransport(events_body=events_body, odds_bodies=odds_bodies)
+
+
+def _fixture_path(root: Path, filename: str) -> Path:
+    path = (root / filename).resolve()
+    if not path.is_relative_to(root):
+        raise SourceError("fixture file escapes the selected directory")
+    return path
