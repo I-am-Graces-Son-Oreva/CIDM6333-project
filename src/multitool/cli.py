@@ -3,11 +3,12 @@ from importlib.metadata import version
 
 from multitool.codec import decode, encode
 from multitool.hash import hash_file, hash_text
+from multitool.health import format_report, inspect_project
 from multitool.net import network_info
 from multitool.units import convert
 
 
-def main() -> int:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="mt")
     parser.add_argument("--version", action="version", version=version("multitool"))
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -26,6 +27,13 @@ def main() -> int:
     hash_parser.add_argument("--verify")
     net_parser = subparsers.add_parser("net")
     net_parser.add_argument("cidr")
+    health_parser = subparsers.add_parser("health")
+    health_parser.add_argument("path")
+    return parser
+
+
+def main() -> int:
+    parser = _build_parser()
     args = parser.parse_args()
     exit_code = 0
 
@@ -47,8 +55,12 @@ def main() -> int:
                 else hash_text(args.algorithm, args.text)
             )
             exit_code = int(args.verify is not None and result != args.verify.lower())
-        else:
+        elif args.command == "net":
             result = "\n".join(f"{key}: {value}" for key, value in network_info(args.cidr).items())
+        else:
+            report = inspect_project(args.path)
+            result = format_report(report)
+            exit_code = report["exit_code"]
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
     print(result)

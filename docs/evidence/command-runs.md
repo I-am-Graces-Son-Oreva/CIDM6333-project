@@ -592,3 +592,81 @@ Timestamp: 2026-11-19T16:46:02Z (UTC)
 | `uv run ruff format --check` | `22 files already formatted` | 0 |
 | `uv run ty check` | `All checks passed!` | 0 |
 | `uv run python -m unittest discover -s tests` | `Ran 25 tests ... OK` | 0 |
+
+## Step 4.5: reviewer and net commit
+
+Command: `git commit -m "step 4: reviewer agent, net"`
+
+Actual output:
+
+```text
+[main 2ff98d4] step 4: reviewer agent, net
+8 files changed, 315 insertions(+), 16 deletions(-)
+```
+
+Exit code: 0. `git rev-parse HEAD` returned `2ff98d489e77db5ad7b1aa02afc23587963132ee`.
+
+## Step 5: worker and health
+
+After human approval to create only `tests/test_health.py`, the test-first run failed before `src/multitool/health.py` existed:
+
+```text
+$ uv run python -m unittest tests.test_health
+ModuleNotFoundError: No module named 'multitool.health'
+Ran 1 test
+FAILED (errors=1)
+unittest exit code: 1
+```
+
+During implementation, focused tests exposed two defects: a boolean failure expression returned a list to `int()`, and a refactor omitted the return from `_project_checks`. The tests failed with `TypeError` and `AttributeError` respectively; both causes were corrected. The focused suite then passed 4 tests. Ruff/format/ty diagnostics also exposed an over-complex, over-50-line `inspect_project`, a 52-line CLI `main`, a formatting issue, and an optional `shutil.which("uv")` value passed to `subprocess.run`; the code was split/formatted and the test now narrows the optional path.
+
+An intermediate `uv run mt health .` reported `ruff_check: 1`, `ruff_format: 1`, `ty: 1`, and AST findings for `inspect_project` (16 branches, 66 lines) and `cli.main` (52 lines). After the corrections, the observed health output was:
+
+```text
+pyproject.toml: OK
+uv.lock: OK
+tests/: OK
+ruff configuration: OK
+ruff_check: 0
+ruff_format: 0
+ty: 0
+unittest: 0
+functions with >8 branches:
+  none
+functions longer than 50 lines:
+  none
+analysis errors:
+  none
+```
+
+The CLI test uses a temporary fixture and a fake `uv` executable to make one gate return 5; `mt health <path>` returned 1 and reported `ty: 5`. A healthy fixture reports all gate codes as 0 and report `exit_code` 0.
+
+Step 5.4 receipt sequence:
+
+```text
+$ git diff --stat
+ src/multitool/cli.py | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+$ uv run mt --version
+0.1.0
+
+$ uv run ruff check
+All checks passed!
+EXIT_CODE=0
+
+$ uv run ruff format --check
+25 files already formatted
+EXIT_CODE=0
+
+$ uv run ty check
+All checks passed!
+EXIT_CODE=0
+
+$ uv run python -m unittest discover -s tests
+Ran 29 tests in 4.834s
+OK
+EXIT_CODE=0
+```
+
+The `git diff --stat` output lists tracked changes only; new untracked files are not included in Git's default diff stat.
