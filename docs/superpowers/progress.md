@@ -1,6 +1,7 @@
 # Execution ledger — plan: docs/superpowers/plans/2026-11-19-cidm6333-closeout.md
 
-- Task 1: in progress; 0.1-0.3 local work is done. Deliberate failure preserved, removed; final Area 0 gate run all 0. Awaiting required 0.4 commit.
+- Task 1: complete; setup commit `c67af8706268ae5adabecfdd4c88cda73f82a4c6` exists. Gates after removing the wrong test: 0, 0, 0, 0.
+- Task 2: in progress; 1.1 measured 966 bytes, 1.2 is NOT OBSERVED, 1.3 codec tests failed before implementation and all four gates now pass; awaiting 1.4 commit.
 - Pre-flight: all implementation is in the same repository; the CLI is shared by all five modules. Each subcommand will register a parser/handler with the common argparse entry point. No separate task commits beyond the six professor-required commits.
 - Workspace: `/Users/orevisco/multitool` is a standalone Git checkout (git-dir equals common-dir), not a linked worktree or submodule. User explicitly requires implementation in this directory; remain here.
 - Baseline: no project or tests existed before design and plan documentation; no test command is available yet.

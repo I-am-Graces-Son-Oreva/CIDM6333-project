@@ -38,7 +38,15 @@ No `/new` session, OpenCode permission dialog, skill-load dialog, plan/build Tab
 
 ### 0.2 The four gates
 
-- Original prompt: "Run `uv add --dev ruff ty`. In pyproject.toml, configure ruff with line-length 100 and the rule sets E, F, I, B, and C90, with mccabe max-complexity 8. Create tests/__init__.py and tests/test_cli.py with a unittest that runs `mt --version` and checks that it prints the package version. Then run these four gates in this order and report the exit code of each: uv run ruff check; uv run ruff format --check; uv run ty check; uv run python -m unittest discover -s tests."
+- Original prompt:
+
+```text
+Run `uv add --dev ruff ty`. In pyproject.toml, configure ruff with line-length 100 and the rule sets E, F, I, B, and C90, with mccabe max-complexity 8. Create tests/__init__.py and tests/test_cli.py with a unittest that runs `mt --version` and checks that it prints the package version. Then run these four gates in this order and report the exit code of each:
+uv run ruff check
+uv run ruff format --check
+uv run ty check
+uv run python -m unittest discover -s tests
+```
 - Execution date/time: 2026-11-19 UTC; outputs are preserved in `docs/evidence/command-runs.md`.
 - Starting state: uv src package exists; generated console script was still `multitool`; no tests or dev dependencies existed.
 - Action performed: Human approved creation of only `tests/__init__.py` and `tests/test_cli.py` via the scoped question at the chat boundary. Wrote the version test first and observed it fail because `mt` did not exist; ran `uv add --dev ruff ty`; wired argparse and `mt`; configured Ruff.
@@ -67,14 +75,90 @@ No `/new` session, OpenCode permission dialog, skill-load dialog, plan/build Tab
 ### 0.4 Commit
 
 - Original prompt: "Commit everything with the message `setup: uv package, four gates`."
-- Execution date/time: Pending.
+- Execution date/time: 2026-11-19T13:49:07Z UTC.
 - Starting project state: Area 0 scaffold, CLI, passing `tests/test_cli.py`, Ruff/ty config, lock file, and evidence ledger; no commit exists yet.
+- Action performed: Created the setup commit after reviewing the staged file list and diff.
+- Commands/tool calls: `git commit -m "setup: uv package, four gates"`.
+- Actual outputs and exit codes: Commit `c67af8706268ae5adabecfdd4c88cda73f82a4c6`; command succeeded (exit 0).
+- Expected behavior: One commit with exact message `setup: uv package, four gates`.
+- Observed behavior: Git created the requested commit on `main`; working tree was clean immediately after commit.
+- Evidence reference: `docs/evidence/command-runs.md` and Git history.
+- Result: PASS for local Git commit. Exact prompt entry into the OpenCode TUI is NOT OBSERVED.
+- Corrective action: None.
+
+## Step 1 — AGENTS.md and Codec
+
+### 1.1 Write the map
+
+- Original prompt:
+
+```text
+Write AGENTS.md at the project root. Hard limit: 4,000 characters including headings. Use exactly four sections: "Run and test", "Conventions that differ from defaults", "Rules that must hold (enforced)", and "Where the truth lives". The first sentence states what this system is and what it must never do. Every line must be a command to run, a convention that differs from the default, or a pointer to where truth lives; do not describe anything the code already shows. List the four gates as the definition of done. Include this rule word for word: "Never edit files under tests/ to make a gate pass. Enforced by: nothing yet." Then run `wc -c AGENTS.md` and report the number.
+```
+- Execution date/time: 2026-11-19T13:49:41Z UTC.
+- Starting state: Area 0 commit `c67af8706268ae5adabecfdd4c88cda73f82a4c6`; no project AGENTS.md existed.
+- Action performed: Created root AGENTS.md with exactly the four specified section headings and required initial test rule; ran `wc -c AGENTS.md`.
+- Commands/tool calls: `wc -c AGENTS.md`.
+- Actual outputs and exit codes: `966 AGENTS.md`, exit 0.
+- Expected behavior: Exactly four sections, first sentence states system and prohibition, under 4,000 characters, with four gates and exact initial rule.
+- Observed behavior: File is 966 bytes; all four headings and requested rule are present.
+- Evidence reference: `AGENTS.md`; command output in `docs/evidence/command-runs.md`.
+- Result: PASS for file structure/size; exact original prompt entry into a TUI is NOT OBSERVED.
+- Corrective action: None.
+
+### 1.2 Fresh-session AGENTS test
+
+- Original prompt:
+
+```text
+/new
+
+What does this project's AGENTS.md say the test command is? Quote it exactly.
+```
+- Execution date/time: Not observed.
+- Starting state: `AGENTS.md` exists; no new OpenCode TUI session was started.
+- Action performed: None. This interface has not provided a genuine interactive `/new` session.
+- Commands/tool calls: None.
+- Actual outputs and exit codes: None.
+- Expected behavior: A fresh OpenCode session answers from its preloaded AGENTS context without a `read` call.
+- Observed behavior: NOT OBSERVED; no answer or read trace exists.
+- Evidence reference: This limitation is recorded here; there is no session transcript.
+- Result: NOT OBSERVED.
+- Corrective action: None; do not simulate the answer.
+
+### 1.3 Build the codec
+
+- Original prompt:
+
+```text
+Add a codec module at src/multitool/codec.py with encode and decode for rot13, base64, and hex, and wire it as `mt codec <scheme> <encode|decode> <text>`. Exit with code 2 on an unknown scheme or direction. Add tests/test_codec.py with a round-trip test for every scheme, including the input "café". Follow AGENTS.md. Done means all four gates exit 0; report each exit code.
+```
+- Execution date/time: 2026-11-19T14:04:15Z UTC (gate completion).
+- Starting state: Setup commit and AGENTS map exist; codec module and tests did not exist. User approved creation of only `tests/test_codec.py` through the scoped chat question.
+- Action performed: Wrote the codec tests first, observed the missing-module failure, implemented UTF-8 round trips and argparse wiring, then ran the four gates.
+- Commands/tool calls: `uv run python -m unittest tests.test_codec`; four gates in required order.
+- Actual outputs and exit codes: focused test first failed with `ModuleNotFoundError: No module named 'multitool.codec'` (exit 1); after implementation 3 tests passed (exit 0). Four gates all exited 0.
+- Expected behavior: Each supported scheme round-trips Unicode; invalid scheme/direction exits 2; all gates pass.
+- Observed behavior: rot13, base64, and hex round-trip `café`; unknown scheme and direction exit 2; all gates pass.
+- Evidence reference: `docs/evidence/command-runs.md`.
+- Result: PASS for behavior/tests/gates. Exact prompt entry into a TUI is NOT OBSERVED.
+- Corrective action: None.
+
+### 1.4 Commit
+
+- Original prompt:
+
+```text
+Commit with the message "step 1: AGENTS.md, codec".
+```
+- Execution date/time: Pending.
+- Starting state: Step 1 code/tests and evidence are complete; setup commit is `c67af8706268ae5adabecfdd4c88cda73f82a4c6`.
 - Action performed: Pending.
 - Commands/tool calls: Pending.
 - Actual outputs and exit codes: Pending.
-- Expected behavior: One commit with exact message `setup: uv package, four gates`.
+- Expected behavior: Commit with exact message `step 1: AGENTS.md, codec`.
 - Observed behavior: Pending.
-- Evidence reference: `docs/evidence/command-runs.md` and Git history.
+- Evidence reference: Git history and `docs/evidence/command-runs.md`.
 - Result: NOT OBSERVED (commit not yet created).
 - Corrective action: None.
 

@@ -168,3 +168,65 @@ Final Area 0.3 gates after correcting that formatting issue:
 | `uv run python -m unittest discover -s tests` | `Ran 1 test ... OK` | 0 |
 
 The intentional incorrect test has been removed from the final test suite.
+
+## Area 0.4: setup commit
+
+Timestamp: 2026-11-19T13:49:07Z (UTC)
+
+Command: `git commit -m "setup: uv package, four gates"`
+
+Actual output:
+
+```text
+[main (root-commit) c67af87] setup: uv package, four gates
+15 files changed, 559 insertions(+)
+```
+
+Exit code: 0. Full Git output confirmed the 15 project/config/evidence files. `git rev-parse HEAD` returned `c67af8706268ae5adabecfdd4c88cda73f82a4c6`; `git status --short --branch` returned `## main`.
+
+## Step 1.1: AGENTS.md size
+
+Command: `wc -c AGENTS.md`
+
+Actual output:
+
+```text
+     966 AGENTS.md
+EXIT_CODE=0
+```
+
+## Step 1.3: codec test-first and gates
+
+Approval: The user approved creation of `tests/test_codec.py` in response to a narrowly scoped question. This is a human chat approval, not an OpenCode permission-dialog trace.
+
+Before implementation, `uv run python -m unittest tests.test_codec` returned:
+
+```text
+E
+======================================================================
+ERROR: test_codec (unittest.loader._FailedTest.test_codec)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_codec
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 141, in loadTestsFromName
+    module = __import__(module_name)
+  File "/Users/orevisco/multitool/tests/test_codec.py", line 4, in <module>
+    from multitool.codec import decode, encode
+ModuleNotFoundError: No module named 'multitool.codec'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
+```
+
+Exit code: 1. After implementation, the focused command reported `Ran 3 tests ... OK`, exit 0.
+
+Four gates after implementation, in order:
+
+| Command | Actual output | Exit |
+| --- | --- | ---: |
+| `uv run ruff check` | `All checks passed!` | 0 |
+| `uv run ruff format --check` | `14 files already formatted` | 0 |
+| `uv run ty check` | `All checks passed!` | 0 |
+| `uv run python -m unittest discover -s tests` | `Ran 4 tests ... OK` | 0 |
