@@ -526,3 +526,69 @@ Timestamp: 2026-11-19T15:59:55Z (UTC)
 | `uv run ruff format --check` | `19 files already formatted` | 0 |
 | `uv run ty check` | `All checks passed!` | 0 |
 | `uv run python -m unittest discover -s tests` | `Ran 18 tests ... OK` | 0 |
+
+## Step 3.3: hash commit
+
+Command: `git commit -m "step 3: add-module skill, hash"`
+
+Actual output:
+
+```text
+[main f9fdca8] step 3: add-module skill, hash
+10 files changed, 373 insertions(+), 17 deletions(-)
+```
+
+Exit code: 0. `git rev-parse HEAD` returned `f9fdca8ed384982f4ddbba749ec16d94a91ff712`; `git status --short --branch` returned `## main`.
+
+## Step 4: reviewer and network module
+
+Skill invocation: the session `functions.skill` tool loaded `.opencode/skills/add-module/SKILL.md` before writing the network test.
+
+After human approval to create only `tests/test_net.py`, the focused test failed before production code existed:
+
+```text
+$ uv run python -m unittest tests.test_net
+E
+======================================================================
+ERROR: test_net (unittest.loader._FailedTest.test_net)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_net
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 141, in loadTestsFromName
+    module = __import__(module_name)
+  File "/Users/orevisco/multitool/tests/test_net.py", line 4, in <module>
+    from multitool.net import network_info
+ModuleNotFoundError: No module named 'multitool.net'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
+unittest exit code: 1
+```
+
+After implementing `network_info` and CLI wiring:
+
+```text
+$ uv run python -m unittest tests.test_net
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.830s
+
+OK
+```
+
+Exit code: 0.
+
+The installed CLI command `opencode agent list` returned a listing containing `reviewer (subagent)`. Its displayed reviewer permissions included `edit: deny`, `bash *: deny`, and allows for the four gates plus `git diff` and `git status`. The command output was truncated by the tool; no numeric exit code was separately captured. This is a CLI configuration listing, not a TUI restart, plan/build exchange, `@reviewer` invocation, or refusal demonstration.
+
+### Step 4 final gates
+
+Timestamp: 2026-11-19T16:46:02Z (UTC)
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| `uv run ruff check` | `All checks passed!` | 0 |
+| `uv run ruff format --check` | `22 files already formatted` | 0 |
+| `uv run ty check` | `All checks passed!` | 0 |
+| `uv run python -m unittest discover -s tests` | `Ran 25 tests ... OK` | 0 |

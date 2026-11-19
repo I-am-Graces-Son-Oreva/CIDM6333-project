@@ -307,15 +307,90 @@ Add a hash module: sha256 and md5 of a string or of a file (`--file <path>`), an
 ### 3.3 Commit
 
 - Original prompt: "Report the four gate exit codes, then commit with the message `step 3: add-module skill, hash`."
-- Execution date/time: 2026-11-19T15:59:55Z UTC (gates complete; commit pending).
+- Execution date/time: 2026-11-19T15:59:55Z UTC (gates complete); commit created in this session.
 - Starting state: Hash implementation, tests, skill, and evidence expected complete.
-- Action performed: Ran the four quality gates in order; commit is the remaining action.
-- Commands/tool calls: Four gates in required order; Git commit pending.
-- Actual outputs and exit codes: Ruff 0, format 0, ty 0, unittest 0 (18 tests). Outputs are preserved in `docs/evidence/command-runs.md`.
+- Action performed: Ran the four quality gates in order and created the required commit.
+- Commands/tool calls: Four gates in required order; `git commit -m "step 3: add-module skill, hash"`; `git rev-parse HEAD`; `git status --short --branch`.
+- Actual outputs and exit codes: Ruff 0, format 0, ty 0, unittest 0 (18 tests); commit `f9fdca8ed384982f4ddbba749ec16d94a91ff712`, commit command exit 0; working tree clean immediately after commit. Outputs are preserved in `docs/evidence/command-runs.md`.
 - Expected behavior: Four gates all 0 and exact commit message.
-- Observed behavior: All four gates passed; commit not yet created.
+- Observed behavior: All four gates passed and the exact required commit exists.
 - Evidence reference: Git history and `docs/evidence/command-runs.md`.
-- Result: NOT OBSERVED (commit pending; gates observed passing).
+- Result: PASS for gates and local commit. The exact prompt entry in a TUI remains NOT OBSERVED.
+- Corrective action: None.
+
+## Step 4 — Personas and Agents
+
+### 4.1 Write the reviewer
+
+- Original prompt:
+
+```text
+Create .opencode/agents/reviewer.md in the format documented for the installed OpenCode version. Frontmatter: description "Reviews one change against AGENTS.md and the add-module skill. Never edits."; mode subagent; permissions: edit denied everywhere; shell denied except the four gate commands, `git diff`, and `git status`. Body:
+- Role: one reviewer of one diff.
+- Traits: runs the four gates before judging; cites a file and line for every finding.
+- Anti-traits: never fixes code; never accepts a summary in place of the diff.
+- Why: a verdict counts only if its author could not edit the work.
+- Output: exactly one JSON object {"verdict": "PASS" | "FAIL" | "CONCERNS", "findings": [{"file": ..., "line": ..., "issue": ...}], "checked": [commands run]} and nothing else.
+```
+
+- Execution date/time: 2026-11-19 UTC; reviewer file created in this session.
+- Starting state: Step 3 commit `f9fdca8ed384982f4ddbba749ec16d94a91ff712`; no project reviewer agent existed.
+- Action performed: Fetched the installed-version documentation from the OpenCode `v1.18.20` tagged `agents.mdx` and `permissions.mdx`; created `.opencode/agents/reviewer.md` with Markdown frontmatter, `mode: subagent`, edit denied, and bash deny-first command exceptions. Ran `opencode agent list`; output included `reviewer (subagent)` and the configured reviewer permission patterns.
+- Commands/tool calls: Version-pinned OpenCode documentation fetch; `opencode agent list`.
+- Actual outputs and exit codes: The agent listing contained `reviewer (subagent)` with edit denied, bash wildcard denied, and allows for each gate plus `git diff` and `git status`. The tool truncated the listing, and did not separately expose the command's numeric exit code.
+- Expected behavior: OpenCode recognizes a read-only reviewer with only specified shell commands allowed.
+- Observed behavior: Static configuration matches the version-pinned Markdown-agent syntax and the agent CLI listing recognizes `reviewer`. A genuine TUI restart is NOT OBSERVED.
+- Evidence reference: `.opencode/agents/reviewer.md`; version-pinned docs at `https://raw.githubusercontent.com/anomalyco/opencode/v1.18.20/packages/web/src/content/docs/agents.mdx` and `https://raw.githubusercontent.com/anomalyco/opencode/v1.18.20/packages/web/src/content/docs/permissions.mdx`; `docs/evidence/command-runs.md`.
+- Result: PASS for agent file/config listing; TUI reload remains NOT OBSERVED.
+- Corrective action: None.
+
+### 4.2 Plan, then build
+
+- Original prompts:
+
+```text
+Plan a net module: from a CIDR, print the network, broadcast, netmask, first and last host, and host count, for IPv4 and IPv6, using the standard library's ipaddress. Exit 2 on bad input. Use the add-module skill. List the steps. Do not edit anything.
+
+Carry out the plan.
+```
+
+- Execution date/time: 2026-11-19T16:46:02Z UTC (implementation and gate completion).
+- Starting state: Reviewer file exists; `tests/test_net.py` and `src/multitool/net.py` did not exist. The user approved creating only the new test file.
+- Action performed: Invoked the project-local add-module skill through the available session skill tool. Wrote the approved tests first and observed the missing-module failure; implemented IPv4/IPv6 details using `ipaddress`, wired `mt net <CIDR>`, then ran focused tests and all four gates.
+- Commands/tool calls: `uv run python -m unittest tests.test_net`; `uv run python -m unittest discover -s tests`; four gates in required order.
+- Actual outputs and exit codes: Initial focused test failed with `ModuleNotFoundError: No module named 'multitool.net'` (exit 1); focused tests passed 7 (exit 0); four gates all exited 0 and full suite passed 25 tests. Outputs are preserved in `docs/evidence/command-runs.md`.
+- Expected behavior: IPv4/IPv6 network, broadcast, netmask, first/last host, host count; malformed and non-network CIDRs exit 2.
+- Observed behavior: Required output and both address families pass tests, including IPv4 /31 and /32 and IPv6 /127 boundaries; invalid CIDR and IPv4 host bits exit 2.
+- Evidence reference: `tests/test_net.py`, `docs/evidence/command-runs.md`.
+- Result: PASS for local implementation and verification.
+- Corrective action: None.
+
+### 4.3 Review and 4.4 refusal
+
+- Original prompts: `@reviewer Review the uncommitted changes. Return one JSON object.` and `@reviewer Fix what you found.`
+- Execution date/time: Not observed.
+- Starting state: This interface exposes no OpenCode TUI transcript or invocation of the project-local `@reviewer` agent.
+- Action performed: None. No reviewer result or refusal was synthesized.
+- Commands/tool calls: None for `@reviewer`.
+- Actual outputs and exit codes: None.
+- Expected behavior: One JSON review, no changes, followed by refusal or denied edit.
+- Observed behavior: NOT OBSERVED. The `opencode agent list` output only confirms the configured agent is listed; it is not a review or refusal trace.
+- Evidence reference: This limitation and the CLI listing are recorded in `docs/evidence/command-runs.md`.
+- Result: NOT OBSERVED.
+- Corrective action: None; retain this limitation unless a genuine TUI trace is supplied.
+
+### 4.5 Commit
+
+- Original prompt: "Fix any FAIL findings yourself (build agent), report the four gate exit codes, then commit with the message `step 4: reviewer agent, net`."
+- Execution date/time: Pending.
+- Starting state: Reviewer and net files are implemented; local gates pass. Project-agent review/refusal remains NOT OBSERVED.
+- Action performed: Pending.
+- Commands/tool calls: Four gates passed; Git commit pending.
+- Actual outputs and exit codes: Ruff 0, format 0, ty 0, unittest 0 (25 tests); output is preserved in `docs/evidence/command-runs.md`.
+- Expected behavior: Four gates all 0 and exact commit message.
+- Observed behavior: Gates pass; commit pending.
+- Evidence reference: Git history and `docs/evidence/command-runs.md`.
+- Result: NOT OBSERVED (commit pending).
 - Corrective action: None.
 
 ## Rulings

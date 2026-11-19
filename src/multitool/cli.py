@@ -3,6 +3,7 @@ from importlib.metadata import version
 
 from multitool.codec import decode, encode
 from multitool.hash import hash_file, hash_text
+from multitool.net import network_info
 from multitool.units import convert
 
 
@@ -23,6 +24,8 @@ def main() -> int:
     hash_parser.add_argument("text", nargs="?")
     hash_parser.add_argument("--file")
     hash_parser.add_argument("--verify")
+    net_parser = subparsers.add_parser("net")
+    net_parser.add_argument("cidr")
     args = parser.parse_args()
     exit_code = 0
 
@@ -35,7 +38,7 @@ def main() -> int:
             )
         elif args.command == "units":
             result = format(convert(args.value, args.from_unit, args.to_unit), ".15g")
-        else:
+        elif args.command == "hash":
             if (args.text is None) == (args.file is None):
                 parser.error("provide exactly one of text or --file")
             result = (
@@ -44,6 +47,8 @@ def main() -> int:
                 else hash_text(args.algorithm, args.text)
             )
             exit_code = int(args.verify is not None and result != args.verify.lower())
+        else:
+            result = "\n".join(f"{key}: {value}" for key, value in network_info(args.cidr).items())
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
     print(result)
