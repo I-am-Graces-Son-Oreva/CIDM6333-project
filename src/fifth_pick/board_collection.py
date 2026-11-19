@@ -423,6 +423,19 @@ class BoardCollector:
                 if event.commence_time.astimezone(chicago).date() == date
             }
             approved = set(self._grant.slate_event_ids)
+            if first:
+                from fifth_pick.official_slate import load_official_slate, reconcile_coverage
+
+                official = load_official_slate(date)
+                if (
+                    official is not None
+                    and not reconcile_coverage(official, events, day=date)[
+                        "provider_matches_official_slate"
+                    ]
+                ):
+                    raise SourceError(
+                        "provider schedule does not cover the verified official slate"
+                    )
             if (first and current != approved) or not current <= approved:
                 raise SourceError("provider schedule differs from the approved full slate")
             if not any(scope.matches(event) for event in events):

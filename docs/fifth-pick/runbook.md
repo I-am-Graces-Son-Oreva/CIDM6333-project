@@ -273,3 +273,12 @@ existing manifest intact. Use `board-status --date YYYY-MM-DD` offline to
 display the saved event IDs, quota and deadlines. Snapshot 2's actual opening
 depends on the recorded Snapshot 1 timestamp. The date-level view reports
 only its latest permitted time.
+
+When a verified official schedule record exists, preflight reconciles the
+returned matchups against that schedule by Chicago date. The report keeps
+the official game count separate from provider event coverage and never
+infers player or market coverage from event discovery. Partial or conflicting
+coverage saves a sanitized report under `var/fifth-pick/preflight-coverage/`.
+It does not replace a complete collection manifest. An off-date provider
+matchup is shown separately and cannot satisfy the official slate. Paid
+collection and LIVE finalization still require the verified full slate.

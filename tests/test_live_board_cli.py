@@ -12,6 +12,78 @@ EVENT = "2adabff2dca8b2ed4b39540a6a25ffb2"
 
 
 class LiveBoardCliTests(unittest.TestCase):
+    def test_partial_provider_discovery_saves_diagnostics_only(self):
+        import io
+        import os
+        from contextlib import redirect_stderr, redirect_stdout
+
+        from fifth_pick.sources.odds_api import events_url
+        from fifth_pick.sources.transport import HttpResponse, UrllibTransport
+        from fifth_pick.storage import RunStore
+
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            patch("fifth_pick.cli.application_run_store", return_value=RunStore(directory)),
+            patch("fifth_pick.cli.datetime", wraps=datetime) as clock,
+            patch.dict("os.environ", {"THE_ODDS_API_KEY": "test-key"}),
+            patch.object(UrllibTransport, "get") as request,
+            redirect_stdout(io.StringIO()) as stdout,
+        ):
+            clock.now.return_value = datetime.fromisoformat("2026-11-18T20:30:00-06:00")
+            request.return_value = HttpResponse(
+                200,
+                {"x-requests-last": "0", "x-requests-remaining": "491", "x-requests-used": "9"},
+                json.dumps(
+                    [
+                        {
+                            "id": "provider-only-one",
+                            "away_team": "Portland Trail Blazers",
+                            "home_team": "Milwaukee Bucks",
+                            "commence_time": "2026-11-20T01:00:00+00:00",
+                        }
+                    ]
+                ).encode(),
+            )
+            args = ["board-preflight", "--date", "2026-11-19", "--expected-games", "4"]
+            self.assertEqual(main(args, prompt=lambda _: "PREFLIGHT"), 1)
+            request.assert_called_once()
+            self.assertEqual(request.call_args.args[0], events_url())
+            root = Path(directory)
+            self.assertFalse((root / "preflight/2026-11-19.json").exists())
+            saved = json.loads((root / "preflight-coverage/2026-11-19.json").read_text())
+            self.assertEqual(saved["mode"], "LIVE_PROVIDER_COVERAGE_ONLY")
+            self.assertEqual(saved["events"][0]["event_id"], "provider-only-one")
+            self.assertNotIn("test-key", stdout.getvalue())
+            self.assertEqual(saved["coverage"]["official_game_count"], 4)
+            self.assertEqual(len(saved["coverage"]["unavailable_from_provider"]), 3)
+            self.assertEqual(main(["board-status", "--date", "2026-11-19"]), 0)
+            status = json.loads(stdout.getvalue().splitlines()[-1])
+            self.assertEqual(status["selection_ceiling"], 4)
+            self.assertEqual(status["provider_discovered_game_count"], 1)
+            old = root / "preflight/2026-11-19.json"
+            old.parent.mkdir()
+            old.write_text("{}")
+            os.utime(old, (0, 0))
+            scope = root / "scope.json"
+            scope.write_text("{}")
+            clock.now.return_value = datetime.fromisoformat("2026-11-19T15:00:00-06:00")
+            with (
+                patch(
+                    "fifth_pick.live_board_cli.application_run_store", return_value=RunStore(root)
+                ),
+                patch("fifth_pick.live_board_cli.datetime", new=clock),
+                redirect_stderr(io.StringIO()) as stderr,
+            ):
+                self.assertEqual(
+                    main(
+                        ["board-collect", "--run-id", "stale", "--scope", str(scope)],
+                        prompt=lambda _: self.fail("stale manifest must not request approval"),
+                    ),
+                    1,
+                )
+            self.assertIn("A newer preflight found incomplete coverage", stderr.getvalue())
+            request.assert_called_once()
+
     def test_future_preflight_saves_only_requested_complete_chicago_date(self):
         import io
         from contextlib import redirect_stdout
@@ -31,6 +103,8 @@ class LiveBoardCliTests(unittest.TestCase):
         events.append(dict(events[0], id="today", commence_time=TIPOFF))
         with (
             tempfile.TemporaryDirectory() as directory,
+            patch("fifth_pick.live_board_cli.load_official_slate", return_value=None),
+            patch("fifth_pick.official_slate.load_official_slate", return_value=None),
             patch("fifth_pick.cli.application_run_store", return_value=RunStore(directory)),
             patch("fifth_pick.cli.datetime", wraps=datetime) as clock,
             patch.dict("os.environ", {"THE_ODDS_API_KEY": "test-key"}),

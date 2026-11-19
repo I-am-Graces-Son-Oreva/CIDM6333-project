@@ -478,6 +478,18 @@ def _collect(
         slate_date = observed_dates["events"]
         if at.astimezone(chicago).date().isoformat() != slate_date:
             raise SourceError("Chicago slate date changed during discovery")
+        if mode is EvidenceMode.LIVE:
+            from fifth_pick.official_slate import load_official_slate, reconcile_coverage
+
+            day = at.astimezone(chicago).date()
+            official = load_official_slate(day)
+            if (
+                official is not None
+                and not reconcile_coverage(official, schedule, day=day)[
+                    "provider_matches_official_slate"
+                ]
+            ):
+                raise SourceError("provider schedule does not cover the verified official slate")
         slate = [
             row
             for row in schedule

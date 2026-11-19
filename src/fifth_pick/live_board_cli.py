@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 
 from fifth_pick.board_collection import BoardCollector, BoardPolicy, LiveBoardGrant
 from fifth_pick.errors import FifthPickError
+from fifth_pick.official_slate import load_official_slate
 from fifth_pick.personal_readiness import LiveEventScope
 from fifth_pick.slate_manifest import SLATE_TIMEZONE
 from fifth_pick.snapshots import SNAPSHOT_2_T20_GAP, SNAPSHOT_3_EARLY_WINDOW, T20_OFFSET
@@ -27,15 +28,29 @@ def preflight_path(store: RunStore, day: date) -> Path:
     return store.root / "preflight" / f"{day.isoformat()}.json"
 
 
+def coverage_path(store: RunStore, day: date) -> Path:
+    return store.root / "preflight-coverage" / f"{day.isoformat()}.json"
+
+
+def _coverage_is_newer(store: RunStore, day: date, manifest: Path) -> bool:
+    coverage = coverage_path(store, day)
+    return coverage.exists() and (
+        not manifest.exists() or coverage.stat().st_mtime_ns > manifest.stat().st_mtime_ns
+    )
+
+
 def show_board_status(store: RunStore, now: datetime, *, day: date | None = None) -> int:
     """Show timing from the saved discovery without opening a connection."""
     chicago = ZoneInfo(SLATE_TIMEZONE)
     day = now.astimezone(chicago).date() if day is None else day
-    path = preflight_path(store, day)
     try:
+        official = load_official_slate(day)
+        path = preflight_path(store, day)
+        if _coverage_is_newer(store, day, path):
+            path = coverage_path(store, day)
         report = json.loads(path.read_text(encoding="utf-8"))
         if (
-            report["mode"] != "LIVE_PROVIDER_DISCOVERY_ONLY"
+            report["mode"] not in ("LIVE_PROVIDER_DISCOVERY_ONLY", "LIVE_PROVIDER_COVERAGE_ONLY")
             or report["slate_date"] != day.isoformat()
             or not isinstance(report["quota"], dict)
         ):
@@ -87,6 +102,8 @@ def show_board_status(store: RunStore, now: datetime, *, day: date | None = None
         if type(expected) is int and 0 < expected == len(rows)
         else None
     )
+    if official is not None:
+        ceiling = 5 if len(official.games) >= 5 else 4
     print(
         json.dumps(
             {
@@ -95,7 +112,11 @@ def show_board_status(store: RunStore, now: datetime, *, day: date | None = None
                 "checked_at": report.get("checked_at"),
                 "quota_at_preflight": report["quota"],
                 "manifest_game_count": len(rows),
+                "provider_discovered_game_count": len(rows),
+                "official_game_count": len(official.games) if official is not None else None,
                 "selection_ceiling": ceiling,
+                "coverage_only": report["mode"] == "LIVE_PROVIDER_COVERAGE_ONLY",
+                "coverage": report.get("coverage"),
                 "events": rows,
             },
             sort_keys=True,
@@ -128,6 +149,12 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
         store.run_directory(options.run_id)
         draft = json.loads(options.scope.read_text(encoding="utf-8"))
         path = options.preflight or preflight_path(store, today)
+        if _coverage_is_newer(store, today, path):
+            print(
+                "LIVE collection stopped. A newer preflight found incomplete coverage.",
+                file=sys.stderr,
+            )
+            return 1
         report = json.loads(path.read_text(encoding="utf-8"))
         selected = draft["event"]
         event_id = selected["event_id"]
@@ -158,12 +185,21 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             )
             return 1
         events = report["events"]
+        official = load_official_slate(today)
         slate_ids = tuple(row["event_id"] for row in events)
         for provider_id in slate_ids:
             validate_event_id(provider_id)
         if (
             report["mode"] != "LIVE_PROVIDER_DISCOVERY_ONLY"
             or report["slate_date"] != today.isoformat()
+            or (
+                official is not None
+                and (
+                    len(events) != len(official.games)
+                    or not isinstance(report.get("coverage"), dict)
+                    or report["coverage"].get("provider_matches_official_slate") is not True
+                )
+            )
             or type(draft["slate_game_count"]) is not int
             or len(events) != draft["slate_game_count"]
             or len(slate_ids) != len(set(slate_ids))
@@ -218,6 +254,11 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             json.dumps(
                 {
                     "event": selected,
+                    "official_tipoff_differences": (
+                        report["coverage"]["provider_tipoff_differences"]
+                        if official is not None
+                        else []
+                    ),
                     "run_id": options.run_id,
                     "snapshot": slot,
                     "authorized_slots": slots,

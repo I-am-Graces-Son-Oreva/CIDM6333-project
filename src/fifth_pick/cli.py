@@ -191,7 +191,12 @@ def _board_preflight(
 ) -> int:
     from zoneinfo import ZoneInfo
 
-    from fifth_pick.live_board_cli import preflight_path
+    from fifth_pick.live_board_cli import coverage_path, preflight_path
+    from fifth_pick.official_slate import (
+        load_official_slate,
+        provider_event_row,
+        reconcile_coverage,
+    )
     from fifth_pick.slate_manifest import SLATE_TIMEZONE
     from fifth_pick.sources.base import MissingApiKeyError
     from fifth_pick.sources.odds_api import FreeQuotaVerificationError, OddsApiClient
@@ -211,6 +216,21 @@ def _board_preflight(
     slate_date = today if day is None else day
     if slate_date < today:
         print("Board preflight stopped: the requested slate is in the past.", file=sys.stderr)
+        return 1
+    try:
+        official = load_official_slate(slate_date)
+    except FifthPickError as exc:
+        print(f"Board preflight stopped: {exc}", file=sys.stderr)
+        return 1
+    if (
+        official is not None
+        and expected_games is not None
+        and expected_games != len(official.games)
+    ):
+        print(
+            "Board preflight stopped: expected count conflicts with the official slate.",
+            file=sys.stderr,
+        )
         return 1
     response: HttpResponse | None = None
 
@@ -273,41 +293,46 @@ def _board_preflight(
     slate = [
         event for event in events if event.commence_time.astimezone(timezone).date() == slate_date
     ]
-    if expected_games is not None and len(slate) != expected_games:
-        print(
-            f"Board preflight stopped: expected {expected_games} games on {slate_date}, "
-            f"provider returned {len(slate)}. No manifest was saved.",
-            file=sys.stderr,
-        )
-        return 1
+    coverage = (
+        reconcile_coverage(official, events, day=slate_date) if official is not None else None
+    )
+    partial = (
+        not coverage["provider_matches_official_slate"]
+        if coverage is not None
+        else expected_games is not None and len(slate) != expected_games
+    )
     report = json.dumps(
         {
-            "mode": "LIVE_PROVIDER_DISCOVERY_ONLY",
+            "mode": "LIVE_PROVIDER_COVERAGE_ONLY" if partial else "LIVE_PROVIDER_DISCOVERY_ONLY",
             "slate_date": slate_date.isoformat(),
             "expected_games": expected_games,
             "checked_at": now.isoformat(),
             "quota": asdict(quota),
-            "events": [
-                {
-                    "event_id": event.event_id,
-                    "home_team": event.home_team,
-                    "away_team": event.away_team,
-                    "tipoff": event.commence_time.isoformat(),
-                }
-                for event in slate
-            ],
+            "events": [provider_event_row(event) for event in slate],
+            "provider_discovered_game_count": len(slate),
+            "coverage": coverage,
         },
         sort_keys=True,
     )
-    path = preflight_path(application_run_store(), slate_date)
+    store = application_run_store()
     try:
-        _atomic_write(path, (report + "\n").encode("utf-8"))
+        content = (report + "\n").encode("utf-8")
+        if partial:
+            _atomic_write(coverage_path(store, slate_date), content)
+        if not partial:
+            _atomic_write(preflight_path(store, slate_date), content)
     except OSError:
         print(report)
         print("Board preflight succeeded but the manifest could not be saved.", file=sys.stderr)
         return 1
     print(report)
-    return 0
+    if partial:
+        print(
+            "Board preflight found incomplete or conflicting provider coverage. "
+            "Saved diagnostics only. No collection manifest was written.",
+            file=sys.stderr,
+        )
+    return int(partial)
 
 
 def _live_board_menu(read: Callable[[str], str]) -> int:

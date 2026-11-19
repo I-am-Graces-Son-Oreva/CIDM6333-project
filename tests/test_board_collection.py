@@ -431,6 +431,30 @@ class BoardCollectorTests(unittest.TestCase):
             with self.assertRaisesRegex(MethodologyError, "not bound"):
                 evaluate_candidate(case)
 
+    def test_paid_dispatch_rejects_grant_matching_provider_but_missing_official_game(self):
+        from datetime import date
+
+        from fifth_pick.official_slate import OfficialGame, OfficialSlate
+
+        official = OfficialSlate(
+            "fixture:published-schedule",
+            (
+                OfficialGame("Dallas Mavericks", "Los Angeles Lakers", NOW),
+                OfficialGame("New York Knicks", "Boston Celtics", NOW),
+                OfficialGame("Utah Jazz", "Denver Nuggets", NOW),
+            ),
+        )
+        with (
+            patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.board_collection._application_clock", return_value=NOW),
+            patch("fifth_pick.official_slate.load_official_slate", return_value=official) as lookup,
+            patch.object(UrllibTransport, "get", side_effect=self.respond),
+            self.assertRaisesRegex(SourceError, "stopped"),
+        ):
+            self.live_collector().collect(RUN, 1, EVENT, request_authorized=True)
+        lookup.assert_called_once_with(date(2026, 11, 15))
+        self.assertEqual(self.calls, [events_url()])
+
     def test_live_slate_change_stops_before_odds(self):
         with (
             patch("fifth_pick.board_collection.application_run_store", return_value=self.store),

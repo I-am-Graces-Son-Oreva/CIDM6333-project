@@ -4,7 +4,7 @@ import hashlib
 import json
 import math
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
 from typing import Final
@@ -24,7 +24,7 @@ from fifth_pick.slate_manifest import (
     SlateRunContext,
     read_slate_run_context,
 )
-from fifth_pick.sources.base import EvidenceMode
+from fifth_pick.sources.base import EvidenceMode, SourceError, SourceEvent
 from fifth_pick.sources.odds_api import SOURCE_ID
 from fifth_pick.storage import RunStore, _atomic_write, application_run_store
 
@@ -130,6 +130,25 @@ def _read_authoritative_slate(
         for event_id, event in events_by_id.items()
         if event.commence_time.astimezone(timezone).date().isoformat() == slate_day
     }
+    if board.evidence_mode is EvidenceMode.LIVE:
+        from fifth_pick.official_slate import load_official_slate, reconcile_coverage
+
+        day = date.fromisoformat(slate_day)
+        try:
+            official = load_official_slate(day)
+        except SourceError as exc:
+            raise FinalizationError("official NBA schedule could not be validated") from exc
+        if official is not None:
+            provider_events = tuple(
+                SourceEvent(
+                    event.event_id, event.home_team, event.away_team, event.commence_time, ()
+                )
+                for event in slate_events.values()
+            )
+            if not reconcile_coverage(official, provider_events, day=day)[
+                "provider_matches_official_slate"
+            ]:
+                raise FinalizationError("LIVE run-start manifest does not cover the official slate")
     slate = {
         "slate_date": slate_day,
         "slate_timezone": SLATE_TIMEZONE,

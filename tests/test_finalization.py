@@ -553,6 +553,25 @@ class FinalizationTests(unittest.TestCase):
         self.assertEqual(audit["slate"]["authoritative_board"]["evidence_mode"], "live")
         self.assertEqual(audit["m6_ranking"]["audits"][0]["evidence_mode"], "LIVE")
 
+    def test_live_finalization_rejects_provider_subset_of_official_slate(self) -> None:
+        from fifth_pick.official_slate import OfficialGame, OfficialSlate
+
+        official = OfficialSlate(
+            "fixture:published-schedule",
+            (OfficialGame("Uncovered Visitor", "Uncovered Home", datetime.now(UTC)),),
+        )
+        with (
+            TemporaryDirectory() as application_root,
+            patch.object(storage_module, "APPLICATION_STORAGE_ROOT", Path(application_root)),
+            patch("fifth_pick.official_slate.load_official_slate", return_value=official),
+        ):
+            make_live_ledger(application_root, RUN_ID)
+            store = application_run_store()
+            result = finalize_slate((), (), run_id=RUN_ID, store=store)
+            audit = json.loads((store.run_directory(RUN_ID) / "audit.json").read_text())
+        self.assertEqual(result.state.value, "BLOCKED")
+        self.assertIn("official slate", " ".join(audit["blocking_reasons"]))
+
     def test_live_and_fixture_m6_evidence_mix_fails_closed(self) -> None:
         with (
             TemporaryDirectory() as application_root,
