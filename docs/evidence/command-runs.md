@@ -912,6 +912,50 @@ Final standalone gates, in required order:
 | `uv run ty check` | `All checks passed!` | 0 |
 | `uv run python -m unittest discover -s tests` | `Ran 33 tests in 5.604s ... OK` | 0 |
 
+## Fresh continuation verification (2026-11-19)
+
+After the Step 5 API Worker/Reviewer calls and documentation updates, the original checkout remained on `main` at `137122a05ba309b080a642ccfae3769bc6545668`; only four closeout Markdown files were modified, with no source or test changes.
+
+```text
+$ uv run mt --version
+0.1.0
+EXIT_CODE=0
+
+$ uv run mt health .
+pyproject.toml: OK
+uv.lock: OK
+tests/: OK
+ruff configuration: OK
+ruff_check: 0
+ruff_format: 0
+ty: 0
+unittest: 0
+functions with >8 branches:
+  none
+functions longer than 50 lines:
+  none
+analysis errors:
+  none
+EXIT_CODE=0
+
+$ uv run ruff check
+All checks passed!
+EXIT_CODE=0
+
+$ uv run ruff format --check
+28 files already formatted
+EXIT_CODE=0
+
+$ uv run ty check
+All checks passed!
+EXIT_CODE=0
+
+$ uv run python -m unittest discover -s tests
+Ran 33 tests in 6.203s
+OK
+EXIT_CODE=0
+```
+
 ## GitHub destination audit
 
 ```text

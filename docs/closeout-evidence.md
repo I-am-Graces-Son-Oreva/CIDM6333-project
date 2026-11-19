@@ -609,11 +609,29 @@ Audit date: 2026-11-19. This addendum updates earlier `NOT OBSERVED` statements 
 - A separate worktree at Step 4 commit `2ff98d489e77db5ad7b1aa02afc23587963132ee` was used for a headless OpenCode attempt at Step 5.2. The non-interactive runner requested the `using-superpowers` skill permission and auto-rejected it before creating `tests/test_health.py`. This was not a Worker/Controller/Reviewer run; no Worker or Reviewer JSON is available, and no health test was created in that worktree.
 - Independent Step 5 receipts were run in a clean detached worktree at Step 5 commit `13e34c83fccfe81021004cd0a863844a72aee72a`. `git diff --stat` was empty (exit 0); `uv run mt health .` exited 0; the four standalone gates exited 0, with 29 tests. These receipts verify the committed Step 5 state, not an agent claim.
 
+### Step 5 API Worker/Controller/Reviewer demonstration
+
+- On 2026-11-19, actual `functions.task` subagent calls ran against the existing detached Step 5 worktree `/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/opencode/multitool-step5-receipts`, at commit `13e34c83fccfe81021004cd0a863844a72aee72a`. The implementation and health tests were already present, so the Worker performed verification only and changed no files. The original main checkout and all tests remained untouched.
+- Worker task `ses_e0a3f2ef4ffeNtYG3nTToZZMey` returned this typed JSON after running the four gates in order:
+
+```json
+{"status":"DONE","files_changed":[],"gates":{"ruff_check":0,"ruff_format":0,"ty":0,"unittest":0},"blocked_by":null}
+```
+
+- The controller parsed `DONE` and four zero exit codes, then routed the Step 4-to-Step 5 committed diff (`2ff98d489e77db5ad7b1aa02afc23587963132ee..13e34c83fccfe81021004cd0a863844a72aee72a`) to the read-only Reviewer. Reviewer task `ses_e0a3e3c32ffeiJsb5NZvrzNjaY` independently inspected that diff and reran the four gates. It returned:
+
+```json
+{"verdict":"PASS","findings":[],"checked":["git status --short && git diff --stat 2ff98d489e77db5ad7b1aa02afc23587963132ee..13e34c83fccfe81021004cd0a863844a72aee72a && git diff --name-status 2ff98d489e77db5ad7b1aa02afc23587963132ee..13e34c83fccfe81021004cd0a863844a72aee72a","git diff --find-renames --unified=80 2ff98d489e77db5ad7b1aa02afc23587963132ee..13e34c83fccfe81021004cd0a863844a72aee72a","uv run ruff check","uv run ruff format --check","uv run ty check","uv run python -m unittest discover -s tests"]}
+```
+
+- Both calls returned valid JSON matching their closed result shapes. The Worker made no edits; the Reviewer reported no findings; both reported all gates 0. The Step 5 worktree remained clean afterward. This is an observed API subagent/controller handoff and typed-result trace, not an OpenCode TUI `@worker`/`@reviewer` transcript. No second Worker round was needed.
+
 ### Step 6 hook attempts
 
 - A detached worktree at `ca233cb388ef9315b676d2fc256540b97f5f6ca7` was used. The headless attempt at the Step 6.4 test change auto-rejected a `using-superpowers` skill permission before an edit was attempted; do not call this a live test-write block.
 - OpenCode did run the configured pre-tool plugin for that skill call and wrote an `allow` receipt. A direct invocation of the Python guard for `edit` on `tests/test_units.py` returned exit 2 and wrote a `block` receipt. The test SHA-256 remained `d98ea6400cbfffd253c2f333b83a69f9483f1b48d96a5096ffc9a583ceaa3154`; no test was changed.
 - `guard/after_edit.py` was invoked directly on `src/multitool/health.py`; Ruff reported `1 file left unchanged` and the script wrote an `after-edit.jsonl` receipt with exit code 0. This is direct script evidence, not an OpenCode edit/formatter event. The live Step 6.4 plugin block and live after-edit formatter event remain incomplete.
+- No new Step 6 runtime attempt was made during this continuation: the project rules leave OpenCode CLI and direct guard/formatter shell commands behind an ask rule, and editing `tests/**` also asks. No human approval was available, so the planned live calls were marked BLOCKED before invocation rather than bypassing those rules. Existing Step 6 receipts above remain genuine evidence for the plugin's allowed skill call and the direct Python guard/formatter invocations; they do not prove a live plugin denial or formatter event.
 
 ### Final verification and GitHub destination
 
@@ -621,6 +639,8 @@ Audit date: 2026-11-19. This addendum updates earlier `NOT OBSERVED` statements 
 - The user authorized creation of a private repo when no matching repo existed. `gh repo create multitool --private --source . --remote origin` returned `https://github.com/I-am-Graces-Son-Oreva/multitool`. `git remote -v` now points `origin` fetch/push URLs at that repository. `gh repo view` reports `isPrivate: true` and an empty `defaultBranchRef`; no branch has been published.
 - `opencode.json` still denies `git push`. No push command or alternate GitHub write API was used, so publishing is blocked by the preserved control. No credentials or tokens were copied into evidence.
 - Final original-main verification: `uv run mt --version` printed `0.1.0`; `uv run mt health .` exited 0 with all artifact checks and internal gate codes 0 and no AST findings. The four standalone gates exited 0, 0, 0, 0; unittest ran 33 tests. Exact outputs are in `docs/evidence/command-runs.md`.
+- Fresh continuation verification after the API handoff ran on original `main` at pre-documentation HEAD `137122a05ba309b080a642ccfae3769bc6545668`: version `0.1.0`, health 0, four gates 0, 0, 0, 0, and 33 unittests (6.203s). The exact outputs are recorded in `docs/evidence/command-runs.md`.
+- The four-file documentation-only update remains unstaged and uncommitted. `git add` and `git commit` are behind the configured ask rule; without approval, neither command was run. No push was attempted; `git push` remains explicitly denied. The updated files are left for review/publication through the user's regular Terminal.
 
 ## Rulings
 
