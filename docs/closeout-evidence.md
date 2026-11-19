@@ -2,7 +2,7 @@
 
 Official source: https://ahuimanu.github.io/CIDM6333/exercises/closeout-walkthrough.html
 
-Execution interface: OpenCode coding tools and non-interactive shell calls. The interface does not expose an interactive OpenCode TUI transcript. Tool output is copied verbatim from returned command results into `docs/evidence/command-runs.md`; this file does not treat model narratives as traces. A prompt is marked `NOT OBSERVED` when it requires a TUI action without an actual TUI trace.
+Execution evidence sources: command output is preserved in `docs/evidence/command-runs.md`; actual OpenCode session records are referenced by session ID where available. Model summaries are not treated as traces. A prompt remains `NOT OBSERVED` unless an actual command or session record supports it.
 
 ## Area 0
 
@@ -34,7 +34,7 @@ multitool/
 
 ## TUI Demonstrations and Boundaries
 
-No `/new` session, OpenCode permission dialog, skill-load dialog, plan/build Tab switch, or task-tool delegation has been observed in this interface. Do not upgrade these results without an actual visible interaction or exported trace.
+At the original evidence capture, no `/new` session, permission dialog, skill-load dialog, plan/build switch, or task-tool delegation had been observed. Later Step 3 and Step 4 evidence is recorded in the audit addendum below. Do not treat static files or generic subagent reviews as live project-agent traces.
 
 ### 0.2 The four gates
 
@@ -538,7 +538,7 @@ Run `opencode --version`. Create .opencode/plugins/guard.ts as a thin plugin shi
 - Commands/tool calls: `uv run mt health .`; `uv run mt --version`; four gates in `docs/evidence/command-runs.md`.
 - Actual outputs and exit codes: Health exit 0 with all artifact checks OK, four internal gate codes 0, and no AST findings; version is `0.1.0`; final standalone gates: Ruff 0, format 0, ty 0, unittest 0 (33 tests in 6.755s).
 - Expected behavior: Health and every final gate pass.
-- Observed behavior: All expected local checks passed. Live plugin block/formatter and TUI interactions remain NOT OBSERVED.
+- Observed behavior at Step 6.5: All expected local checks passed. Live plugin block/formatter and TUI interactions were NOT OBSERVED at that time; later partial plugin evidence is recorded in the audit addendum.
 - Evidence reference: `docs/evidence/command-runs.md`.
 - Result: PASS for local verification; live harness demonstrations remain NOT OBSERVED.
 - Corrective action: Create the required Step 6 commit; retain the TUI/plugin limitations below.
@@ -548,33 +548,79 @@ Run `opencode --version`. Create .opencode/plugins/guard.ts as a thin plugin shi
 | Action | Configured control | Observed evidence | Limit |
 | --- | --- | --- | --- |
 | Read files | `opencode.json` denies `.env` and `.env.*` reads | Static config is present | No live denied-read prompt/trace observed |
-| Edit source | `src/**` allowed; reviewer edit denied | Reviewer static config and `opencode agent list` recognition | No reviewer task or denied-edit interaction observed |
-| Change tests | Edit permission asks; Python guard blocks test-target writes | Guard tests show block decisions; JSONL receipts tested in temporary directories | No live plugin interception; direct unit tests do not prove hook enforcement |
+| Edit source | `src/**` allowed; reviewer edit denied | Static config plus Step 4 project-local Reviewer refusal in the detached worktree | The Reviewer refused by persona; no edit tool was allowed through |
+| Change tests | Edit permission asks; Python guard blocks test-target writes | Guard tests and a direct Python guard block receipt | The Step 6 headless request stopped at an auto-rejected skill permission before a test-edit call reached the plugin |
 | Run shell commands | Ask by default; four gates and read-only Git inspection allowed; push denied | Static `opencode.json`; actual gate outputs recorded | Runtime permission prompts not observed |
-| Claim completion | Health report and four exit-code gates | `mt health .` and 32-test/gate receipts | Worker/reviewer typed outputs and controller routing not observed |
+| Claim completion | Health report and four exit-code gates | Final `mt health .` and four gates, 33 tests | Step 5 Worker/Reviewer typed outputs and controller routing remain incomplete |
 
-The table reports configured controls and local evidence, not a claim that unobserved TUI/plugin demonstrations succeeded.
+The table distinguishes configured controls from observed enforcement. See the audit addendum for later Step 4 evidence and the remaining Step 5/6 gaps.
 
 ## Independent Code Review
 
 - A read-only `functions.task` general subagent reviewed the implementation from the initial project commit through Step 5 plus the current Step 6 worktree. It did not edit files and reran the four gates before its review findings.
 - Findings were verified and fixed test-first: common `&>`/`>|` shell redirections could bypass the guard; read-only formatter checks were overblocked; allowed file-call receipts omitted target paths; and AST branch analysis omitted conditional expressions (`ast.IfExp`). Added focused failing cases, fixed each issue, and observed focused tests pass. Counting `IfExp` then correctly identified `cli.main` at 9 branches; split dispatch into command handlers and verified `mt health .` reports no branch or length findings. Additional tests keep Python `open()` reads under `tests/` allowed while blocking write modes and block lexical test paths even when a symlink resolves outside the directory.
-- This API subagent review is separate from the project `.opencode/agents/reviewer.md`; no `@reviewer` TUI invocation, typed project reviewer JSON, refusal, or denied-edit interaction was observed.
+- At the time of this API subagent review, no `@reviewer` TUI invocation, typed project reviewer JSON, refusal, or denied-edit interaction was available. A later project-local Step 4 session and refusal are recorded in the audit addendum; this API review remains a separate generic review.
 - Exact finding/fix sequence is preserved in `docs/evidence/command-runs.md`.
 
 ### 6.6 Commit
 
 - Original prompt: `Commit with the message "step 6: guard hook, after-edit check".`
 - Execution date/time: 2026-11-19 UTC.
-- Starting state: Step 6 final health and four gates pass; native plugin/TUI demonstrations remain NOT OBSERVED.
+- Starting state at the Step 6.6 commit: Step 6 final health and four gates pass; native plugin/TUI demonstrations were NOT OBSERVED at that time.
 - Action performed: This required final commit records the completed local work and this evidence. Its object ID is verified from Git history after creation.
 - Commands/tool calls: `git commit -m "step 6: guard hook, after-edit check"`; `git rev-parse HEAD`; `git status --short --branch`.
 - Actual outputs and exit codes: The required commit command succeeded (exit 0); the exact object ID is available from Git history and the final command result.
 - Expected behavior: Exact required commit message; all six professor-required commits exist.
-- Observed behavior: Exact required commit exists; native TUI/plugin demonstrations remain NOT OBSERVED.
+- Observed behavior: Exact required commit exists. Later audit evidence records a live plugin allow receipt on a skill call and direct Python receipts; live test-write interception and an OpenCode formatter event remain NOT OBSERVED.
 - Evidence reference: Git history and `docs/evidence/command-runs.md`.
-- Result: PASS for local commit; TUI/plugin demonstrations NOT OBSERVED.
+- Result: PASS for local commit; the remaining live Step 6 gaps are listed in the audit addendum.
 - Corrective action: None.
+
+## Autopilot Audit Addendum
+
+Audit date: 2026-11-19. This addendum updates earlier `NOT OBSERVED` statements only where new evidence is identified below. Historical command and commit records remain unchanged.
+
+### Step 3 targeted skill permission
+
+- The user reports that a separate targeted demonstration loaded the project-local `add-module` skill through a native OpenCode permission prompt, which the human approved with `Allow once`.
+- This was not the original hash implementation prompt. The original Step 3.2 entry above remains accurate: that implementation used the session skill tool, and its native TUI prompt was not observed there.
+
+### Step 4 live Reviewer demonstration
+
+- The user completed the Plan/Build/Reviewer/refusal demonstration in `/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/opencode/multitool-step4-reviewer`, detached at the Step 3 commit. The worktree contains the resulting uncommitted net implementation, `tests/test_net.py`, and project-local reviewer configuration.
+- OpenCode session `ses_e0a8ef59cffeeDxVdcKd4l3jnY` contains the Plan/Build sequence. Session `ses_e0a86997fffe2XQ9G9MiUGoVEZ` invoked the project-local `reviewer` agent; it is distinct from a generic reviewer subagent.
+- The Step 4.3 review returned exactly:
+
+```json
+{"verdict":"PASS","findings":[],"checked":["git status --short","git diff","git diff --cached","git diff --no-index /dev/null src/multitool/net.py","git diff --no-index /dev/null tests/test_net.py","git diff HEAD -- src/multitool/cli.py","uv run ruff check","uv run ruff format --check","uv run ty check","uv run python -m unittest discover -s tests"]}
+```
+
+- The exact Step 4.4 prompt, `@reviewer Fix what you found.`, returned `{"verdict":"PASS","findings":[],"checked":[]}` because the review had no findings. A separate targeted request, `@reviewer Modify src/multitool/net.py to add a comment saying "reviewer edit test".`, returned:
+
+```json
+{"verdict":"CONCERNS","findings":[{"file":".opencode/agents/reviewer.md","line":27,"issue":"Refused the requested edit because the reviewer must never edit any file."}],"checked":[]}
+```
+
+- The follow-up check reported the same worktree status, no tracked diff for the untracked `net.py`, and no requested comment in the file. No unauthorized edit occurred. This is a live refusal demonstration, with the explicit targeted edit as a supplement because the professor's exact fix prompt had nothing to fix.
+- The user separately reported a Step 4 Reviewer JSON field-type inconsistency and asked that it be preserved. The exact offending object/field was not identified in that report; the two retained JSON objects above have string text fields, an integer `line`, and arrays of the specified shapes. Preserve the reported inconsistency as an unresolved user-reported finding rather than attributing it to these objects or claiming it was fixed.
+
+### Step 5 controller attempt and receipts
+
+- A separate worktree at Step 4 commit `2ff98d489e77db5ad7b1aa02afc23587963132ee` was used for a headless OpenCode attempt at Step 5.2. The non-interactive runner requested the `using-superpowers` skill permission and auto-rejected it before creating `tests/test_health.py`. This was not a Worker/Controller/Reviewer run; no Worker or Reviewer JSON is available, and no health test was created in that worktree.
+- Independent Step 5 receipts were run in a clean detached worktree at Step 5 commit `13e34c83fccfe81021004cd0a863844a72aee72a`. `git diff --stat` was empty (exit 0); `uv run mt health .` exited 0; the four standalone gates exited 0, with 29 tests. These receipts verify the committed Step 5 state, not an agent claim.
+
+### Step 6 hook attempts
+
+- A detached worktree at `ca233cb388ef9315b676d2fc256540b97f5f6ca7` was used. The headless attempt at the Step 6.4 test change auto-rejected a `using-superpowers` skill permission before an edit was attempted; do not call this a live test-write block.
+- OpenCode did run the configured pre-tool plugin for that skill call and wrote an `allow` receipt. A direct invocation of the Python guard for `edit` on `tests/test_units.py` returned exit 2 and wrote a `block` receipt. The test SHA-256 remained `d98ea6400cbfffd253c2f333b83a69f9483f1b48d96a5096ffc9a583ceaa3154`; no test was changed.
+- `guard/after_edit.py` was invoked directly on `src/multitool/health.py`; Ruff reported `1 file left unchanged` and the script wrote an `after-edit.jsonl` receipt with exit code 0. This is direct script evidence, not an OpenCode edit/formatter event. The live Step 6.4 plugin block and live after-edit formatter event remain incomplete.
+
+### Final verification and GitHub destination
+
+- At audit start, `/Users/orevisco/multitool` was clean on `main` at `ca233cb388ef9315b676d2fc256540b97f5f6ca7`; `git remote -v` was empty. GitHub CLI authentication was active for `I-am-Graces-Son-Oreva`. The authenticated account's repository list contained no `multitool`; the unrelated `project` repository was not selected.
+- The user authorized creation of a private repo when no matching repo existed. `gh repo create multitool --private --source . --remote origin` returned `https://github.com/I-am-Graces-Son-Oreva/multitool`. `git remote -v` now points `origin` fetch/push URLs at that repository. `gh repo view` reports `isPrivate: true` and an empty `defaultBranchRef`; no branch has been published.
+- `opencode.json` still denies `git push`. No push command or alternate GitHub write API was used, so publishing is blocked by the preserved control. No credentials or tokens were copied into evidence.
+- Final original-main verification: `uv run mt --version` printed `0.1.0`; `uv run mt health .` exited 0 with all artifact checks and internal gate codes 0 and no AST findings. The four standalone gates exited 0, 0, 0, 0; unittest ran 33 tests. Exact outputs are in `docs/evidence/command-runs.md`.
 
 ## Rulings
 

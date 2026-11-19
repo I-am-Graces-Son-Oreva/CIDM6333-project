@@ -795,3 +795,141 @@ health exit code: 0
 | `uv run ruff format --check` | `28 files already formatted` | 0 |
 | `uv run ty check` | `All checks passed!` | 0 |
 | `uv run python -m unittest discover -s tests` | `Ran 33 tests in 6.755s ... OK` | 0 |
+
+## Autopilot audit: isolated Step 5/6 receipts
+
+All commands below ran in detached temporary worktrees, not the completed main checkout.
+
+### Step 5.2 headless permission outcome
+
+In the Step 4-based worktree at `/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/opencode/multitool-step5-controller`, the exact Step 5.2 test-only task was sent to `opencode run --agent build --format json` without `--auto`. The runner requested the `using-superpowers` skill permission and auto-rejected it:
+
+```text
+permission requested: skill (using-superpowers); auto-rejecting
+tool: skill
+status: error
+error: The user rejected permission to use this specific tool call.
+```
+
+The task stopped before writing `tests/test_health.py`; the worktree remained clean. No Worker/Controller/Reviewer interaction or JSON result was produced. The permission was not bypassed.
+
+### Step 5.4 independent receipts
+
+Worktree: `/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/opencode/multitool-step5-receipts`, detached at `13e34c83fccfe81021004cd0a863844a72aee72a`.
+
+```text
+$ git diff --stat
+(no output; exit 0, clean committed baseline)
+
+$ uv run mt health .
+pyproject.toml: OK
+uv.lock: OK
+tests/: OK
+ruff configuration: OK
+ruff_check: 0
+ruff_format: 0
+ty: 0
+unittest: 0
+functions with >8 branches:
+  none
+functions longer than 50 lines:
+  none
+analysis errors:
+  none
+EXIT_CODE=0
+```
+
+Standalone gates, in required order: `uv run ruff check` (0), `uv run ruff format --check` (0, `25 files already formatted`), `uv run ty check` (0), and `uv run python -m unittest discover -s tests` (0, 29 tests). These are receipts for the committed Step 5 state, not for Worker or Reviewer claims.
+
+### Step 6 live-run limitation and direct guard receipts
+
+In `/private/var/folders/55/k044jjds0tv7rhmxc3x7_5gc0000gn/T/opencode/multitool-step6-hooks`, detached at `ca233cb388ef9315b676d2fc256540b97f5f6ca7`, the Step 6.4 prompt was sent to `opencode run --agent build --format json` without `--auto`. The runner requested `using-superpowers` and auto-rejected before attempting any test edit. The OpenCode pre-tool plugin did run on that skill call and wrote an `allow` receipt. This does not demonstrate the test-write block.
+
+The test remained unchanged: `shasum -a 256 tests/test_units.py` returned `d98ea6400cbfffd253c2f333b83a69f9483f1b48d96a5096ffc9a583ceaa3154`; `git diff -- tests/test_units.py` was empty; worktree status was clean apart from ignored receipts.
+
+Direct Python guard probe:
+
+```text
+$ printf '%s' '{"tool":"edit","args":{"filePath":"tests/test_units.py"}}' | uv run python guard/guard.py
+blocked write to tests path: tests/test_units.py
+guard exit code: 2
+```
+
+It appended this actual block receipt to the ignored `.receipts/tool-calls.jsonl`:
+
+```json
+{"decision":"block","path":"tests/test_units.py","reason":"blocked write to tests path: tests/test_units.py","time":"2026-11-19T20:57:31.341679+00:00","tool":"edit"}
+```
+
+The OpenCode plugin's actual skill-call receipt in the same file was:
+
+```json
+{"decision":"allow","time":"2026-11-19T20:55:18.758817+00:00","tool":"skill"}
+```
+
+The after-edit script was then invoked directly, not by an OpenCode edit event:
+
+```text
+$ uv run python guard/after_edit.py src/multitool/health.py
+1 file left unchanged
+```
+
+It appended `{"path":"src/multitool/health.py","ruff_exit_code":0,"time":"2026-11-19T20:57:51.915175+00:00"}` to ignored `.receipts/after-edit.jsonl`. The live Step 6.4 plugin denial and live after-edit formatter event remain NOT OBSERVED.
+
+## Final closeout verification on original main
+
+The original checkout remained on `main` at `ca233cb388ef9315b676d2fc256540b97f5f6ca7` while these checks ran. Only closeout documentation was modified.
+
+```text
+$ uv run mt --version
+0.1.0
+EXIT_CODE=0
+
+$ uv run mt health .
+pyproject.toml: OK
+uv.lock: OK
+tests/: OK
+ruff configuration: OK
+ruff_check: 0
+ruff_format: 0
+ty: 0
+unittest: 0
+functions with >8 branches:
+  none
+functions longer than 50 lines:
+  none
+analysis errors:
+  none
+EXIT_CODE=0
+```
+
+Final standalone gates, in required order:
+
+| Command | Actual output | Exit |
+| --- | --- | ---: |
+| `uv run ruff check` | `All checks passed!` | 0 |
+| `uv run ruff format --check` | `28 files already formatted` | 0 |
+| `uv run ty check` | `All checks passed!` | 0 |
+| `uv run python -m unittest discover -s tests` | `Ran 33 tests in 5.604s ... OK` | 0 |
+
+## GitHub destination audit
+
+```text
+$ git remote -v
+(no output before destination setup)
+
+$ gh repo view I-am-Graces-Son-Oreva/multitool --json name,url,isPrivate
+GraphQL: Could not resolve to a Repository with the name 'I-am-Graces-Son-Oreva/multitool'.
+
+$ gh repo create multitool --private --source . --remote origin
+https://github.com/I-am-Graces-Son-Oreva/multitool
+
+$ git remote -v
+origin  https://github.com/I-am-Graces-Son-Oreva/multitool.git (fetch)
+origin  https://github.com/I-am-Graces-Son-Oreva/multitool.git (push)
+
+$ gh repo view I-am-Graces-Son-Oreva/multitool --json name,url,isPrivate,defaultBranchRef
+{"defaultBranchRef":{"name":""},"isPrivate":true,"name":"multitool","url":"https://github.com/I-am-Graces-Son-Oreva/multitool"}
+```
+
+The private repository exists but has no branch. No push or equivalent GitHub write API was attempted because the project permission rule denies `git push`; the rule was left unchanged.
