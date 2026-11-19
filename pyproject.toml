@@ -1,0 +1,29 @@
+[project]
+name = "multitool"
+version = "0.1.0"
+description = "A small command-line multitool"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+mt = "multitool.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.15,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.5",
+    "ty>=0.0.107",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "C90"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 8
