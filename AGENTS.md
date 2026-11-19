@@ -12,6 +12,7 @@ Multitool is a local Python command-line toolkit; it must never edit tests/ to m
 - Require Python 3.14 or newer; keep package code under `src/`.
 - Use only standard-library `unittest`; do not add pytest.
 - Use argparse for CLI parsing and exit 2 for invalid command input.
+- New modules: use the add-module skill.
 
 # Rules that must hold (enforced)
 - Never edit files under tests/ to make a gate pass. Enforced by: opencode.json, edit on tests/ asks.

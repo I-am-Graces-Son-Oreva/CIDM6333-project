@@ -21,6 +21,9 @@
       "src/**": "allow",
       "tests/**": "ask"
     },
+    "skill": {
+      "*": "ask"
+    },
     "read": {
       "*": "allow",
       "*.env": "deny",

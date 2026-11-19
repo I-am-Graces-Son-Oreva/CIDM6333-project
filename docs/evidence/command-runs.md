@@ -410,3 +410,119 @@ Timestamp: 2026-11-19T14:30:37Z (UTC)
 | `uv run ruff format --check` | `16 files already formatted` | 0 |
 | `uv run ty check` | `All checks passed!` | 0 |
 | `uv run python -m unittest discover -s tests` | `Ran 9 tests ... OK` | 0 |
+
+## Step 2.4: units commit
+
+Command: `git commit -m "step 2: permissions, units"`
+
+Actual output:
+
+```text
+[main e48922f] step 2: permissions, units
+9 files changed, 378 insertions(+), 20 deletions(-)
+```
+
+Exit code: 0. `git rev-parse HEAD` returned `e48922f7a79a51f081302b7a5040dbdcff74c66a`; `git status --short --branch` returned `## main`.
+
+## Step 3.1: skill files and config
+
+Commands and outputs:
+
+```text
+$ wc -l .opencode/skills/add-module/SKILL.md
+      12 .opencode/skills/add-module/SKILL.md
+
+$ wc -c AGENTS.md
+    1030 AGENTS.md
+```
+
+`python3 -m json.tool opencode.json` printed valid JSON and completed successfully (exit 0). `opencode.json` contains the V1 rule `"skill": { "*": "ask" }`. No TUI restart or skill permission dialog was observed.
+
+## Step 3.1 follow-up: skill discovery diagnosis
+
+```text
+$ opencode --version
+1.18.20
+```
+
+Exit code: 0. The native `skill` tool invocation for `add-module` returned `Skill "add-module" not found` with only the preloaded skills listed. Inspection against OpenCode 1.18.20's tagged skill loader/config path source confirms `.opencode/skills/add-module/SKILL.md`, its `name` and `description`, and the `permission.skill.* = ask` rule are valid. The running process caches skill state, so discovery needs a full process/server restart, not only `/new`. No hash test or implementation was created. References and the restart sequence are recorded in `docs/closeout-evidence.md`.
+
+## Step 3.2: hash test-first failure
+
+The project-local `add-module` skill was loaded through the available `functions.skill` tool. The tool returned the contents of `.opencode/skills/add-module/SKILL.md`; this is evidence of this session's skill invocation, not an OpenCode TUI skill-permission prompt.
+
+After human approval to create only `tests/test_hash.py`, ran the focused test before adding `src/multitool/hash.py` or changing the CLI:
+
+```text
+$ uv run python -m unittest tests.test_hash
+E
+======================================================================
+ERROR: test_hash (unittest.loader._FailedTest.test_hash)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_hash
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 141, in loadTestsFromName
+    module = __import__(module_name)
+  File "/Users/orevisco/multitool/tests/test_hash.py", line 7, in <module>
+    from multitool.hash import hash_file, hash_text
+ModuleNotFoundError: No module named 'multitool.hash'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
+unittest exit code: 1
+```
+
+This is the expected pre-implementation failure. The chat approval and session skill tool are observed; a native OpenCode TUI restart, skill permission prompt, and TUI trace remain NOT OBSERVED.
+
+The first implementation passed the initial eight hash tests. A CLI regression test then exposed an uninitialized return code on successful codec commands:
+
+```text
+$ uv run python -m unittest tests.test_hash.HashTests.test_cli_keeps_existing_codec_command_working
+F
+======================================================================
+FAIL: test_cli_keeps_existing_codec_command_working (tests.test_hash.HashTests.test_cli_keeps_existing_codec_command_working)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/multitool/tests/test_hash.py", line 95, in test_cli_keeps_existing_codec_command_working
+    self.assertEqual(result.returncode, 0, result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/Users/orevisco/multitool/.venv/bin/mt", line 10, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/Users/orevisco/multitool/src/multitool/cli.py", line 50, in main
+    return exit_code
+           ^^^^^^^^^
+UnboundLocalError: cannot access local variable 'exit_code' where it is not associated with a value
+
+----------------------------------------------------------------------
+Ran 1 test in 0.232s
+
+FAILED (failures=1)
+```
+
+Initialized the common CLI exit code to zero before dispatch. The focused hash suite then passed:
+
+```text
+$ uv run python -m unittest tests.test_hash
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 1.587s
+
+OK
+```
+
+Exit code: 0.
+
+## Step 3.2 and 3.3: final hash gates
+
+Timestamp: 2026-11-19T15:59:55Z (UTC)
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| `uv run ruff check` | `All checks passed!` | 0 |
+| `uv run ruff format --check` | `19 files already formatted` | 0 |
+| `uv run ty check` | `All checks passed!` | 0 |
+| `uv run python -m unittest discover -s tests` | `Ran 18 tests ... OK` | 0 |

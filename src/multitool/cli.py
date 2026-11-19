@@ -2,6 +2,7 @@ import argparse
 from importlib.metadata import version
 
 from multitool.codec import decode, encode
+from multitool.hash import hash_file, hash_text
 from multitool.units import convert
 
 
@@ -17,7 +18,13 @@ def main() -> int:
     units_parser.add_argument("value", type=float)
     units_parser.add_argument("from_unit")
     units_parser.add_argument("to_unit")
+    hash_parser = subparsers.add_parser("hash")
+    hash_parser.add_argument("algorithm", choices=("sha256", "md5"))
+    hash_parser.add_argument("text", nargs="?")
+    hash_parser.add_argument("--file")
+    hash_parser.add_argument("--verify")
     args = parser.parse_args()
+    exit_code = 0
 
     try:
         if args.command == "codec":
@@ -26,9 +33,18 @@ def main() -> int:
                 if args.direction == "encode"
                 else decode(args.scheme, args.text)
             )
-        else:
+        elif args.command == "units":
             result = format(convert(args.value, args.from_unit, args.to_unit), ".15g")
-    except ValueError as exc:
+        else:
+            if (args.text is None) == (args.file is None):
+                parser.error("provide exactly one of text or --file")
+            result = (
+                hash_file(args.algorithm, args.file)
+                if args.file is not None
+                else hash_text(args.algorithm, args.text)
+            )
+            exit_code = int(args.verify is not None and result != args.verify.lower())
+    except (OSError, ValueError) as exc:
         parser.error(str(exc))
     print(result)
-    return 0
+    return exit_code

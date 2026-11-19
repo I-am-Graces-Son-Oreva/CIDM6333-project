@@ -235,13 +235,87 @@ Report the four gate exit codes, then commit with the message "step 2: permissio
 ```
 - Execution date/time: 2026-11-19T14:30:37Z UTC (gate completion).
 - Starting state: Units and permissions work complete; rounding conflict resolved; test file unchanged; recovery gates green.
-- Action performed: Ran all four gates in order; commit is the remaining action for this prompt.
-- Commands/tool calls: Four gates in required order; Git commit pending.
-- Actual outputs and exit codes: Ruff 0, format 0, ty 0, unittest 0.
+- Action performed: Ran all four gates in order, then created the required Git commit.
+- Commands/tool calls: Four gates in required order; `git commit -m "step 2: permissions, units"`.
+- Actual outputs and exit codes: Ruff 0, format 0, ty 0, unittest 0; commit `e48922f7a79a51f081302b7a5040dbdcff74c66a`, command exit 0.
 - Expected behavior: Four gates all exit 0 and commit exact message.
-- Observed behavior: All gates exit 0. Commit not yet created.
+- Observed behavior: All gates exit 0; required commit exists on `main`.
 - Evidence reference: `docs/evidence/command-runs.md` and Git history.
-- Result: NOT OBSERVED (commit action pending; gates observed passing).
+- Result: PASS for local gates/commit. Exact prompt entry into the TUI is NOT OBSERVED.
+- Corrective action: None.
+
+## Step 3 — Skills and Hash
+
+### 3.1 Write the skill
+
+- Original prompt:
+
+```text
+Create .opencode/skills/add-module/SKILL.md. Frontmatter: name "add-module"; description "Use when adding a new subcommand module to multitool: tests first, module, CLI wiring, four gates." Body, numbered, under 40 lines:
+1. Write tests/test_<name>.py first and run it; it must fail.
+2. Write src/multitool/<name>.py.
+3. Wire `mt <name>` in the CLI.
+4. Run the four gates from AGENTS.md and report each exit code.
+5. Never change an existing test; if one blocks you, stop and say which.
+Then add a permission rule so that loading any skill asks first. Add one line to AGENTS.md: "New modules: use the add-module skill."
+```
+
+- Execution date/time: 2026-11-19T14:40:25Z UTC.
+- Starting state: Steps 0-2 committed; no project skill directory or skill permission rule existed.
+- Action performed: Created the specified 12-line skill file, added the V1 skill permission ask rule, and added the AGENTS.md convention.
+- Commands/tool calls: `wc -l .opencode/skills/add-module/SKILL.md`; `wc -c AGENTS.md`; `python3 -m json.tool opencode.json`.
+- Actual outputs and exit codes: Skill file 12 lines; AGENTS.md 1,030 bytes; JSON parsed successfully (exit 0).
+- Expected behavior: Skill metadata/body exact, under 40 lines; project OpenCode skill permission is ask; AGENTS line added.
+- Observed behavior: Frontmatter and five numbered steps match the professor's requested content and are under 40 lines. Static config asks for every skill load. No OpenCode restart or live skill-load permission prompt was observed.
+- Evidence reference: `.opencode/skills/add-module/SKILL.md`, `opencode.json`, AGENTS.md.
+- Result: PASS for static file/config; NOT OBSERVED for restart and live permission behavior.
+- Corrective action: None.
+
+### 3.1a Skill discovery diagnosis
+
+- Execution date/time: 2026-11-19T15:02:56Z UTC.
+- OpenCode version: `opencode --version` printed `1.18.20` (exit 0).
+- Skill metadata inspection: `.opencode/skills/add-module/SKILL.md` has YAML frontmatter `name: add-module` and a non-empty `description`; its directory name is the matching lowercase kebab-case `add-module`, and the file is exactly `SKILL.md` at the documented project skill location.
+- Permission inspection: `opencode.json` has `permission.skill.* = ask`. OpenCode 1.18.20's permission schema accepts `ask`, `allow`, and `deny`; its skill availability filter excludes `deny`, so `ask` permits advertisement/discovery and requires approval when loading.
+- Discovery inspection: OpenCode 1.18.20's `skill/index.ts` scans `{skill,skills}/**/SKILL.md` under config directories. Its `config/paths.ts` includes project `.opencode` directories. The skill file and project location therefore need no correction.
+- Restart finding: The 1.18.20 skill service stores discovery/state in `InstanceState`; it does not hot-reload a newly added project skill into the already-running instance. A full OpenCode process/server restart is required; `/new` alone may reuse stale state.
+- References: [OpenCode skills documentation](https://opencode.ai/docs/skills/); [1.18.20 skill loader](https://github.com/anomalyco/opencode/blob/v1.18.20/packages/opencode/src/skill/index.ts); [1.18.20 config paths](https://github.com/anomalyco/opencode/blob/v1.18.20/packages/opencode/src/config/paths.ts); [1.18.20 permission schema](https://github.com/anomalyco/opencode/blob/v1.18.20/packages/core/src/v1/config/permission.ts); [skills not refreshing across sessions](https://github.com/anomalyco/opencode/issues/34443).
+- Corrective action: No skill/config edit is warranted. Save this checkpoint, fully exit OpenCode and any persistent server it is attached to, relaunch `opencode` from `/Users/orevisco/multitool`, create `/new`, submit the exact Step 3.2 prompt, and approve the actual `add-module` skill-load request.
+- Result: Root cause identified; native skill invocation and permission approval remain NOT OBSERVED. Do not start the hash test or implementation until that real interaction is evidenced.
+
+### 3.2 Use it
+
+- Original prompt:
+
+```text
+/new
+
+Add a hash module: sha256 and md5 of a string or of a file (`--file <path>`), and `--verify <digest>` that exits 1 on a mismatch.
+```
+
+- Execution date/time: 2026-11-19T15:29:14Z UTC (test-first failure).
+- Starting state: Skill/config files exist statically; no hash module or test exists. User approved creation of only `tests/test_hash.py` through a narrow chat question.
+- Action performed: Loaded the project-local `add-module` skill through the available `functions.skill` tool; its output included the local skill contents. The user approved creation of only `tests/test_hash.py`. Wrote that test file before production code and ran it; it failed because `multitool.hash` did not yet exist. Implemented string/file hashing and CLI support. A regression test exposed an uninitialized CLI exit code for successful codec calls; initialized it to zero and reran the focused suite successfully.
+- Commands/tool calls: `functions.skill(add-module)`; chat permission approval for `tests/test_hash.py`; `uv run python -m unittest tests.test_hash`; `uv run python -m unittest tests.test_hash.HashTests.test_cli_keeps_existing_codec_command_working`; four quality gates.
+- Actual outputs and exit codes: Initial focused test: `ModuleNotFoundError: No module named 'multitool.hash'`, exit 1. The regression test failed with `UnboundLocalError`, exit 1. The focused suite then passed 9 tests (exit 0). Final quality gates: Ruff 0, format 0, ty 0, unittest 0 (18 tests). Full test/gate outputs are preserved in `docs/evidence/command-runs.md`.
+- Expected behavior: Hash CLI supports algorithms, string/file input, verify mismatch exit 1; test fails before implementation; add-module skill is genuinely approved and invoked.
+- Observed behavior: The project-local skill invocation, scoped chat approval for the new test file, expected test-first failure, regression failure/fix, passing focused suite, and four green gates are observed in this interface. A native OpenCode TUI restart, skill permission prompt, and TUI trace remain NOT OBSERVED; chat approval for the test file is not represented as a skill permission approval.
+- Evidence reference: `docs/evidence/command-runs.md`; any actual skill/session trace if available.
+- Result: PASS for implementation, focused tests, and required gates. Native TUI interaction remains NOT OBSERVED.
+- Corrective action: Commit as `step 3: add-module skill, hash`; preserve the TUI limitation honestly.
+
+### 3.3 Commit
+
+- Original prompt: "Report the four gate exit codes, then commit with the message `step 3: add-module skill, hash`."
+- Execution date/time: 2026-11-19T15:59:55Z UTC (gates complete; commit pending).
+- Starting state: Hash implementation, tests, skill, and evidence expected complete.
+- Action performed: Ran the four quality gates in order; commit is the remaining action.
+- Commands/tool calls: Four gates in required order; Git commit pending.
+- Actual outputs and exit codes: Ruff 0, format 0, ty 0, unittest 0 (18 tests). Outputs are preserved in `docs/evidence/command-runs.md`.
+- Expected behavior: Four gates all 0 and exact commit message.
+- Observed behavior: All four gates passed; commit not yet created.
+- Evidence reference: Git history and `docs/evidence/command-runs.md`.
+- Result: NOT OBSERVED (commit pending; gates observed passing).
 - Corrective action: None.
 
 ## Rulings
