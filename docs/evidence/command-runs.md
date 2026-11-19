@@ -230,3 +230,183 @@ Four gates after implementation, in order:
 | `uv run ruff format --check` | `14 files already formatted` | 0 |
 | `uv run ty check` | `All checks passed!` | 0 |
 | `uv run python -m unittest discover -s tests` | `Ran 4 tests ... OK` | 0 |
+
+## Step 1.4: codec commit
+
+Command: `git commit -m "step 1: AGENTS.md, codec"`
+
+Actual output:
+
+```text
+[main 4c1b97d] step 1: AGENTS.md, codec
+8 files changed, 254 insertions(+), 14 deletions(-)
+```
+
+Exit code: 0. `git rev-parse HEAD` returned `4c1b97d51d0273131a5dcdf68b4c3214d8a19209`; `git status --short --branch` returned `## main`.
+
+## Step 2.1: installed OpenCode version and config syntax
+
+Commands: `opencode --version`; `python3 -m json.tool opencode.json`; `wc -c AGENTS.md`.
+
+Actual outputs: version `1.18.20`; JSON parsed and printed the project config (exit 0); `     989 AGENTS.md` (exit 0).
+
+The format was checked against the tagged V1 documentation for exactly v1.18.20. Static rule order is broad-first with exceptions after it. The TUI was not started, so runtime loading/restart and live allow/ask/deny effects are not proven.
+
+## Step 2.2: units test-first and gate runs
+
+Approval: The user approved creation of `tests/test_units.py` through a narrowly scoped chat question. This approval is not an OpenCode permission-dialog trace.
+
+Before implementation, `uv run python -m unittest tests.test_units` reported:
+
+```text
+E
+======================================================================
+ERROR: test_units (unittest.loader._FailedTest.test_units)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_units
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py", line 141, in loadTestsFromName
+    module = __import__(module_name)
+  File "/Users/orevisco/multitool/tests/test_units.py", line 3, in <module>
+    from multitool.units import convert
+ModuleNotFoundError: No module named 'multitool.units'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (errors=1)
+```
+
+Exit code: 1. After implementation and the complexity refactor, the focused test reported `Ran 5 tests ... OK`, exit 0.
+
+First required four-gate run after initial implementation:
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| Ruff check | `E501 Line too long (109 > 100)` at `src/multitool/units.py:18` | 1 |
+| Ruff format check | `1 file would be reformatted, 15 files already formatted` | 1 |
+| ty | `All checks passed!` | 0 |
+| unittest | `Ran 9 tests ... OK` | 0 |
+
+Exact initial Ruff failure:
+
+```text
+E501 Line too long (109 > 100)
+  --> src/multitool/units.py:18:101
+   |
+16 |         if to_unit not in {"C", "F", "K"}:
+17 |             raise ValueError(f"incompatible or unknown unit: {to_unit}")
+18 |         celsius = value if from_unit == "C" else (value - 32) * 5 / 9 if from_unit == "F" else value - 273.15
+   |                                                                                                     ^^^^^^^^^
+19 |         if to_unit == "C":
+20 |             return celsius
+   |
+
+Found 1 error.
+EXIT_CODE=1
+```
+
+Exact initial formatter output:
+
+```text
+unformatted: File would be reformatted
+  --> src/multitool/units.py:18:19
+1 file would be reformatted, 15 files already formatted
+EXIT_CODE=1
+```
+
+After splitting the long expression into explicit branches, Ruff check reported:
+
+```text
+C901 `convert` is too complex (9 > 8)
+  --> src/multitool/units.py:9:5
+Found 1 error.
+EXIT_CODE=1
+```
+
+Format, ty, and unittest returned 0. Extracting `_convert_temperature` reduced the complexity; behavior tests passed.
+
+Final pre-trap gates, in order:
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| Ruff check | `All checks passed!` | 0 |
+| Ruff format check | `16 files already formatted` | 0 |
+| ty | `All checks passed!` | 0 |
+| unittest | `Ran 9 tests ... OK` | 0 |
+
+## Step 2.3: deliberate one-decimal failure, before restoring code
+
+The rounding-trap gate run returned:
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| Ruff check | `All checks passed!` | 0 |
+| Ruff format check | `16 files already formatted` | 0 |
+| ty | `All checks passed!` | 0 |
+| unittest | Exact failure below | 1 |
+
+```text
+........F
+======================================================================
+FAIL: test_zero_celsius_preserves_kelvin_precision (test_units.UnitsTests.test_zero_celsius_preserves_kelvin_precision)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/orevisco/multitool/tests/test_units.py", line 15, in test_zero_celsius_preserves_kelvin_precision
+    self.assertEqual(convert(0, "C", "K"), 273.15)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 273.1 != 273.15
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.658s
+
+FAILED (failures=1)
+EXIT_CODE=1
+```
+
+At the failure, `shasum -a 256 tests/test_units.py` returned `d98ea6400cbfffd253c2f333b83a69f9483f1b48d96a5096ffc9a583ceaa3154`, confirming the test content remained as written. No attempt was made to edit the test, so no test-edit permission prompt was generated.
+
+After restoring full precision, the same `shasum -a 256 tests/test_units.py` command returned the identical digest:
+
+```text
+d98ea6400cbfffd253c2f333b83a69f9483f1b48d96a5096ffc9a583ceaa3154  tests/test_units.py
+```
+
+Recovery gates, in order:
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| Ruff check | `All checks passed!` | 0 |
+| Ruff format check | `16 files already formatted` | 0 |
+| ty | `All checks passed!` | 0 |
+| unittest | `Ran 9 tests ... OK` | 0 |
+
+Actual CLI observations after recovery:
+
+```text
+$ uv run mt units -40 C F
+-40
+EXIT_CODE=0
+
+$ uv run mt units 0 C K
+273.15
+EXIT_CODE=0
+
+$ uv run mt units 1 m C
+usage: mt [-h] [--version] {codec,units} ...
+mt: error: incompatible or unknown unit: C
+EXIT_CODE=2
+```
+
+The nonzero incompatible-unit result is the required argparse exit 2.
+
+## Step 2.4: final gates before commit
+
+Timestamp: 2026-11-19T14:30:37Z (UTC)
+
+| Gate | Actual output | Exit |
+| --- | --- | ---: |
+| `uv run ruff check` | `All checks passed!` | 0 |
+| `uv run ruff format --check` | `16 files already formatted` | 0 |
+| `uv run ty check` | `All checks passed!` | 0 |
+| `uv run python -m unittest discover -s tests` | `Ran 9 tests ... OK` | 0 |

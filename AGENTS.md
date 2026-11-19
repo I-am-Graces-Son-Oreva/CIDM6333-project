@@ -14,7 +14,7 @@ Multitool is a local Python command-line toolkit; it must never edit tests/ to m
 - Use argparse for CLI parsing and exit 2 for invalid command input.
 
 # Rules that must hold (enforced)
-- Never edit files under tests/ to make a gate pass. Enforced by: nothing yet.
+- Never edit files under tests/ to make a gate pass. Enforced by: opencode.json, edit on tests/ asks.
 
 # Where the truth lives
 - Toolchain and lint configuration: `pyproject.toml`; resolved versions: `uv.lock`.

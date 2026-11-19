@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "uv run ruff check": "allow",
+      "uv run ruff format --check": "allow",
+      "uv run ty check": "allow",
+      "uv run python -m unittest discover -s tests": "allow",
+      "git status": "allow",
+      "git status *": "allow",
+      "git diff": "allow",
+      "git diff *": "allow",
+      "git log": "allow",
+      "git log *": "allow",
+      "git push": "deny",
+      "git push *": "deny"
+    },
+    "edit": {
+      "*": "ask",
+      "src/**": "allow",
+      "tests/**": "ask"
+    },
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny"
+    }
+  }
+}

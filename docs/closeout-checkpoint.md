@@ -1,11 +1,11 @@
 # Closeout Checkpoint
 
-- Current professor prompt: 1.4, commit.
-- Completed prompts: 0.1 command executed (full text not entered in a TUI); 0.2 local implementation and gates; 0.3 deliberate failure captured, removed, and all gates restored; 0.4 local commit created; 1.1 AGENTS map created and measured; 1.3 codec tests and gates pass. 1.2 fresh session NOT OBSERVED.
-- Last Git commit: `c67af8706268ae5adabecfdd4c88cda73f82a4c6` (`setup: uv package, four gates`).
-- Current gate results: Last run all exit 0 (Ruff 0, format 0, ty 0, unittest 0).
-- Evidence collected: Above plus AGENTS.md content/size (966 bytes). User approved Area 0 test files through a narrow chat question; this was not an OpenCode permission dialog.
-- Pending permission decisions: None for Step 1.
+- Current professor prompt: 2.4, commit.
+- Completed prompts: Area 0 and Step 1 local work/commits; 1.2 fresh session NOT OBSERVED; 2.1 static config created/parsed; 2.2 units implementation/tests pass; 2.3 deliberate failure captured, full precision restored, tests unchanged. Live OpenCode permission behavior NOT OBSERVED.
+- Last Git commit: `4c1b97d51d0273131a5dcdf68b4c3214d8a19209` (`step 1: AGENTS.md, codec`).
+- Current gate results: Most recent 2.4 run: 0, 0, 0, 0. Rounding trap run remains recorded: 0, 0, 0, 1.
+- Evidence collected: Prior items plus test-first units failure, final units pass, initial lint/format failures and fixes, preserved one-decimal unittest failure, identical test hash before/after recovery, and real CLI output for required temperatures.
+- Pending permission decisions: No pending test-file creation; the live test-edit permission demonstration remains unavailable/unobserved.
 - Required restarts/fresh sessions: None observed; genuine `/new` and restarts remain pending TUI capability.
-- Remaining tasks: Create Step 1 commit; then Steps 2-6, closing assurance table, final verification, four remaining commits, and authorized school submission path.
+- Remaining tasks: Create Step 2 commit; continue Steps 3-6, closing assurance table, final verification, remaining commits, and authorized school submission path.
 - Submission: No remote inspected or configured; no push authorized or attempted.
