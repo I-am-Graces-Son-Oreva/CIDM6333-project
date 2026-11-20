@@ -33,6 +33,7 @@ INITIAL_DIGEST = "a" * 64
 CORRECTED_DIGEST = "b" * 64
 REVIEWED_AT = datetime(2026, 11, 17, 19, 30, tzinfo=UTC)
 ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = ROOT.parent
 
 
 def verdict_json(status: str, findings: list[str] | None = None) -> str:
@@ -657,7 +658,7 @@ class PhaseOneDocumentTests(unittest.TestCase):
             "t20-review",
         )
         for name in names:
-            path = ROOT / ".opencode" / "skills" / name / "SKILL.md"
+            path = REPO_ROOT / ".opencode" / "skills" / name / "SKILL.md"
             with self.subTest(skill=name):
                 self.assertTrue(path.is_file())
                 text = path.read_text(encoding="utf-8")
@@ -729,7 +730,8 @@ class PhaseOneDocumentTests(unittest.TestCase):
             path_refs = re.findall(r"`((?:tests|docs|src|\.opencode)/[^`]+)`", evidence)
             for reference in path_refs:
                 referenced_path = reference.split("::", maxsplit=1)[0]
-                self.assertTrue((ROOT / referenced_path).exists(), reference)
+                base = REPO_ROOT if referenced_path.startswith(".opencode/") else ROOT
+                self.assertTrue((base / referenced_path).exists(), reference)
 
         self.assertTrue(blocked_rows)
         self.assertTrue(any("unavailable tools" in line.lower() for line in text.splitlines()))

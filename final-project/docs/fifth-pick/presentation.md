@@ -11,7 +11,7 @@ Tuesday, November 24, 2026
 From the repository root, in the prepared project environment:
 
 ```sh
-sh scripts/course-demo.sh
+sh final-project/scripts/course-demo.sh
 ```
 
 Use the following sequence as a roughly five-minute speaking guide. Every line, judgment, approval, and result shown in the demonstration belongs to a synthetic fixture run.

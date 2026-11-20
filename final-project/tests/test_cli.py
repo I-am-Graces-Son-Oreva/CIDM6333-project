@@ -11,7 +11,7 @@ from unittest import mock
 
 from fifth_pick.cli import main
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_HEALTH = {
     "package": "fifth_pick",
     "status": "ok",

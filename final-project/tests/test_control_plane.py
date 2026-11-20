@@ -2,7 +2,7 @@ import json
 import unittest
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_GATE_PERMISSIONS = {
     "*": "deny",
     "git status *": "allow",
@@ -92,8 +92,8 @@ class ControlPlaneTests(unittest.TestCase):
         self.assertEqual(config["permission"]["bash"], EXPECTED_GATE_PERMISSIONS)
 
     def test_gate_and_permission_docs_exist(self) -> None:
-        self.assertTrue((REPO_ROOT / "docs/fifth-pick/gates.md").is_file())
-        self.assertTrue((REPO_ROOT / "docs/fifth-pick/harness.md").is_file())
+        self.assertTrue((REPO_ROOT / "final-project/docs/fifth-pick/gates.md").is_file())
+        self.assertTrue((REPO_ROOT / "final-project/docs/fifth-pick/harness.md").is_file())
 
     def test_var_fifth_pick_is_gitignored(self) -> None:
         ignored = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()

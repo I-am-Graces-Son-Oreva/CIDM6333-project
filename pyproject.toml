@@ -29,12 +29,12 @@ legacy = [
 default-groups = ["dev", "legacy"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/fifth_pick"]
+packages = ["final-project/src/fifth_pick"]
 
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-src = ["src", "tests"]
+src = [".", "final-project/src", "final-project"]
 extend-exclude = [
   "evolution-00/**",
   "evolution-01/**",
@@ -56,6 +56,9 @@ extend-exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ty.environment]
+extra-paths = ["final-project"]
 
 [tool.ty.src]
 exclude = [

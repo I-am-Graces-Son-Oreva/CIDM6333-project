@@ -1,6 +1,6 @@
 # Reproduce the course demonstration
 
-From the project directory with the existing environment available:
+From the repository root with the existing environment available:
 
 ```zsh
 uv run --offline --no-sync fifth-pick menu
@@ -46,7 +46,7 @@ After setup the demonstration uses local files and needs no credentials,
 provider calls, or OpenCode runtime.
 
 ```sh
-sh scripts/course-demo.sh
+sh final-project/scripts/course-demo.sh
 ```
 
 The script runs the standalone CLI against the bundled synthetic inputs.

@@ -57,7 +57,7 @@ The reviewer returns one JSON object:
 
 ## Evidence
 
-Gate outputs are recorded in `docs/fifth-pick/gates.md`. M1 evidence must include:
+Gate outputs are recorded in `final-project/docs/fifth-pick/gates.md`. M1 evidence must include:
 
 - the pre-correction gate failure,
 - the post-M1 gate results,
@@ -69,7 +69,7 @@ The configured reviewer is the only authority for the final M1 verdict. A provis
 
 ## M10 Phase 1 Status
 
-Phase 1 adds `src/fifth_pick/review.py` for strict typed reviewer-output parsing, deterministic one-correction state transitions, review-cycle IDs, and append-only M2 receipts. At the Phase 1 checkpoint, the unit-tested Python review logic had no OpenCode plugin or lifecycle bridge. It does not rank candidates, finalize a slate, or record Joseph's approval.
+Phase 1 adds `final-project/src/fifth_pick/review.py` for strict typed reviewer-output parsing, deterministic one-correction state transitions, review-cycle IDs, and append-only M2 receipts. At the Phase 1 checkpoint, the unit-tested Python review logic had no OpenCode plugin or lifecycle bridge. It does not rank candidates, finalize a slate, or record Joseph's approval.
 
 The four project-local skills provide procedures only. They do not enforce authorization, evidence validity, ranking, finalization, or Reviewer isolation; those controls remain in the existing application and native permission configuration.
 

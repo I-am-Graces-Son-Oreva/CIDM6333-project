@@ -155,7 +155,7 @@ To demonstrate settlement after approval, select the approved pick under
 The fixture excerpt is `Synthetic PrizePicks Luka Doncic Assists Higher 9.5 settled HIT.`
 Review the excerpt against the displayed pick before entering `YES`.
 
-The fixture is bundled under `src/fifth_pick/demo/` and uses the same synthetic
+The fixture is bundled under `final-project/src/fifth_pick/demo/` and uses the same synthetic
 inputs as the deterministic CLI integration tests.
 
 ### Product evidence and live board preparation

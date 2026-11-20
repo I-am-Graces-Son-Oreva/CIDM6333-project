@@ -65,7 +65,7 @@
       <p>A terminal walkthrough for the CIDM 6333 project. The Fifth Pick turns
         NBA fantasy projections and supporting evidence into a proposed slate
         for Joseph’s explicit decision.</p>
-      <p><a href="../../README.md">Repository README</a> ·
+      <p><a href="../../README.md">Fifth Pick README</a> ·
         <a href="technical-design.html">Technical design</a></p>
       <nav aria-label="Guide sections">
         <ul>
@@ -84,11 +84,11 @@
     <section id="setup">
       <h2>Set up and run offline</h2>
       <p>Use a macOS or Linux terminal with <code>uv</code> and Python 3.11 or newer.
-        Open the project directory containing <code>pyproject.toml</code> and
+        Open the repository root containing <code>pyproject.toml</code> and
         <code>uv.lock</code>. The initial install may download dependencies.</p>
       <pre><code>uv sync --locked
 uv run --offline --no-sync fifth-pick health
-sh scripts/course-demo.sh</code></pre>
+sh final-project/scripts/course-demo.sh</code></pre>
       <p>The course script uses bundled synthetic data and shows a positive proposal
         and a zero-pick result. After setup, the script and Demo Mode run offline
         without provider credentials or OpenCode.</p>
@@ -143,11 +143,11 @@ sh scripts/course-demo.sh</code></pre>
 
     <section id="commands">
       <h2>Run the same workflow from the shell</h2>
-      <p>From the project root, run the lines in order in one shell. Choose a fresh
+      <p>From the repository root, run the lines in order in one shell. Choose a fresh
         run ID for each new scenario and keep it the same throughout the run.</p>
       <pre><code>fp() { uv run --offline --no-sync fifth-pick "$@"; }
 run_id="course-$(date +%Y%m%d-%H%M%S)-$$"
-demo=src/fifth_pick/demo
+demo=final-project/src/fifth_pick/demo
 
 fp analyze --run-id "$run_id" --snapshot 1 --fixture "$demo/1"
 fp analyze --run-id "$run_id" --snapshot 2 --fixture "$demo/2"
@@ -245,7 +245,7 @@ fp evaluate --run-id "$run_id"</code></pre>
       <dl>
         <dt><code>uv</code> or <code>fifth-pick</code> cannot be found</dt>
         <dd>Check that <code>uv --version</code> works, then run <code>uv sync --locked</code>
-          from the project root and repeat the offline health check.</dd>
+          from the repository root and repeat the offline health check.</dd>
         <dt>The interactive menu will not open</dt>
         <dd>Run the menu in a macOS or Linux terminal with interactive input and output,
           or use the shell commands or course script.</dd>
@@ -264,7 +264,7 @@ fp evaluate --run-id "$run_id"</code></pre>
       </dl>
     </section>
   </main>
-  <footer class="wrap"><a href="../../README.md">Repository README</a> ·
+  <footer class="wrap"><a href="../../README.md">Fifth Pick README</a> ·
     <a href="technical-design.html">Technical design</a> · <a href="demo.md">Recorded course demo</a></footer>
 </body>
 </html>

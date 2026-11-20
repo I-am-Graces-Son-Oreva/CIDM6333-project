@@ -16,7 +16,7 @@ from fifth_pick.receipts import Receipt
 
 RUNS_DIRECTORY: Final[str] = "runs"
 RECEIPTS_FILENAME: Final[str] = "receipts.jsonl"
-APPLICATION_STORAGE_ROOT: Final[Path] = Path(__file__).resolve().parents[2] / "var" / "fifth-pick"
+APPLICATION_STORAGE_ROOT: Final[Path] = Path(__file__).resolve().parents[3] / "var" / "fifth-pick"
 _RUN_ID_PATTERN: Final[re.Pattern[str]] = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 

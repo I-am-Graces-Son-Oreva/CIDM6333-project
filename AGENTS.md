@@ -33,7 +33,7 @@ M1–M9 remain accepted under their recorded scopes. M10 is ACCEPTED WITH QUALIF
 
 ## Where the truth lives
 
-- Full operational guidance and controls: `docs/fifth-pick/agent-guidance.md`.
-- Frozen design: `docs/superpowers/specs/2026-11-13-fifth-pick-design.md`. PRD: `docs/PRD.md`.
-- Acceptance, runtime qualifications, and operating evidence: `docs/fifth-pick/gates.md`, `harness.md`, `assurance.md`, and `runbook.md` in that directory.
+- Full operational guidance and controls: `final-project/docs/fifth-pick/agent-guidance.md`.
+- Frozen design: `final-project/docs/superpowers/specs/2026-11-13-fifth-pick-design.md`. PRD: `final-project/docs/PRD.md`.
+- Acceptance, runtime qualifications, and operating evidence: `final-project/docs/fifth-pick/gates.md`, `harness.md`, `assurance.md`, and `runbook.md` in that directory.
 - Purpose and PEAS: `evolution-00/pitch.md`. Choices: `evolution-00/choices.md`. Judgments: `design-analyses/LEDGER.md`. Preserve Evolution 00–08.

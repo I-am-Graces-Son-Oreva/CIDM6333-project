@@ -8,7 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import uuid4
 
-FIXTURES = Path("src/fifth_pick/demo")
+FIXTURES = Path(__file__).resolve().parents[1] / "src/fifth_pick/demo"
 
 
 def cli(run_id: str, command: str, *args: str, expected: int = 0) -> dict:

@@ -5,8 +5,9 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PLUGIN_PATH = ROOT / ".opencode" / "plugin" / "fifth-pick-review-adapter.ts"
-COMMAND_PATH = ROOT / ".opencode" / "commands" / "fifth-pick-review.md"
+REPO_ROOT = ROOT.parent
+PLUGIN_PATH = REPO_ROOT / ".opencode" / "plugin" / "fifth-pick-review-adapter.ts"
+COMMAND_PATH = REPO_ROOT / ".opencode" / "commands" / "fifth-pick-review.md"
 ASSURANCE_PATH = ROOT / "docs" / "fifth-pick" / "assurance.md"
 
 
@@ -77,7 +78,7 @@ for (const [args, expected] of [
 """
         result = subprocess.run(
             ["node", "--input-type=module", "-e", script, str(PLUGIN_PATH)],
-            cwd=ROOT,
+            cwd=REPO_ROOT,
             capture_output=True,
             text=True,
             timeout=15,
@@ -244,7 +245,7 @@ assert.match(warnings.join("\n"), /no controller response channel/i);
 """
         result = subprocess.run(
             ["node", "--input-type=module", "-e", script, str(PLUGIN_PATH)],
-            cwd=ROOT,
+            cwd=REPO_ROOT,
             capture_output=True,
             text=True,
             timeout=15,
@@ -288,9 +289,9 @@ assert.match(warnings.join("\n"), /no controller response channel/i);
 
     def test_controller_dispatch_command_requires_confirmed_receipt(self) -> None:
         source = PLUGIN_PATH.read_text(encoding="utf-8")
-        command = (ROOT / ".opencode" / "commands" / "fifth-pick-review-dispatch.md").read_text(
-            encoding="utf-8"
-        )
+        command = (
+            REPO_ROOT / ".opencode" / "commands" / "fifth-pick-review-dispatch.md"
+        ).read_text(encoding="utf-8")
 
         self.assertIn('const REVIEW_DISPATCH_COMMAND = "fifth-pick-review-dispatch"', source)
         self.assertIn("input.command === REVIEW_DISPATCH_COMMAND", source)
@@ -348,7 +349,7 @@ assert.match(warnings.join("\n"), /no controller response channel/i);
     def test_phase2_assurance_cites_runtime_evidence_and_keeps_denial_blocked(self) -> None:
         text = ASSURANCE_PATH.read_text(encoding="utf-8")
         harness = (ROOT / "docs" / "fifth-pick" / "harness.md").read_text(encoding="utf-8")
-        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        agents = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
         self.assertIn("## Phase 2 Runtime Integration", text)
         self.assertIn(
