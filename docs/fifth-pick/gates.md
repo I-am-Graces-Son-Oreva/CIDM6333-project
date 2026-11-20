@@ -2641,3 +2641,47 @@ returned PASS and matched the demo receipt hash to the captured checkout
 artifact. No paid pilot was authorized, no provider request was made, and LIVE
 analysis is not operational. M10's formal acceptance and qualifications are
 unchanged.
+
+## Professor rehearsal checkpoint — November 19, 2026
+
+Baseline `e2d2671`. This checkpoint packages the existing Python CLI and
+review harness for classroom reproduction. The production methodology,
+native permissions, and milestone acceptance scopes were preserved.
+
+The first gate attempt with uv's default cache returned exit 2 for all
+four commands. The workspace sandbox denied access to
+`~/.cache/uv/sdists-v9/.git`. Verification switched to a writable uv cache.
+A fresh tracked-source export with the course files overlaid installed
+successfully with `uv sync --locked --offline` and a warm cache. The
+environment used Python 3.14.7 and Node 24.21.0.
+
+From that fresh environment, with provider credentials absent,
+`sh scripts/course-demo.sh` exited 0. The invalid slot exited 2 as expected.
+Fixture A recorded 8.5, 9.0, and 9.5, produced one `HIGH` / `STILL STRONG`
+proposal under a four-pick cap, and wrote 28 receipts. Fixture B recorded
+zero observations in slot 3, proposed zero picks, printed
+`NO ENTRY RECOMMENDED TODAY.`, and wrote 26 receipts. All four selected
+workflow regressions passed. The 14 OpenCode adapter contract tests also
+passed, including Node-executed lifecycle hooks.
+
+The independent read-only finalization review initially returned CONCERNS
+about the printed receipt directory and the walkthrough's treatment of
+fixture and native review states. The corrected files received PASS.
+This course review covered the deliverables. It was separate from the
+native proposal review state in the demo and the qualified M10 evidence.
+
+The fresh-export rehearsal used the restricted workspace and an empty
+inherited environment with only executable path, scratch home, and cache
+location set. An attempt to add a second OS-level network sandbox was
+rejected by the host. No LIVE validation or provider request was made.
+
+| Final gate | Exit | Result |
+| --- | ---: | --- |
+| `uv run ruff check` | 0 | All checks passed in the fresh export |
+| `uv run ruff format --check` | 0 | 145 files formatted in the fresh export |
+| `uv run ty check` | 0 | All checks passed in the fresh export |
+| `uv run python -m unittest discover -s tests` | 0 | 629 tests passed in the workspace in 298.063 s |
+
+All gates used `UV_OFFLINE=1` and `UV_NO_SYNC=1` after dependency setup.
+`AGENTS.md` had four sections and 3,644 characters. Three pre-existing
+untracked `var/test-evidence/` files were excluded from the commit.

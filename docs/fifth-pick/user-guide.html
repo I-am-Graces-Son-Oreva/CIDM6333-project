@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Install and run The Fifth Pick, then reproduce the offline CIDM 6333 demonstration.">
+  <title>User Guide | The Fifth Pick</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172438;
+      --paper: #f8f7f3;
+      --muted: #45566b;
+      --accent: #075a56;
+      --rule: #c9d1d4;
+      --panel: #e6f1ed;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 1rem; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.65 system-ui, sans-serif; }
+    .wrap { width: min(100% - 2rem, 56rem); margin-inline: auto; }
+    header { background: #112339; color: #fff; padding: 3rem 0 2.5rem; border-bottom: .35rem solid #208477; }
+    header p { color: #d5e0ed; }
+    header a { color: #b5eee1; }
+    h1, h2 { font-family: Georgia, serif; font-weight: 600; line-height: 1.15; }
+    h1 { margin: 0; font-size: clamp(2.25rem, 7vw, 4rem); }
+    h2 { margin: 0 0 1rem; font-size: 2rem; }
+    h3 { line-height: 1.3; }
+    p { max-width: 75ch; }
+    a { color: var(--accent); text-underline-offset: .2em; }
+    a:focus-visible { outline: 2px solid currentColor; outline-offset: .25rem; }
+    .skip { position: absolute; inset-inline-start: 1rem; transform: translateY(-200%); background: #fff; padding: .5rem 1rem; }
+    .skip:focus { transform: translateY(0); }
+    nav ul { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; padding: 0; list-style: none; }
+    section { padding: 2rem 0; border-bottom: 1px solid var(--rule); }
+    li + li { margin-top: .4rem; }
+    nav li + li { margin-top: 0; }
+    code { font-size: .9em; overflow-wrap: anywhere; }
+    pre { overflow-x: auto; padding: 1rem; background: #192f38; color: #eefaf6; border-radius: .35rem; line-height: 1.5; }
+    pre code { overflow-wrap: normal; }
+    .callout { padding: .85rem 1.1rem; background: var(--panel); border-inline-start: .22rem solid var(--accent); }
+    .callout p { margin: 0; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { border-bottom: 1px solid var(--rule); padding: .65rem .6rem; vertical-align: top; }
+    thead { background: var(--panel); }
+    tbody th { width: 12rem; }
+    dt { font-weight: 700; }
+    dd { margin: .25rem 0 1rem; color: var(--muted); }
+    footer { padding: 1rem 0 2rem; }
+    @media print {
+      header { background: white; color: black; padding: 0; }
+      header p, header a { color: black; }
+      .skip, nav { display: none; }
+      pre { background: #eee; color: black; white-space: pre-wrap; }
+      h2, h3 { break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to user guide</a>
+  <header>
+    <div class="wrap">
+      <h1>The Fifth Pick User Guide</h1>
+      <p>A terminal walkthrough for the CIDM 6333 project. The Fifth Pick turns
+        NBA fantasy projections and supporting evidence into a proposed slate
+        for Joseph’s explicit decision.</p>
+      <p><a href="../../README.md">Repository README</a> ·
+        <a href="technical-design.html">Technical design</a></p>
+      <nav aria-label="Guide sections">
+        <ul>
+          <li><a href="#setup">Setup</a></li>
+          <li><a href="#menu">Demo menu</a></li>
+          <li><a href="#commands">Shell commands</a></li>
+          <li><a href="#records">Inputs and outputs</a></li>
+          <li><a href="#review">Agent-assisted review</a></li>
+          <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" id="main">
+    <section id="setup">
+      <h2>Set up and run offline</h2>
+      <p>Use a macOS or Linux terminal with <code>uv</code> and Python 3.11 or newer.
+        Open the project directory containing <code>pyproject.toml</code> and
+        <code>uv.lock</code>. The initial install may download dependencies.</p>
+      <pre><code>uv sync --locked
+uv run --offline --no-sync fifth-pick health
+sh scripts/course-demo.sh</code></pre>
+      <p>The course script uses bundled synthetic data and shows a positive proposal
+        and a zero-pick result. After setup, the script and Demo Mode run offline
+        without provider credentials or OpenCode.</p>
+      <div class="callout">
+        <p>For the classroom walkthrough, stay in <strong>Demo Mode</strong>.
+          The displayed projections, approvals and results are synthetic.
+          The application records decisions and outcomes locally.</p>
+      </div>
+    </section>
+
+    <section id="menu">
+      <h2>Walk through the demo menu</h2>
+      <pre><code>uv run --offline --no-sync fifth-pick menu</code></pre>
+      <p>Use ↑ and ↓ to move, Enter to select, Esc to go back or cancel, and Q
+        to exit from a menu or result screen. Confirmation screens start on
+        <strong>Cancel</strong>. Choose <strong>Continue</strong> to proceed.</p>
+      <ol>
+        <li>Choose <strong>Analyze NBA Slate</strong> twice to record synthetic Snapshots 1 and 2.</li>
+        <li>Open <strong>View Candidates and Rankings</strong> to see the provisional watchlist.</li>
+        <li>Choose <strong>Run T-20 Review</strong>. This records Snapshot 3 and rechecks candidates
+          at the fixture’s simulated twenty-minute checkpoint.</li>
+        <li>Choose <strong>View Final Recommendations</strong> and confirm creation of the proposal.
+          The positive example shows Luka Doncic, PrizePicks, Assists Higher 9.5,
+          <code>HIGH</code> confidence and <code>STILL STRONG</code> at T-20.</li>
+        <li>Choose <strong>Record Results</strong> before approval to see the settlement guard.</li>
+        <li>Open <strong>Approve / Reject / Modify</strong> to see the exact proposal and the
+          decision form. Joseph enters <code>APPROVE</code>, <code>REJECT</code>, or
+          <code>MODIFY</code>. Enter a reason for <code>REJECT</code> or a comma-separated
+          list of displayed candidate keys to keep for <code>MODIFY</code>.
+          Esc closes the menu form.</li>
+        <li>Open <strong>View Audit and Receipts</strong> to inspect the decision,
+          evidence gaps, receipts and recorded outcomes.</li>
+      </ol>
+      <p>The menu header displays the generated run ID. Reopen the same run using
+        <code>uv run --offline --no-sync fifth-pick menu --run-id RUN_ID</code> with
+        that ID substituted.</p>
+      <h3>Record the synthetic settlement after approval</h3>
+      <p>In <strong>Record Results</strong>, select the approved pick and enter the
+        following values. Replace <code>CANDIDATE_KEY</code> with the exact key
+        shown in the approved selection.</p>
+      <dl>
+        <dt>Outcome and source</dt>
+        <dd><code>HIT</code> and <code>synthetic-fixture</code></dd>
+        <dt>Source timestamp and reference</dt>
+        <dd><code>2026-11-15T20:00:00+00:00</code> and
+          <code>fixture:results/CANDIDATE_KEY</code></dd>
+        <dt>Source excerpt</dt>
+        <dd><code>Synthetic PrizePicks Luka Doncic Assists Higher 9.5 settled HIT.</code>
+          Enter <code>YES</code> after checking the excerpt against the approved pick.</dd>
+      </dl>
+    </section>
+
+    <section id="commands">
+      <h2>Run the same workflow from the shell</h2>
+      <p>From the project root, run the lines in order in one shell. Choose a fresh
+        run ID for each new scenario and keep it the same throughout the run.</p>
+      <pre><code>fp() { uv run --offline --no-sync fifth-pick "$@"; }
+run_id="course-$(date +%Y%m%d-%H%M%S)-$$"
+demo=src/fifth_pick/demo
+
+fp analyze --run-id "$run_id" --snapshot 1 --fixture "$demo/1"
+fp analyze --run-id "$run_id" --snapshot 2 --fixture "$demo/2"
+fp candidates --run-id "$run_id"
+fp t20 --run-id "$run_id" --fixture "$demo/3"
+fp final --run-id "$run_id"
+fp audit --run-id "$run_id"
+fp evaluate --run-id "$run_id"</code></pre>
+      <p>Use <code>fp decide --run-id "$run_id"</code> to open the explicit decision
+        form. For an approved fixture pick, replace <code>CANDIDATE_KEY</code> in
+        <code>fp result record --run-id "$run_id" --selection 'CANDIDATE_KEY'</code>
+        with its exact key and use the synthetic settlement values above.
+        Rerun <code>audit</code> and <code>evaluate</code> to see the new records.</p>
+    </section>
+
+    <section id="records">
+      <h2>Supported inputs and outputs</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Item</th><th scope="col">What to enter or inspect</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Fixture input</th><td>Three stage directories each supply
+              <code>events.json</code>, <code>odds-&lt;eventId&gt;.json</code> and
+              <code>stage.json</code>. The stage descriptor supplies fixture mode,
+              a timezone-aware observation timestamp, exact aliases and supporting
+              evidence keyed to candidate IDs. The <a href="runbook.md#product-cli-fixture-workflow">runbook</a>
+              describes the schema.</td></tr>
+            <tr><th scope="row">Board lines</th><td>PrizePicks and Underdog stay separate.
+              Supported categories are points, assists, rebounds, points + rebounds +
+              assists (PRA), and rebounds + assists. Each line requires a resolved
+              canonical player and the exact authorized category and Higher or Lower direction.</td></tr>
+            <tr><th scope="row">Proposal</th><td><code>final</code> reports the exact line,
+              confidence, projection movement, T-20 status and material risks for each
+              retained candidate. An empty proposal displays <strong>NO ENTRY RECOMMENDED TODAY.</strong></td></tr>
+            <tr><th scope="row">Settlement</th><td>Enter <code>HIT</code>, <code>MISS</code>,
+              <code>PUSH</code>, <code>VOID</code>, <code>DNP</code> or
+              <code>RESULT UNAVAILABLE</code>. Choose <code>RESULT UNAVAILABLE</code>
+              when trustworthy settlement evidence is missing.</td></tr>
+            <tr><th scope="row">Audit and evaluation</th><td><code>audit</code> emits JSON with
+              the saved evidence and receipt trail. <code>evaluate</code> reports
+              process checks and recorded outcomes separately. Run artifacts are under
+              <code>var/fifth-pick/runs/RUN_ID/</code>, including <code>receipts.jsonl</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="review">
+      <h2>Standalone and agent-assisted operation</h2>
+      <h3>Standalone CLI</h3>
+      <p>The menu and the shell workflow both exercise the Python application directly.
+        A Demo Mode decision can be recorded without dispatching an independent
+        Reviewer. The CLI runs the fixture checks and persists the resulting evidence.</p>
+      <h3>Native OpenCode review</h3>
+      <p>In the configured OpenCode workflow, Joseph authorizes the task. The Controller
+        coordinates a Planner, Builder and independent read-only Reviewer, then brings
+        the result back to Joseph. The Controller exports the exact JSON envelope with
+        <code>fifth-pick review-material --run-id RUN_ID</code>, passes it to
+        <code>/fifth-pick-review</code> in OpenCode and checks the persisted disposition
+        with <code>fifth-pick review-status --run-id RUN_ID</code>.</p>
+      <p>A first <code>FAIL</code> can lead to one Controller-dispatched Builder
+        correction after <code>/fifth-pick-review-dispatch</code> confirms a newly
+        persisted <code>REVISION_ATTEMPT</code>.
+        Malformed or mismatched review evidence blocks the workflow. <code>CONCERNS</code>
+        and a second <code>FAIL</code> stop automated correction and go to Joseph.
+        M10 was accepted with qualification under OpenCode 1.18.20.
+        Edit and shell-write tools were withheld from the native Reviewer.
+        Use Route A only. Correlated request-to-denial evidence remains blocked
+        for both write routes. LIVE second-FAIL or CONCERNS escalation remains unverified. See the
+        <a href="harness.md">harness</a> and <a href="gates.md">gate record</a>.</p>
+      <h3>LIVE board operation</h3>
+      <p>Live Mode is separate from the classroom fixture. The approved fantasy
+        board route is The Odds API <code>us_dfs</code>. LIVE collection requires
+        verified scope and Joseph’s explicit paid-request budget. Real observation
+        windows, complete required evidence and a pre-tipoff owner decision govern
+        a LIVE run. Consult the <a href="runbook.md">operations runbook</a> and the
+        <a href="live-operational-amendment.md">LIVE operational amendment</a>
+        for prerequisites and review rules.</p>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>Troubleshooting</h2>
+      <dl>
+        <dt><code>uv</code> or <code>fifth-pick</code> cannot be found</dt>
+        <dd>Check that <code>uv --version</code> works, then run <code>uv sync --locked</code>
+          from the project root and repeat the offline health check.</dd>
+        <dt>The interactive menu will not open</dt>
+        <dd>Run the menu in a macOS or Linux terminal with interactive input and output,
+          or use the shell commands or course script.</dd>
+        <dt>The watchlist is provisional</dt>
+        <dd>Complete both analysis stages, then use <code>t20</code> with
+          <code>--fixture</code> pointing to stage 3. Run <code>final</code> after review.</dd>
+        <dt>A replay stops or a receipt is inconsistent</dt>
+        <dd>Verify the run ID and stage path. Preserve the existing artifacts.
+          Start a new scenario with a fresh ID.</dd>
+        <dt>The proposal has zero picks</dt>
+        <dd>Use <code>audit</code> to see candidate exclusions and evidence gaps.
+          The empty result is a valid outcome.</dd>
+        <dt>Settlement is blocked</dt>
+        <dd>Check for an explicit saved approval and use the exact candidate key from
+          its official final set. Inspect <code>audit</code> to see the current state.</dd>
+      </dl>
+    </section>
+  </main>
+  <footer class="wrap"><a href="../../README.md">Repository README</a> ·
+    <a href="technical-design.html">Technical design</a> · <a href="demo.md">Recorded course demo</a></footer>
+</body>
+</html>

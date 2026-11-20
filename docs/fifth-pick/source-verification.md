@@ -232,8 +232,9 @@ documentation](https://docs.balldontlie.io/#account-tiers) lists Stats for
 NBA ALL-STAR and GOAT, including the NBA GOAT trial. No separate Stats
 add-on is documented. Current evidence points to a Stats-specific access
 issue. The provider has not confirmed the actual account entitlement or
-the cause of the rejection. Confirm NBA GOAT trial provisioning with the
-provider before another separately approved Stats request. No credential
+the cause of the rejection. Joseph reports that provider support has been
+contacted. Stats access remains blocked pending their response. Any further
+validation requires confirmed provisioning and separate authorization. No credential
 rotation or request change is indicated by the current evidence.
 
 ### Production source integration checkpoint

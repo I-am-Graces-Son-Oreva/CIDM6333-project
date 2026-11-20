@@ -36,3 +36,33 @@ attempt exited 1. Explicit fixture approval, synthetic settlement, audit
 and evaluation each exited 0. The [30-receipt fixture trail](evidence/course-demo-f39cf82.jsonl)
 has SHA-256 `7627c5e3375a14775aa980217082f23f945781f3a48af72bb23d56e3285b5182`.
 The approval and outcome are demonstration records only.
+
+## One-command professor rehearsal
+
+From a fresh clone, run `uv sync --locked` once. Initial installation may
+need the internet to obtain dependencies. A warm uv cache and an installed
+compatible Python allow offline setup with `uv sync --locked --offline`.
+After setup the demonstration uses local files and needs no credentials,
+provider calls, or OpenCode runtime.
+
+```sh
+sh scripts/course-demo.sh
+```
+
+The script runs the standalone CLI against the bundled synthetic inputs.
+Fixture A shows that snapshot 4 is invalid, ambiguous identity and a
+missing grant block lines, and the three timestamped observations support
+one proposal. Fixture B removes the provider lines from a temporary copy of
+the third input. The T-20 check then produces `NO ENTRY RECOMMENDED TODAY.`
+The command prints both run IDs and audit commands. Each run is retained
+under ignored `var/fifth-pick/runs/`.
+
+The final regression replay exercises the Python review bridge with a test
+verdict, settlement gating, four- and five-slot ceilings, and no refill.
+The direct CLI fixture reports `AWAITING_JOSEPH`. The separate native
+review reports `AWAITING_REVIEW`. Neither a native verdict nor an owner
+decision is recorded in those direct CLI runs. For the independent native Reviewer route and its
+qualifications, consult the [harness](harness.md) and [gate record](gates.md).
+
+Open the [user guide](user-guide.html) or follow the
+[November 24 presentation walkthrough](presentation.md).

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Technical design and verification evidence for The Fifth Pick, a CIDM 6333 agentic systems project.">
+  <title>Technical design | The Fifth Pick</title>
+  <style>
+    :root { color-scheme: light; --ink: #172438; --muted: #45566b; --paper: #f8f7f3; --line: #c9d1d4; --accent: #075a56; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.62 system-ui, sans-serif; }
+    .wrap { width: min(68rem, calc(100% - 2.5rem)); margin-inline: auto; }
+    header { background: #112339; color: #fff; padding-block: 2rem 3rem; border-bottom: .35rem solid #208477; }
+    nav { display: flex; flex-wrap: wrap; gap: .5rem 1.35rem; }
+    header a { color: #b5eee1; }
+    header p { max-width: 42rem; color: #d5e0ed; }
+    h1 { font-size: clamp(2.65rem, 7vw, 5rem); margin: .35em 0 .12em; letter-spacing: -.055em; line-height: 1.03; }
+    h2 { font-size: clamp(1.6rem, 4vw, 2.35rem); line-height: 1.15; letter-spacing: -.035em; margin: 0 0 1rem; }
+    h3 { font-size: 1.13rem; margin: 1.5rem 0 .4rem; }
+    h3 + p { margin-top: 0; }
+    main > nav { padding-block: 1.25rem; border-bottom: 1px solid var(--line); }
+    section { padding-block: 2.2rem; border-bottom: 1px solid var(--line); }
+    p, li { max-width: 80ch; }
+    a { color: var(--accent); text-underline-offset: .15em; }
+    a:focus-visible { outline: 2px solid #237d70; outline-offset: 3px; }
+    .flow { padding: 1rem 1.25rem; border-left: .25rem solid #208477; background: #e6f1ed; font-weight: 650; }
+    .table-wrap { overflow-x: auto; margin-block: 1.25rem; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { padding: .68rem .8rem; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+    thead th { background: #e7eeef; }
+    tbody th { min-width: 9rem; }
+    caption { text-align: left; color: var(--muted); padding-bottom: .45rem; }
+    li + li { margin-top: .45rem; }
+    code { font-size: .91em; overflow-wrap: anywhere; }
+    pre { background: #e7eeef; padding: 1rem; white-space: pre-wrap; }
+    .skip { position: absolute; inset-inline-start: 1rem; transform: translateY(-200%); background: #fff; padding: .5rem 1rem; }
+    .skip:focus { transform: translateY(0); }
+    footer { color: var(--muted); padding-block: 1rem 2rem; }
+    @media print {
+      body, header { background: #fff; color: #000; }
+      header p, header a, a { color: #000; }
+      .skip, main > nav { display: none; }
+      .wrap { width: 100%; }
+      h2, h3 { break-after: avoid; }
+      tr { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to technical design</a>
+  <header>
+    <div class="wrap">
+      <nav aria-label="Project pages"><a href="../../README.md">Repository README</a><a href="user-guide.html">User guide</a></nav>
+      <p>The Fifth Pick · CIDM 6333 Agentic Systems</p>
+      <h1>Technical design</h1>
+      <p>A Python CLI for NBA fantasy selection and discipline. It assembles auditable proposals from authorized evidence and leaves the decision with Joseph.</p>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <nav aria-label="On this page">
+      <a href="#architecture">Architecture</a>
+      <a href="#context">Context and sources</a>
+      <a href="#methodology">Methodology</a>
+      <a href="#governance">Governance and permissions</a>
+      <a href="#evidence">Evidence and limits</a>
+    </nav>
+
+    <section id="architecture" aria-labelledby="architecture-heading">
+      <h2 id="architecture-heading">Architecture</h2>
+      <p class="flow">Discover slate → collect observations → evaluate candidates → review at T−20 → finalize proposal → independent review → Joseph’s decision → settlement and evaluation</p>
+      <p><code>fifth-pick</code> exposes a menu and explicit subcommands. Demo defaults to packaged synthetic inputs. LIVE operations use application-owned storage and read back the run’s receipts and durable artifacts before advancing. The CLI has no platform login, entry submission, wager execution, or money movement. <a href="../../src/fifth_pick/cli.py">CLI entry points</a> · <a href="../PRD.md">Product requirements</a></p>
+      <div class="table-wrap">
+        <table>
+          <caption>Responsibilities along the selection pipeline</caption>
+          <thead><tr><th scope="col">Stage</th><th scope="col">Application boundary</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Slate and board</th><td>Bind the verified full official slate and reconcile provider event coverage on the Chicago date. Guard collection with exact event scope, provider identity evidence, event-local timing, and a pinned credit budget. <a href="../../src/fifth_pick/official_slate.py">Official slate</a> · <a href="../../src/fifth_pick/board_collection.py">Board collection</a></td></tr>
+            <tr><th scope="row">Evidence and ranking</th><td>Bind the platform-specific board to canonical identity and exact authorization. Verify the snapshot ledger and evidence provenance before canonical candidate evaluation and qualitative ranking. <a href="../../src/fifth_pick/snapshots.py">Snapshots</a> · <a href="../../src/fifth_pick/methodology.py">Methodology</a> · <a href="../../src/fifth_pick/ranking.py">Ranking</a></td></tr>
+            <tr><th scope="row">Review and release</th><td>Check refreshed evidence and current values at the event’s T−20. Apply the slate ceiling, preserve the frozen pool, and bind the exact proposal and its review history to receipts before Joseph decides. <a href="../../src/fifth_pick/t20_review.py">T−20 review</a> · <a href="../../src/fifth_pick/finalization.py">Finalization</a> · <a href="../../src/fifth_pick/product_review.py">Proposal review</a></td></tr>
+            <tr><th scope="row">Decision and results</th><td>Persist an explicit <code>APPROVE</code>, <code>REJECT</code>, or subset-only <code>MODIFY</code>. Grade only the exact receipt-bound approved selection with trustworthy result provenance. Track process and outcomes separately. <a href="../../src/fifth_pick/approval.py">Approval</a> · <a href="../../src/fifth_pick/results.py">Results</a> · <a href="../../src/fifth_pick/evaluation.py">Evaluation</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Per-run artifacts connect observations, candidate audits, reviewed proposals, decisions, and results. The receipt ledger uses JSON Lines, stable event keys, conflict detection, and atomic replacement. Readback checks compare the artifact to its receipt and digest. Sensitive query values and known secrets are redacted. Selected workflows hold a per-run lock across validation and persistence. <a href="../../src/fifth_pick/storage.py">Run storage</a> · <a href="../../src/fifth_pick/receipts.py">Receipts</a> · <a href="architecture.md">Architecture record</a></p>
+    </section>
+
+    <section id="context" aria-labelledby="context-heading">
+      <h2 id="context-heading">Context and sources</h2>
+      <p>Evolution 6’s context model preserves canon (stable instructions and decisions), runtime ledger (what execution observed), and derived views (summaries and status). Ledger evidence resolves what happened when a derived view is stale. In Fifth Pick, policy authority comes from the frozen design, approved amendments, and validated configuration. Receipts establish what a run actually did, and CLI views are reconstructed from underlying evidence. <a href="../../README.md">Evolution 6 context model</a> · <a href="../../evolution-06/handoff.md">Evolution 6 handoff</a> · <a href="../../design-analyses/LEDGER.md">Design analysis ledger</a></p>
+      <p>The authoritative universe is pinned by content digest. Canonical names and verified provider mappings are exact, scoped, and evidence-backed. Unknown or ambiguous identity fails closed. An exact player, category, and direction grant precedes analysis. Trust tiers affect evaluation only. Malik Monk has no selectable grant. <a href="../../config/fifth-pick/approved-universe.yaml">Approved universe</a> · <a href="../../src/fifth_pick/authorization.py">Authorization gate</a> · <a href="../../src/fifth_pick/sources/alias_crosswalk.py">Alias crosswalk</a></p>
+      <ul>
+        <li><strong>Projections.</strong> The Odds API <code>us_dfs</code> is the sole approved board route. PrizePicks and Underdog lines stay separate. The live market set is points, assists, rebounds, PRA, and rebounds plus assists. Alternate lines are excluded by default. Three-point attempts are outside the LIVE MVP. Each projected line retains source and retrieval timing, event, platform, and provenance. <a href="../../src/fifth_pick/sources/odds_api.py">Board adapter</a></li>
+        <li><strong>Schedule and quota.</strong> Discovery is quota-free and paid collection requires Joseph’s exact scope and budget. Official game count and eligible provider coverage are distinct. Partial coverage leaves a report and blocks a complete LIVE collection manifest. Credentials stay in the process environment. <a href="runbook.md">Operational runbook</a></li>
+        <li><strong>Supporting facts.</strong> NBA.com is scoped to schedules and general information, the Official NBA Injury Report to availability, and Sports Illustrated NBA to attributed editorial context. The code treats external content as data. Platform scraping, unofficial feeds, and NBA.com statistical endpoints are excluded. Supporting facts cannot replace a platform’s projection. <a href="../../config/fifth-pick/approved-sources.yaml">Approved source policy</a></li>
+        <li><strong>Prepared integrations.</strong> BALLDONTLIE is approved for evaluation only. The history issuer validates captured pages and independently identified corroboration. The official injury PDF adapter requires an approved delivery method. Odds API totals and spreads have a separate grant for event, bookmaker, phases, and credit ceiling. LIVE admission remains subject to receipt and provenance checks. <a href="source-verification.md">Source integration checkpoints</a> · <a href="live-operational-amendment.md">Approved LIVE amendment</a></li>
+      </ul>
+    </section>
+
+    <section id="methodology" aria-labelledby="methodology-heading">
+      <h2 id="methodology-heading">Methodology and deterministic controls</h2>
+      <ol>
+        <li><strong>Observe three times.</strong> Snapshot 1 is the initial accepted observation. Snapshot 2 targets the midpoint between Snapshot 1 and T−20, capped at T−80, with a 60-minute separation when achievable. Snapshot 3 is the accepted observation in the inclusive T−25 to T−20 interval. A missed window stays missed. <a href="../../src/fifth_pick/snapshots.py">Observation rules</a></li>
+        <li><strong>Evaluate evidence.</strong> Check last eight games, same-season head-to-head by exact opponent, availability, role and minutes, matchup, and game environment when required. Record conflicts and gaps with provenance. Senior HIGHER has ranking priority, Senior LOWER has stricter evidence requirements, and foul trouble and movement are contextual signals. Confidence is HIGH, MEDIUM, or LOW. These are qualitative judgments with deterministic validation and ordering. <a href="../superpowers/specs/2026-11-13-fifth-pick-design.md">Frozen methodology</a> · <a href="../../src/fifth_pick/evidence.py">Evidence validation</a></li>
+        <li><strong>Freeze the pool and recheck.</strong> The receipt-bound full slate sets a ceiling of four picks for one to four games and five for five or more. Each canonical player can occupy one slot. LIVE review completes from T−20 through T−15 inclusive, with moving evidence retrieved at or after T−20 and by completion. Wait for outstanding reviews still inside their event windows, omit expired candidates, and keep vacancies open. Joseph alone can promote LOW. If the slate cannot support an entry, the CLI can emit <strong>NO ENTRY RECOMMENDED TODAY.</strong> <a href="live-operational-amendment.md">LIVE timing and release</a> · <a href="../../src/fifth_pick/finalization.py">Pool and ceilings</a></li>
+        <li><strong>Settle with provenance.</strong> Approval is explicit, applies to the exact reviewed LIVE selection, and must precede tipoff and settlement. <code>DNP</code> and <code>VOID</code> have separate result statuses. Untrustworthy or absent evidence yields <code>RESULT UNAVAILABLE</code>. Process compliance and settlement outcomes are evaluated separately. <a href="../../src/fifth_pick/results.py">Settlement</a> · <a href="../../src/fifth_pick/evaluation.py">Evaluation</a></li>
+      </ol>
+    </section>
+
+    <section id="governance" aria-labelledby="governance-heading">
+      <h2 id="governance-heading">Governance and OpenCode permissions</h2>
+      <p class="flow">Joseph → Controller → Planner → Builder → independent Reviewer → Controller → Joseph</p>
+      <p>The Controller owns progression and the one permitted correction. Planner, Builder, and Reviewer have separate OpenCode role definitions. The local skills for candidate evaluation, evidence validation, final-slate review, and T−20 prescribe procedure. Python and native permissions enforce the controls. <a href="agent-guidance.md">Governance and rules</a> · <a href="../../.opencode/skills/">Project skill definitions</a></p>
+      <div class="table-wrap">
+        <table>
+          <caption>OpenCode role boundaries</caption>
+          <thead><tr><th scope="col">Role</th><th scope="col">Responsibility and permissions</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Planner</th><td>Produces bounded plans. Edit, Bash, task dispatch, and the legacy graduate-triage MCP write tool are denied. <a href="../../.opencode/agents/fifth-pick-planner.md">Planner definition</a></td></tr>
+            <tr><th scope="row">Builder</th><td>Implements approved changes. Edit is allowed. Bash defaults to deny with a short inspection, environment, health, and gate allowlist. Task dispatch and the MCP write tool are denied. <a href="../../.opencode/agents/fifth-pick-builder.md">Builder definition</a></td></tr>
+            <tr><th scope="row">Reviewer</th><td>Independently returns a strict JSON verdict with status, summary, and findings. Edit, Bash, task dispatch, and the MCP write tool are denied. <a href="../../.opencode/agents/fifth-pick-reviewer.md">Reviewer definition</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The project config allows reads, asks for edits by default, and denies Bash outside its allowlist. It also retains the local graduate-triage MCP from the course history. Fifth Pick’s TypeScript review adapter correlates the named command and Reviewer task through an invocation marker and task call ID. A fixed-argument Python bridge verifies the exact review material digest and replays prior receipt state under a lock. The adapter transports the response and leaves permissions to the host and dispatch to the Controller. <a href="../../opencode.json">OpenCode config</a> · <a href="../../.opencode/plugin/fifth-pick-review-adapter.ts">Review adapter</a> · <a href="../../src/fifth_pick/review_bridge.py">Python bridge</a></p>
+      <p>PASS must match the exact proposal version. Malformed input stops. A first FAIL can authorize one Builder dispatch only when the current confirmation newly persists <code>REVISION_ATTEMPT</code>. Replay and uncertainty stop. A correction can remove selections only, and the revised proposal requires a matching PASS. CONCERNS and a second FAIL stop automated correction and surface findings to Joseph. The approved amendment permits an explicit, reasoned Joseph acknowledgment of CONCERNS for an uncorrected exact proposal. <a href="harness.md">Harness lifecycle</a> · <a href="live-operational-amendment.md#review-and-decision">Decision rules</a></p>
+    </section>
+
+    <section id="evidence" aria-labelledby="evidence-heading">
+      <h2 id="evidence-heading">Verification evidence and limits</h2>
+      <p>The four mechanical gates are Ruff lint, Ruff format check, ty, and unittest discovery. Historical records retain failing gate output, corrections, exit codes, and independent review findings. <a href="gates.md">Gate evidence</a> · <a href="assurance.md">Risk and assurance map</a></p>
+      <ul>
+        <li><strong>M1–M9.</strong> Accepted within the recorded milestone scopes. The gate record and preserved Evolution 00–08 materials provide the course history. <a href="gates.md">Milestone evidence</a> · <a href="../../evolution-00/pitch.md">Project purpose and PEAS</a> · <a href="../../evolution-00/choices.md">Initial design choices</a></li>
+        <li><strong>M10.</strong> Accepted with qualification for OpenCode 1.18.20. Four implementation gates exited 0 with 510 tests. Isolated native evidence covers adapter activation, an initial PASS, an invalid verdict that stopped, and a separate FAIL → revision attempt → PASS correction run. Native withholding of both edit and Bash/shell-write tools is verified, with reads exposed. Route A correlated request-to-denial evidence remains BLOCKED for both write routes. Live second-FAIL/CONCERNS escalation remains unverified, with offline regression coverage. <a href="gates.md#m10-formal-acceptance-with-qualification">M10 acceptance</a> · <a href="gates.md#m10-native-reviewer-tool-withholding-evidence">Native tool evidence</a></li>
+        <li><strong>M11 course closeout.</strong> A clean clone of <code>f39cf82</code> passed all four gates with 595 tests. The end-to-end synthetic demo recorded 30 receipts, an exact proposal, an explicit decision, and fixture settlement. An independent documentation recheck matched the receipt artifact. <a href="gates.md#m11-offline-course-closeout--november-18-2026">M11 gate record</a> · <a href="demo.md">Demo walkthrough</a> · <a href="evidence/course-demo-f39cf82.jsonl">Demo receipts</a></li>
+        <li><strong>Supporting-source checkpoint.</strong> The source record reports all four gates passing with 629 tests and a focused 17-test run. Constrained replay verified that a refresh without a prior receipt-bound assessment cannot create a review or proposal. A positive LIVE path still needs an admitted receipt-bound interpretation producer and current role/minutes and teammate-absence evidence. <a href="source-verification.md#receipt-issuer-and-live-orchestration-checkpoint">Integration checkpoint</a></li>
+      </ul>
+      <p>Real provider coverage, complete corroborated player history, official injury document acquisition and extraction, positive LIVE T−20, and native review and settlement of a real NBA proposal remain open for product validation. Historical discovery and provider checks have limited scope. The synthetic settlement demonstrates workflow and audit behavior. The project makes no supported hit-rate or profitability claim. <a href="source-verification.md">Source evidence and scope</a> · <a href="product-completion.md">Product coverage matrix</a></p>
+    </section>
+  </main>
+  <footer class="wrap"><a href="user-guide.html">Read the user guide</a> · <a href="../../README.md">Return to the repository README</a></footer>
+</body>
+</html>
