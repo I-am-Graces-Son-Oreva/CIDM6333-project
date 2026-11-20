@@ -7,20 +7,30 @@ It validates evidence, applies the frozen selection rules, and leaves the
 final decision to Joseph. The classroom rehearsal uses synthetic data.
 
 - [Final project README](final-project/README.md)
-- [Technical design](final-project/docs/fifth-pick/technical-design.html)
-- [User guide](final-project/docs/fifth-pick/user-guide.html)
+- Technical design · [PDF](final-project/docs/fifth-pick/technical-design.pdf) · [HTML](final-project/docs/fifth-pick/technical-design.html)
+- User guide · [PDF](final-project/docs/fifth-pick/user-guide.pdf) · [HTML](final-project/docs/fifth-pick/user-guide.html)
 - [Offline demonstration](final-project/docs/fifth-pick/demo.md)
 - [Presentation walkthrough](final-project/docs/fifth-pick/presentation.md)
 
-From the repository root:
+The PDFs open directly from the GitHub repository once this commit is published.
+Reading them requires only access to the repository.
+
+From the repository root, start the interactive CLI in Demo Mode:
 
 ```sh
 uv sync --locked
+uv run --offline --no-sync fifth-pick menu
+```
+
+Run the professor’s scripted offline demonstration after setup:
+
+```sh
 sh final-project/scripts/course-demo.sh
 ```
 
-Dependency setup may require downloads. The rehearsal uses bundled fixtures
-and no provider credentials.
+Dependency setup may require downloads. The rehearsal uses bundled synthetic
+fixtures and requires no provider credentials. Live NBA integration is only
+partially verified.
 
 ## Evolution assignments
 

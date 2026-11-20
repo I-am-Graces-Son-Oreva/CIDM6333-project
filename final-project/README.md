@@ -8,20 +8,29 @@ final decision. The application has no entry submission or wagering path.
 
 ## Start here
 
-- [User guide](docs/fifth-pick/user-guide.html)
-- [Technical and design documentation](docs/fifth-pick/technical-design.html)
+- Technical design · [PDF](docs/fifth-pick/technical-design.pdf) · [HTML](docs/fifth-pick/technical-design.html)
+- User guide · [PDF](docs/fifth-pick/user-guide.pdf) · [HTML](docs/fifth-pick/user-guide.html)
 - [Tuesday presentation walkthrough](docs/fifth-pick/presentation.md)
 - [Beginner learning notes](docs/fifth-pick/learning-notes.md)
 - [Course demonstration and verification](docs/fifth-pick/demo.md)
 
 From the repository root with Python 3.11 or later and uv, install the locked
 environment once. Initial setup may need package downloads. All subsequent
-demo execution uses local files and requires no provider credentials.
+demo execution uses local synthetic fixtures and requires no provider credentials.
+The PDFs can be read from the GitHub repository once published. Live NBA
+integration is only partially verified.
+
+Start the interactive CLI in Demo Mode:
 
 ```sh
 uv sync --locked
-sh final-project/scripts/course-demo.sh
 uv run --offline --no-sync fifth-pick menu
+```
+
+Run the scripted offline demonstration after setup:
+
+```sh
+sh final-project/scripts/course-demo.sh
 ```
 
 The script replays checked-in synthetic provider responses. It prints rejected
