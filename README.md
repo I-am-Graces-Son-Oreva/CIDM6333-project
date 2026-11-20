@@ -32,6 +32,14 @@ Dependency setup may require downloads. The rehearsal uses bundled synthetic
 fixtures and requires no provider credentials. Live NBA integration is only
 partially verified.
 
+## Multi-tool exercise
+
+The CIDM 6333 Closeout Walkthrough builds a Python CLI with codecs, unit
+conversion, hashing, CIDR inspection, and project health checks. Its OpenCode
+harness uses permissions, a skill, Reviewer and Worker roles, and Python
+guards. Start with the [Multi-tool exercise README](multi-tool-exercise/README.md)
+or inspect the [original walkthrough evidence](multi-tool-exercise/docs/closeout-evidence.md).
+
 ## Evolution assignments
 
 | Assignment | Deliverables |
@@ -47,12 +55,6 @@ partially verified.
 | [Evolution 08](evolution-08/) | Multi-agent control and review |
 
 See the [design-analysis ledger](design-analyses/LEDGER.md) and [AI interaction log](AI_LOG.md).
-
-## Multi-tool exercise
-
-No standalone Multi-tool submission was identified among the repository files
-or Git history available for this checkout. The Evolution assignments and their
-tool exercises remain under their original coursework.
 
 ## Shared tool configuration
 

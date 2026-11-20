@@ -36,6 +36,7 @@ target-version = "py311"
 line-length = 100
 src = [".", "final-project/src", "final-project"]
 extend-exclude = [
+  "multi-tool-exercise",
   "evolution-00/**",
   "evolution-01/**",
   "evolution-02/**",
@@ -62,6 +63,7 @@ extra-paths = ["final-project"]
 
 [tool.ty.src]
 exclude = [
+  "multi-tool-exercise/**",
   "evolution-00/**",
   "evolution-01/**",
   "evolution-02/**",
