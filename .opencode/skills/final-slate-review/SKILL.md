@@ -16,6 +16,16 @@ Review the receipt-bound M8 proposal. The ceiling limits selections; it is never
 5. Keep M6 exclusions and candidates outside the frozen pool visible. If T-20 removes a candidate or evidence is unavailable, do not promote an outside candidate or fill the open slot.
 6. Present the receipt-bound proposal, exclusions, unresolved gaps, and stop reason to Joseph. Only the existing interactive decision path may record `APPROVE`, `REJECT`, or `MODIFY`.
 
+## Fresh Controller session
+
+Start from the run ID and read the Python `review-handoff` checkpoint.
+Verify the proposal and artifact digests before loading exact review material.
+Use `review-status` to inspect verified findings when escalation is recorded.
+Confirm the initial review was never attempted before opening it. A rejected
+malformed response may leave no durable receipt. Reconcile any uncertainty
+with Joseph. A checkpoint or a reconstructed
+receipt never authorizes a Builder dispatch.
+
 ## Boundaries
 
 - Do not change authorization, methodology, confidence eligibility, Senior priority, or slate ceilings during review.

@@ -54,7 +54,8 @@ Fixture A shows that snapshot 4 is invalid, ambiguous identity and a
 missing grant block lines, and the three timestamped observations support
 one proposal. Fixture B removes the provider lines from a temporary copy of
 the third input. The T-20 check then produces `NO ENTRY RECOMMENDED TODAY.`
-The command prints both run IDs and audit commands. Each run is retained
+The command prints both run IDs and audit commands. A separate CLI process
+reconstructs the bounded review checkpoint from the first run ID. Each run is retained
 under ignored `var/fifth-pick/runs/`.
 
 The final regression replay exercises the Python review bridge with a test

@@ -62,6 +62,7 @@ USAGE = (
     "  evaluate --run-id RUN_ID\n"
     "  review-material --run-id RUN_ID\n"
     "  review-status --run-id RUN_ID\n"
+    "  review-handoff --run-id RUN_ID\n"
     "  review-correct --run-id RUN_ID --remove CANDIDATE_KEY --reason REASON\n"
     "  decide --run-id RUN_ID\n"
     "  result record --run-id RUN_ID --selection SELECTION_ID\n"
@@ -174,6 +175,7 @@ def main(
         "evaluate",
         "review-material",
         "review-status",
+        "review-handoff",
         "review-correct",
     }:
         return _fixture_command(arguments[0], arguments[1:])
@@ -531,6 +533,10 @@ def _fixture_command(command: str, arguments: list[str]) -> int:
                 if command == "review-material"
                 else review_status(store, args.run_id)
             )
+        elif command == "review-handoff":
+            from fifth_pick.product_review import review_handoff
+
+            output = review_handoff(store, args.run_id)
         elif command == "review-correct":
             from fifth_pick.product_review import record_product_correction
 

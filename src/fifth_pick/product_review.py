@@ -181,7 +181,14 @@ def review_status(store: RunStore, run_id: str) -> dict[str, object]:
     history = _load_history(store, cycle)
     state = history.cycle.phase.value
     expected_receipts = sum(len(transition.events) for transition in history.transitions)
-    if len(history.receipts) != expected_receipts:
+    pending_verdict = f"product-verdict-{cycle.review_cycle_id}-0"
+    if len(history.receipts) != expected_receipts or (
+        history.cycle.phase is ReviewPhase.AWAITING_REVIEW
+        and (
+            (store.run_directory(run_id) / f"{pending_verdict}.json").exists()
+            or any(row["event_key"] == pending_verdict for row in store.read_receipts(run_id))
+        )
+    ):
         state = "INCOMPLETE_REVIEW_RECEIPTS"
     elif history.cycle.phase in (
         ReviewPhase.REVIEWED_FOR_JOSEPH,
@@ -222,6 +229,33 @@ def review_status(store: RunStore, run_id: str) -> dict[str, object]:
         output["verdict"] = notes
         output["verdict_sha256"] = hashlib.sha256(raw).hexdigest()
     return output
+
+
+def review_handoff(store: RunStore, run_id: str) -> dict[str, object]:
+    """Reconstruct a bounded Controller checkpoint without granting dispatch authority."""
+    status = review_status(store, run_id)
+    state = status["state"]
+    next_step = {
+        ReviewPhase.AWAITING_REVIEW: "CONFIRM_INITIAL_REVIEW_NOT_ATTEMPTED",
+        ReviewPhase.REVIEWED_FOR_JOSEPH: "CHECK_DECISION_AND_TIMING",
+        ReviewPhase.ESCALATE_TO_JOSEPH: "LOAD_VERIFIED_FINDINGS_FOR_JOSEPH",
+    }.get(str(state), "STOP_AND_RECONCILE_WITH_JOSEPH")
+    return {
+        "schema_version": 1,
+        **{
+            field: status[field]
+            for field in (
+                "run_id",
+                "state",
+                "subject",
+                "review_cycle_id",
+                "artifact_sha256",
+                "proposal_sha256",
+            )
+        },
+        "next_step": next_step,
+        "dispatch_authorized": False,
+    }
 
 
 def record_product_correction(

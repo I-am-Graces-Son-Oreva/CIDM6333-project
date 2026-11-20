@@ -61,13 +61,16 @@ and passes the verdict to Python. Persistent config, receipts, digests,
 and checked-in gates support reconstruction in a fresh session. Summaries
 are navigation aids. The workflow depends on explicit handoffs and Python
 validation to control drift as the conversation grows. On restart, use the
-run ID to reload status and receipts, confirm the artifact digest, and
-hand off only the next stage and its evidence. Stop when required inputs
+run ID with `fifth-pick review-handoff --run-id RUN_ID` to reconstruct a
+bounded checkpoint. Compare both digests before loading evidence for the
+next stage. The checkpoint grants no Builder dispatch authority. Stop when required inputs
 are missing or the bounded handoff cannot be validated.
 
 Superpowers guided design, implementation planning, review, and verification
 during development. Those plans and findings are checked into the repository.
-The CLI and its synthetic replay run independently of Superpowers. See the
+The CLI and its synthetic replay run independently of Superpowers. Native
+OpenCode discovery and fixture-driven skill calls were exercised separately.
+See the
 [architecture](docs/fifth-pick/architecture.md),
 [OpenCode harness record](docs/fifth-pick/harness.md), and
 [development plans](docs/superpowers/plans).

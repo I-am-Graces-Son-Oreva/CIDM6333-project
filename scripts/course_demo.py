@@ -63,6 +63,13 @@ def main() -> None:
     print(f"One-game slate ceiling: {final['slate']['maximum_selections']}")
     review = cli(demo_id, "review-status")
     print(f"Native review state: {review['state']} (offline replay below uses a test verdict)")
+    recovered = cli(demo_id, "review-handoff")
+    if (
+        recovered["artifact_sha256"] != review["artifact_sha256"]
+        or recovered["dispatch_authorized"]
+    ):
+        raise SystemExit("Fresh-process handoff did not match the review status.")
+    print(f"Fresh-process handoff: {recovered['next_step']}, dispatch not authorized")
     show_evidence(audit)
 
     print("\nFixture B: provider has no line at T-20")

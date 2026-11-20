@@ -1,0 +1,82 @@
+{
+  "agents": {
+    "fifth-pick-builder": {
+      "adapter_activated": true,
+      "tools": {
+        "bash": true,
+        "edit": true,
+        "read": true,
+        "skill": true,
+        "task": false,
+        "write": true
+      }
+    },
+    "fifth-pick-planner": {
+      "adapter_activated": true,
+      "tools": {
+        "bash": false,
+        "edit": false,
+        "read": true,
+        "skill": true,
+        "task": false,
+        "write": false
+      }
+    },
+    "fifth-pick-reviewer": {
+      "adapter_activated": true,
+      "tools": {
+        "bash": false,
+        "edit": false,
+        "read": true,
+        "skill": true,
+        "task": false,
+        "write": false
+      }
+    }
+  },
+  "baseline": "0931fb2",
+  "discovered_skills": [
+    "evaluate-candidate",
+    "final-slate-review",
+    "t20-review",
+    "test-driven-development",
+    "using-superpowers",
+    "validate-evidence",
+    "verification-before-completion",
+    "writing-plans"
+  ],
+  "local_qwen3_4b_planner": "Timed out at 120 seconds before a skill tool completed",
+  "native_debug_adapter_activated": true,
+  "native_fixture_planner": {
+    "agent": "fifth-pick-planner",
+    "exit": 0,
+    "forbidden_tools_absent_from_model_request": [
+      "bash",
+      "edit",
+      "write",
+      "task"
+    ],
+    "provider": "scripted OpenAI-compatible loopback fixture",
+    "session_id": "ses_e08b8ff64ffeVX9Q6GSZAkgKiN",
+    "skill_calls": [
+      {
+        "input": {
+          "name": "validate-evidence"
+        },
+        "output_sha256": "12de74232818d002b821c368e909bb0e7a9cfe1f099350bd6c2ef076a42c8e38",
+        "state": "completed",
+        "tool": "skill"
+      },
+      {
+        "input": {
+          "name": "verification-before-completion"
+        },
+        "output_sha256": "9d34bcb719d44b577d6b12f6e3e438419aa2236b89d1bfae622fe89b745517d5",
+        "state": "completed",
+        "tool": "skill"
+      }
+    ]
+  },
+  "opencode_version": "1.18.20",
+  "scope": "Disposable source export with isolated XDG paths and legacy MCP disabled"
+}

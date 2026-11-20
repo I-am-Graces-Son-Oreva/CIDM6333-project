@@ -20,11 +20,27 @@ Use the following sequence as a roughly five-minute speaking guide. Every line, 
 | --- | --- | --- |
 | 0:00–0:45 | The problem and the Demo Mode label | An assistant should explain the basis for a selection and stop when evidence or authorization is missing. PrizePicks and Underdog are separate boards. |
 | 0:45–1:45 | Invalid fourth snapshot and candidate refusals | Each game has three observation slots. The fixture audit also shows an unresolved identity and an unauthorized category or direction. |
-| 1:45–2:45 | Third observation, proposal, and review state | T-20 means 20 minutes before the associated game's scheduled tipoff. Show fixture Luka Doncic, PrizePicks assists HIGHER, and movement from 8.5 to 9.0 to 9.5. Point to the `HIGH` judgment and `STILL STRONG` T-20 result. The fixture proposal reports `AWAITING_JOSEPH` and the separate native review status reports `AWAITING_REVIEW`. Demo decisions can be recorded without a native dispatch. |
+| 1:45–2:45 | Third observation, proposal, and review state | T-20 means 20 minutes before the associated game's scheduled tipoff. Show fixture Luka Doncic, PrizePicks assists HIGHER, and movement from 8.5 to 9.0 to 9.5. Point to the `HIGH` judgment and `STILL STRONG` T-20 result. The fixture proposal reports `AWAITING_JOSEPH` and the separate native review status reports `AWAITING_REVIEW`. Demo decisions can be recorded without a native dispatch. A separate CLI process reloads the checkpoint from the run ID and reports that dispatch is unauthorized. |
 | 2:45–3:45 | Receipts and the missing-third-observation scenario | The receipts show what happened. When the third observation is missing, the fixture produces zero picks and `NO ENTRY RECOMMENDED TODAY.` |
 | 3:45–5:00 | Automated regression replay | The replay checks a synthetic review verdict, refusal to settle before approval, explicit fixture approval, and a synthetic result. It also checks the four- and five-pick caps and that removals leave slots empty. One synthetic HIT exercises settlement. It cannot establish a hit rate. |
 
 For a manual rehearsal, use `uv run --offline --no-sync fifth-pick menu` and the [menu walkthrough](demo.md). The menu shows the provisional watchlist after the first two observations. The [archived fixture trail](evidence/course-demo-f39cf82.jsonl) documents a prior clean-checkout demonstration at commit `f39cf82`.
+
+## Optional native harness evidence
+
+On a host configured for OpenCode 1.18.20, run:
+
+```sh
+opencode debug skill
+opencode debug agent fifth-pick-reviewer
+```
+
+Look for the review adapter activation marker, the four Fifth Pick skills, and
+`read` and `skill` exposed while `bash`, `edit`, `write`, and `task` are
+withheld. The recorded Planner exercise completed two native skill calls with
+a scripted loopback model response. For actual Reviewer and Builder model
+execution, use the historical M10 receipts and their qualification.
+[Native checks](harness.md#professor-alignment-native-checks-and-fresh-session-recovery)
 
 ## Questions to be ready for
 

@@ -92,3 +92,35 @@ The 2026-11-18 OpenCode 1.18.20 addendum permits native pre-invocation withholdi
 M1 does not implement feature-specific skills, defense-in-depth hooks, the mechanical correction counter, Odds API integration, registry, authorization, snapshots, methodology, ranking, T-20, finalization, or result grading. Those remain later milestones.
 
 The `legacy` dependency group restores the historical MCP and pytest imports needed by old test modules during discovery. Fifth Pick tests remain built-in `unittest` tests and are discovered automatically by the required gate command.
+
+## Professor-alignment native checks and fresh-session recovery
+
+An isolated source export on OpenCode 1.18.20 returned exit 0 for
+`opencode debug skill` and for `opencode debug agent fifth-pick-planner`,
+`opencode debug agent fifth-pick-builder`, and
+`opencode debug agent fifth-pick-reviewer`. The adapter printed its
+activation marker. The native catalogs exposed read and skill while
+withholding Bash, edit, write, and task from Planner and Reviewer.
+Builder retained its scoped Bash and edit permissions. A second native
+discovery check loaded the updated `final-slate-review` skill and its
+fresh-session instructions. The unrelated legacy MCP was disabled only
+for the isolated process.
+
+A local Qwen3 4B Planner session started but timed out at 120 seconds
+before completing a skill call. A loopback fixture model then drove the
+real OpenCode Planner tool cycle. Both `validate-evidence` and
+`verification-before-completion` completed as native `skill` calls and
+the run exited 0. The fixture also verified that Bash, edit, write, and
+task were absent from the model request. This exercises host routing
+without measuring a model's autonomous skill choice. The existing M10
+record above covers actual native model Reviewer and Builder execution.
+[Sanitized discovery and skill events](evidence/professor-native-discovery-2026-11-19.json)
+
+A fresh Controller starts with
+`fifth-pick review-handoff --run-id RUN_ID`. The bounded JSON reconstructs
+the review state and proposal/artifact digests from Python's existing
+evidence. It never authorizes Builder dispatch. If an initial verdict
+file or receipt is present without the native transition, recovery stops
+for reconciliation. A malformed verdict may have no durable record.
+Confirm no previous attempt before starting an initial review and reconcile
+uncertainty with Joseph. Original M10 qualifications remain in force.

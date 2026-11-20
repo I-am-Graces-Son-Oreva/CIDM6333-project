@@ -2685,3 +2685,45 @@ rejected by the host. No LIVE validation or provider request was made.
 All gates used `UV_OFFLINE=1` and `UV_NO_SYNC=1` after dependency setup.
 `AGENTS.md` had four sections and 3,644 characters. Three pre-existing
 untracked `var/test-evidence/` files were excluded from the commit.
+
+## Professor-alignment verification — November 19, 2026
+
+Baseline `0931fb2`. The new `review-handoff` CLI regression initially failed
+with exit 2 from the CLI because the command was unavailable. Independent
+review then identified a partial-verdict crash path. Before the correction,
+the updated test failed because the receipt-free handoff suggested loading
+initial review material without confirming that no attempt had occurred.
+The corrected handoff verifies identity and digests through the existing
+review status path, surfaces interrupted initial verdict writes, and stops
+after a consumed correction. The independent re-review returned PASS
+within the code, tests, demo wiring, and operator guidance scope.
+
+The final `sh scripts/course-demo.sh` run exited 0 from a fresh source
+export with a separately installed locked environment and provider
+credentials absent. The positive run produced 28 receipts and a separate
+CLI process returned `CONFIRM_INITIAL_REVIEW_NOT_ATTEMPTED` with dispatch
+unauthorized. The missing T-20 observation produced zero proposals and
+26 receipts. All four selected replay checks passed.
+
+OpenCode 1.18.20 resolved all three project agents and the four project
+skills. A scripted loopback model drove real native Planner calls to
+`validate-evidence` and Superpowers `verification-before-completion`.
+Both completed, and the native request excluded the prohibited tools.
+A real local Qwen3 4B run timed out before completing a skill call. The
+[native evidence](evidence/professor-native-discovery-2026-11-19.json)
+and [harness record](harness.md#professor-alignment-native-checks-and-fresh-session-recovery)
+retain the distinct scopes. Route A and M10 qualifications remain in force.
+
+Two extra fresh CLI processes reconstructed the same 484-byte handoff
+byte for byte. The receipt ledger SHA-256 stayed identical across both
+reads. A missing run returned exit 1 with missing slate metadata.
+
+| Final gate | Exit | Result |
+| --- | ---: | --- |
+| `uv run ruff check` | 0 | All checks passed |
+| `uv run ruff format --check` | 0 | 145 files already formatted |
+| `uv run ty check` | 0 | All checks passed |
+| `uv run python -m unittest discover -s tests` | 0 | 630 tests passed in 353.796 s |
+
+All four commands ran with uv offline and synchronization disabled after
+setup. No LIVE endpoint was requested.

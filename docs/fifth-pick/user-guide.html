@@ -202,12 +202,24 @@ fp evaluate --run-id "$run_id"</code></pre>
         A Demo Mode decision can be recorded without dispatching an independent
         Reviewer. The CLI runs the fixture checks and persists the resulting evidence.</p>
       <h3>Native OpenCode review</h3>
+      <p>In a configured OpenCode 1.18.20 environment, use <code>opencode debug skill</code>
+        to list discovered skills and <code>opencode debug agent fifth-pick-reviewer</code>
+        to inspect the resolved native tools before starting review. The native route
+        requires a configured model. Superpowers skills appear in discovery when installed
+        on the host. The offline course script uses the checked-in fixtures and Python CLI.</p>
       <p>In the configured OpenCode workflow, Joseph authorizes the task. The Controller
         coordinates a Planner, Builder and independent read-only Reviewer, then brings
         the result back to Joseph. The Controller exports the exact JSON envelope with
         <code>fifth-pick review-material --run-id RUN_ID</code>, passes it to
         <code>/fifth-pick-review</code> in OpenCode and checks the persisted disposition
         with <code>fifth-pick review-status --run-id RUN_ID</code>.</p>
+      <p>In a fresh Controller session, start with
+        <code>fifth-pick review-handoff --run-id RUN_ID</code>. Compare the proposal and
+        artifact digests with the handoff. The compact record gives a next step and
+        always reports <code>dispatch_authorized: false</code>. Inspect
+        <code>review-status</code> for verified findings. If the checkpoint says
+        <code>CONFIRM_INITIAL_REVIEW_NOT_ATTEMPTED</code>, confirm that no attempt occurred.
+        Reconcile interrupted or uncertain review with Joseph.</p>
       <p>A first <code>FAIL</code> can lead to one Controller-dispatched Builder
         correction after <code>/fifth-pick-review-dispatch</code> confirms a newly
         persisted <code>REVISION_ATTEMPT</code>.

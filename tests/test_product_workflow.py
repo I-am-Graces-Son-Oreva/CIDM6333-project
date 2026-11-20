@@ -7,7 +7,7 @@ from typing import Any, cast
 
 from fifth_pick.fixture_workflow import collect_fixture_stage, final_view
 from fifth_pick.menu import DEMO
-from fifth_pick.product_review import review_material, review_status
+from fifth_pick.product_review import review_handoff, review_material, review_status
 from fifth_pick.review_bridge import process_request
 from fifth_pick.schedule import schedule_view
 from fifth_pick.storage import RunStore
@@ -43,6 +43,45 @@ class ProductWorkflowTests(unittest.TestCase):
     def collect(self, count):
         for slot in range(1, count + 1):
             collect_fixture_stage(self.store, self.run_id, slot, DEMO / str(slot))
+
+    def test_fresh_controller_handoff_is_bounded_and_read_only(self):
+        from contextlib import redirect_stderr, redirect_stdout
+        from io import StringIO
+        from unittest.mock import patch
+
+        from fifth_pick.cli import main
+
+        self.collect(3)
+        final_view(self.store, self.run_id)
+        before = self.store.read_receipts(self.run_id)
+        status = review_status(self.store, self.run_id)
+        output, errors = StringIO(), StringIO()
+        with (
+            patch("fifth_pick.cli.application_run_store", return_value=RunStore(self.store.root)),
+            redirect_stdout(output),
+            redirect_stderr(errors),
+        ):
+            result = main(["review-handoff", "--run-id", self.run_id])
+        self.assertEqual(result, 0, errors.getvalue())
+        handoff = json.loads(output.getvalue())
+        self.assertEqual(handoff["state"], "AWAITING_REVIEW")
+        self.assertEqual(handoff["next_step"], "CONFIRM_INITIAL_REVIEW_NOT_ATTEMPTED")
+        self.assertEqual(handoff["artifact_sha256"], status["artifact_sha256"])
+        self.assertEqual(handoff["proposal_sha256"], status["proposal_sha256"])
+        self.assertFalse(handoff["dispatch_authorized"])
+        self.assertNotIn("review_material", handoff)
+        self.assertNotIn("receipts", handoff)
+        self.assertLess(len(output.getvalue()), 1024)
+        self.assertEqual(self.store.read_receipts(self.run_id), before)
+
+        verdict_key = f"product-verdict-{status['review_cycle_id']}-0"
+        (self.store.run_directory(self.run_id) / f"{verdict_key}.json").write_text(
+            "{}", encoding="utf-8"
+        )
+        interrupted = review_handoff(RunStore(self.store.root), self.run_id)
+        self.assertEqual(interrupted["state"], "INCOMPLETE_REVIEW_RECEIPTS")
+        self.assertEqual(interrupted["next_step"], "STOP_AND_RECONCILE_WITH_JOSEPH")
+        self.assertFalse(interrupted["dispatch_authorized"])
 
     def test_t20_readiness_reports_due_and_late_with_actual_time(self):
         self.collect(2)
@@ -101,6 +140,9 @@ class ProductWorkflowTests(unittest.TestCase):
         with self.assertRaises(ReviewError):
             record_product_correction(self.store, self.run_id, remove=(key,), reason="Fixture")
         self.assertEqual(bridge(original).exit_code, 0)
+        recovered = review_handoff(RunStore(self.store.root), self.run_id)
+        self.assertEqual(recovered["next_step"], "STOP_AND_RECONCILE_WITH_JOSEPH")
+        self.assertFalse(recovered["dispatch_authorized"])
         revised = record_product_correction(
             self.store, self.run_id, remove=(key,), reason="Remove the cited fixture selection"
         )
