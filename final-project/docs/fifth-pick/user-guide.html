@@ -93,9 +93,8 @@
   <header>
     <div class="wrap">
       <h1>The Fifth Pick User Guide</h1>
-      <p>A terminal walkthrough for the CIDM 6333 project. The Fifth Pick turns
-        NBA fantasy projections and supporting evidence into a proposed slate
-        for Joseph’s explicit decision.</p>
+      <p>Use this guide to install The Fifth Pick, run the credential-free demo, and
+        inspect how the Python CLI evaluates NBA fantasy lines.</p>
       <p><a href="../../README.md">Fifth Pick README</a> ·
         <a href="technical-design.html">Technical design</a></p>
       <nav aria-label="Guide sections">
@@ -114,9 +113,9 @@
   <main class="wrap" id="main">
     <section id="setup">
       <h2>Set up and run offline</h2>
-      <p>Use a macOS or Linux terminal with <code>uv</code> and Python 3.11 or newer.
-        Open the repository root containing <code>pyproject.toml</code> and
-        <code>uv.lock</code>. The initial install may download dependencies.</p>
+      <p>Get a copy of the <a href="https://github.com/WTAMU-CIDM6333/CIDM6333-Fall2026-Joseph-Edafiadhe">class repository</a>.
+        Open its root in a macOS or Linux terminal with <code>uv</code> and Python 3.11 or newer.
+        You should see <code>pyproject.toml</code> and <code>uv.lock</code>. The initial install may download dependencies.</p>
       <pre><code>uv sync --locked
 uv run --offline --no-sync fifth-pick health
 sh final-project/scripts/course-demo.sh</code></pre>
@@ -124,7 +123,7 @@ sh final-project/scripts/course-demo.sh</code></pre>
         and a zero-pick result. After setup, the script and Demo Mode run offline
         without provider credentials or OpenCode.</p>
       <div class="callout">
-        <p>For the classroom walkthrough, stay in <strong>Demo Mode</strong>.
+        <p>Choose <strong>Demo Mode</strong> to try the tool without provider access.
           The displayed projections, approvals and results are synthetic.
           The application records decisions and outcomes locally.</p>
       </div>
@@ -138,8 +137,8 @@ sh final-project/scripts/course-demo.sh</code></pre>
         <strong>Cancel</strong>. Choose <strong>Continue</strong> to proceed.</p>
       <p>The main menu summarizes verified snapshot, decision, and results progress.
         The pointer marks the selected option. The separate Next Action section offers
-        guidance based on the saved run. A proposal with selections still requires
-        Joseph’s decision.</p>
+        guidance based on the saved run. Demo Mode lets you practice recording a decision against synthetic data.
+        In LIVE mode, only the project owner can approve a proposal.</p>
       <ol>
         <li>Choose <strong>Analyze NBA Slate</strong> twice to record synthetic Snapshots 1 and 2.</li>
         <li>Open <strong>View Candidates and Rankings</strong> to compare candidates in one table.
@@ -153,7 +152,7 @@ sh final-project/scripts/course-demo.sh</code></pre>
           <code>HIGH</code> confidence and <code>STILL STRONG</code> at T-20.</li>
         <li>Choose <strong>Record Results</strong> before approval to see the settlement guard.</li>
         <li>Open <strong>Approve / Reject / Modify</strong> to see the exact proposal and the
-          decision form. Joseph enters <code>APPROVE</code>, <code>REJECT</code>, or
+          decision form. In Demo Mode, you can enter <code>APPROVE</code>, <code>REJECT</code>, or
           <code>MODIFY</code> in any capitalization. The menu also accepts
           <code>A</code>, <code>R</code>, and <code>M</code>. Enter a reason for rejection
           or a comma-separated list of the proposal’s selection numbers to keep.
