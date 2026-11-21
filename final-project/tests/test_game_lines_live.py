@@ -77,6 +77,7 @@ class GameLinesLiveTests(unittest.TestCase):
                     spec=SnapshotEvidence,
                     event_id=event.event_id,
                     snapshot=SimpleNamespace(number=2),
+                    slate_start=None,
                     late=True,
                 )
                 ledger.return_value = (snapshot,)

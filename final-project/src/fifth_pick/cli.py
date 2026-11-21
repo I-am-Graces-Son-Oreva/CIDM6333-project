@@ -614,7 +614,12 @@ def _game_lines_grant(arguments: list[str], read: Callable[[str], str]) -> int:
 
 def _game_lines_collect(arguments: list[str], read: Callable[[str], str]) -> int:
     from fifth_pick.board_collection import live_slot_has_bound_aliases
-    from fifth_pick.snapshots import T20_OFFSET, SnapshotEvidence, read_receipted_snapshot_ledger
+    from fifth_pick.snapshots import (
+        T20_OFFSET,
+        SnapshotEvidence,
+        read_receipted_snapshot_ledger,
+        shared_slate_start,
+    )
     from fifth_pick.sources.base import SourceEvent
     from fifth_pick.sources.game_lines import GameLinesGrant, acquire_game_lines
     from fifth_pick.sources.odds_api import OddsApiClient
@@ -662,14 +667,15 @@ def _game_lines_collect(arguments: list[str], read: Callable[[str], str]) -> int
             raise ValueError("granted event is not uniquely present")
         row = events[0]
         event = SourceEvent(row.event_id, row.home_team, row.away_team, row.commence_time, ())
-        target = event.commence_time - T20_OFFSET
+        snapshots = read_receipted_snapshot_ledger(store, args.run_id)
+        target = (shared_slate_start(snapshots) or event.commence_time) - T20_OFFSET
         slot = 2 if args.phase == "analysis" else 3
         if not live_slot_has_bound_aliases(args.run_id, slot, event.event_id) or not any(
             isinstance(snapshot, SnapshotEvidence)
             and snapshot.event_id == event.event_id
             and snapshot.snapshot.number == slot
             and not snapshot.late
-            for snapshot in read_receipted_snapshot_ledger(store, args.run_id)
+            for snapshot in snapshots
         ):
             print(
                 f"Game-lines collection requires a timely, completed LIVE Snapshot {slot}.",

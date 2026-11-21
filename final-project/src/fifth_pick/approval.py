@@ -432,6 +432,13 @@ def _apply_locked_joseph_decision(
     if action is DecisionAction.APPROVE and (proposed or product_correction):
         board = _manifest_start_board(read_slate_run_context(store, run_id))
         if board.evidence_mode is EvidenceMode.LIVE:
+            from fifth_pick.snapshots import read_receipted_snapshot_ledger, shared_slate_start
+
+            slate_start = shared_slate_start(read_receipted_snapshot_ledger(store, run_id))
+            if slate_start is not None and decision_at >= slate_start:
+                raise ApprovalError(
+                    "LIVE approval requires the first official game to be pre-tipoff"
+                )
             tipoffs = {event.event_id: event.commence_time for event in board.events}
             if any(
                 not isinstance(item, dict)

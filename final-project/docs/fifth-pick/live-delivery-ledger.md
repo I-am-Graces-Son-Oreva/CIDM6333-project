@@ -111,3 +111,23 @@ Timing-gate verification: 720 repository tests passed with networking
 blocked. Ruff lint and formatting, ty, the synthetic classroom demo, and
 Git diff checks passed. The local board-preflight command stopped at the
 credential check before transport. No provider requests were made.
+
+The credential-enabled terminal refreshed the November 21 preflight at
+3:08:52 a.m. CST. The saved response reports zero credits charged, 487
+remaining, and six discovered events. Reconciliation against the
+[official November 21 slate](https://www.nba.com/games?date=2026-11-21)
+matched all six team pairings. Every provider tipoff was ten minutes later
+than its corresponding official tipoff. None qualifies under the matching
+clock rule. The Milwaukee–Philadelphia authorization remains unused and
+does not transfer to another event.
+
+## Shared official slate clock
+
+Joseph approved using the earliest official NBA tipoff for every game's
+Snapshot 3 and T−20 on new LIVE series. The clock is pinned from the complete
+official slate, with the selected official tipoff and provider tipoff stored
+separately. Preserve all previous collection receipts and their clocks.
+For November 21, the common Snapshot 3 window is 11:35–11:40 a.m. Central,
+and the existing review grace ends at 11:45 a.m. Central. Snapshots 1 and 2
+must leave the same required time before this earlier target. No paid
+collection or backfill was performed.

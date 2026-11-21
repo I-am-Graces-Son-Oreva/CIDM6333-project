@@ -53,7 +53,7 @@ def controller_assess(arguments: list[str], read: Callable[[str], str] | None) -
             ) or any(row.late or row.evidence_mode is not EvidenceMode.LIVE for row in rows):
                 raise ValidationError("the candidate lacks the exact timely LIVE snapshot sequence")
             stage = max(rows, key=lambda row: row.snapshot.number)
-            target = stage.event_start - T20_OFFSET
+            target = stage.window_start - T20_OFFSET
             evidence = read_live_supporting_items(
                 args.run_id,
                 stage.candidate_key,
@@ -130,7 +130,7 @@ def controller_assess(arguments: list[str], read: Callable[[str], str] | None) -
             cited = set(judgment.supporting_evidence_ids)
             cited.update(judgment.meaningful_risk_ids, judgment.senior_lower_support_ids)
             gaps = t20_cited_source_gaps(
-                checked, cited, target_at=stage.event_start - T20_OFFSET, reviewed_at=observed_at
+                checked, cited, target_at=stage.window_start - T20_OFFSET, reviewed_at=observed_at
             )
             if gaps:
                 raise ValidationError(" ".join(gaps))

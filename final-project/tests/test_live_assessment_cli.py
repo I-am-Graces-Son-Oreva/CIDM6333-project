@@ -83,7 +83,8 @@ class LiveAssessmentCliTests(unittest.TestCase):
                 candidate_id="stephen-curry",
                 evidence_mode=EvidenceMode.LIVE,
                 late=False,
-                event_start=NOW + timedelta(minutes=20 if slot == 3 else 90),
+                event_start=NOW + timedelta(hours=4),
+                window_start=NOW + timedelta(minutes=20 if slot == 3 else 90),
                 snapshot=SimpleNamespace(
                     number=number,
                     observation=SimpleNamespace(

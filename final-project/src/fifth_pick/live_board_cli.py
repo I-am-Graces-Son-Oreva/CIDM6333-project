@@ -13,11 +13,18 @@ from zoneinfo import ZoneInfo
 
 from fifth_pick.board_collection import BoardCollector, BoardPolicy, LiveBoardGrant
 from fifth_pick.errors import FifthPickError
-from fifth_pick.official_slate import load_official_slate
+from fifth_pick.official_slate import load_official_slate, reconcile_coverage
 from fifth_pick.personal_readiness import LiveEventScope
 from fifth_pick.slate_manifest import SLATE_TIMEZONE
-from fifth_pick.snapshots import SNAPSHOT_2_T20_GAP, SNAPSHOT_3_EARLY_WINDOW, T20_OFFSET
+from fifth_pick.snapshots import (
+    SNAPSHOT_2_T20_GAP,
+    SNAPSHOT_3_EARLY_WINDOW,
+    T20_OFFSET,
+    SnapshotEvidence,
+    read_receipted_snapshot_ledger,
+)
 from fifth_pick.sources.alias_crosswalk import BoardIdentity, RosterIdentity, join_event_aliases
+from fifth_pick.sources.base import SourceEvent
 from fifth_pick.sources.odds_api import APPROVED_BOOKMAKERS, APPROVED_MARKETS, validate_event_id
 from fifth_pick.sources.transport import UrllibTransport
 from fifth_pick.storage import RunStore, application_run_store
@@ -68,12 +75,17 @@ def show_board_status(store: RunStore, now: datetime, *, day: date | None = None
             tipoff = datetime.fromisoformat(event["tipoff"])
             if tipoff.utcoffset() is None or tipoff.astimezone(chicago).date() != day:
                 raise ValueError("unexpected event timestamp")
-            local_tipoff = tipoff.astimezone(chicago)
+            game = official.game_for(event["away_team"], event["home_team"]) if official else None
+            local_tipoff = (
+                min(item.scheduled_tipoff for item in official.games)
+                if game and official
+                else tipoff
+            ).astimezone(chicago)
             t20 = local_tipoff - T20_OFFSET
             cutoff = t20 - SNAPSHOT_2_T20_GAP
             if now.astimezone(chicago).date() < day:
                 timing = "SNAPSHOT_1_WINDOW_NOT_YET_OPEN"
-            elif now >= tipoff:
+            elif now >= local_tipoff:
                 timing = "SCHEDULED_TIPOFF_PASSED"
             elif now >= cutoff:
                 timing = "SNAPSHOT_1_WINDOW_CLOSED"
@@ -83,6 +95,8 @@ def show_board_status(store: RunStore, now: datetime, *, day: date | None = None
                 dict(
                     event,
                     timing=timing,
+                    official_tipoff=game.scheduled_tipoff.isoformat() if game else None,
+                    slate_start=local_tipoff.isoformat() if game else None,
                     snapshot_1_cutoff=cutoff.isoformat(),
                     snapshot_2_latest_at=cutoff.isoformat(),
                     snapshot_3_opens_at=(local_tipoff - SNAPSHOT_3_EARLY_WINDOW).isoformat(),
@@ -110,6 +124,7 @@ def show_board_status(store: RunStore, now: datetime, *, day: date | None = None
         json.dumps(
             {
                 "mode": "SAVED_PROVIDER_DISCOVERY_TIMING_ONLY",
+                "clock_scope": "LIVE_SERIES",
                 "slate_date": day.isoformat(),
                 "checked_at": report.get("checked_at"),
                 "quota_at_preflight": report["quota"],
@@ -232,28 +247,31 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             if datetime.fromisoformat(timing["conservative_snapshot_1_cutoff"]) != cutoff:
                 raise ValueError("recorded conservative cutoff differs")
         official = load_official_slate(today)
-        if options.series:
-            if official is not None:
+        slate_start = None
+        existing = read_receipted_snapshot_ledger(store, options.run_id) if options.series else ()
+        legacy = any(
+            isinstance(row, SnapshotEvidence) and row.slate_start is None for row in existing
+        )
+        if options.series and legacy:
+            if timing is None and official is not None:
                 game = official.game_for(scope.away_team, scope.home_team)
-                if game is None or (
-                    official_tipoff is not None and official_tipoff != game.scheduled_tipoff
-                ):
-                    raise ValueError("the independent timing records disagree on this matchup")
-                official_tipoff, timing_reference = game.scheduled_tipoff, official.source
-            if official_tipoff is None:
-                print(
-                    "LIVE series stopped. Independent official tipoff is required.", file=sys.stderr
-                )
-                return 1
+                if game is not None:
+                    official_tipoff, timing_reference = game.scheduled_tipoff, official.source
             if official_tipoff != tipoff:
-                print(
-                    "LIVE series stopped before approval. Official and provider tipoffs differ "
-                    f"({official_tipoff.astimezone(chicago).isoformat()} vs "
-                    f"{tipoff.astimezone(chicago).isoformat()}). "
-                    "Find an event with matching, independently verified timing.",
-                    file=sys.stderr,
-                )
+                raise ValueError("legacy series requires its original corroborated timing")
+        elif options.series:
+            if official is None:
+                print("LIVE series requires the complete official NBA slate.", file=sys.stderr)
                 return 1
+            game = official.game_for(scope.away_team, scope.home_team)
+            if game is None or (
+                official_tipoff is not None and official_tipoff != game.scheduled_tipoff
+            ):
+                raise ValueError("the independent timing records disagree on this matchup")
+            official_tipoff, timing_reference = game.scheduled_tipoff, official.source
+            slate_start = min(item.scheduled_tipoff for item in official.games)
+            t20 = slate_start - T20_OFFSET
+            cutoff = t20 - SNAPSHOT_2_T20_GAP
         deadline = t20 if slot == 3 else cutoff
         if (
             now > deadline
@@ -265,6 +283,24 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             )
             return 1
         events = report["events"]
+        coverage = (
+            reconcile_coverage(
+                official,
+                tuple(
+                    SourceEvent(
+                        row["event_id"],
+                        row["home_team"],
+                        row["away_team"],
+                        datetime.fromisoformat(row["tipoff"]),
+                        (),
+                    )
+                    for row in events
+                ),
+                day=today,
+            )
+            if official is not None
+            else None
+        )
         slate_ids = tuple(row["event_id"] for row in events)
         for provider_id in slate_ids:
             validate_event_id(provider_id)
@@ -275,8 +311,8 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
                 official is not None
                 and (
                     len(events) != len(official.games)
-                    or not isinstance(report.get("coverage"), dict)
-                    or report["coverage"].get("provider_matches_official_slate") is not True
+                    or coverage is None
+                    or coverage["provider_matches_official_slate"] is not True
                 )
             )
             or type(draft["slate_game_count"]) is not int
@@ -343,11 +379,10 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
                 {
                     "event": selected,
                     "official_tipoff_differences": (
-                        report["coverage"]["provider_tipoff_differences"]
-                        if official is not None
-                        else []
+                        coverage["provider_tipoff_differences"] if coverage is not None else []
                     ),
                     "run_id": options.run_id,
+                    "slate_start": slate_start.isoformat() if slate_start else None,
                     "snapshot": slot,
                     "authorized_slots": slots,
                     "deadline_central": deadline.astimezone(chicago).isoformat(),
@@ -400,13 +435,14 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             options.run_id,
             f"Joseph terminal confirmation: {confirmation}",
             "https://the-odds-api.com/liveapi/guides/v4/#get-event-odds",
-            tipoff if options.series else cutoff,
+            (slate_start or tipoff) if options.series else cutoff,
             policy.fingerprint(),
             (scope,),
             slate_ids,
             slots,
             official_tipoff,
             timing_reference,
+            slate_start,
         )
 
         def review_labels(labels: tuple[str, ...]) -> tuple[dict[str, str], dict[str, str]]:

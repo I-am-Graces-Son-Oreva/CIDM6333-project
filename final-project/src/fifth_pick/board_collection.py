@@ -149,6 +149,7 @@ class LiveBoardGrant:
     slots: tuple[int, ...] = (1,)
     official_tipoff: datetime | None = None
     timing_reference: str | None = None
+    slate_start: datetime | None = None
 
 
 def _application_clock() -> datetime:
@@ -216,9 +217,13 @@ class BoardCollector:
                     raise LiveAuthorizationError("invalid independently corroborated timing")
                 provider = live_grant.events[0].tipoff
                 if live_grant.slots == (1, 2, 3):
+                    anchor = live_grant.slate_start
                     if (
-                        official != provider
-                        or live_grant.expires_at != provider
+                        (anchor is None and official != provider)
+                        or (
+                            anchor is not None and (anchor.utcoffset() is None or anchor > official)
+                        )
+                        or live_grant.expires_at != (anchor or provider)
                         or policy.credit_limit != 3 * _EVENT_COST
                     ):
                         raise LiveAuthorizationError("LIVE series requires matching tipoff clocks")
@@ -231,6 +236,8 @@ class BoardCollector:
                     raise LiveAuthorizationError(
                         "invalid separately corroborated Snapshot 1 deadline"
                     )
+            if live_grant.slate_start is not None and live_grant.slots != (1, 2, 3):
+                raise LiveAuthorizationError("the shared slate clock requires a series grant")
         if review_quarantined_labels is not None and (
             self._mode is not EvidenceMode.LIVE
             or live_grant is None
@@ -258,8 +265,11 @@ class BoardCollector:
             "official_tipoff": grant.official_tipoff.isoformat(),
             "provider_tipoff": grant.events[0].tipoff.isoformat(),
             "snapshot_1_cutoff": (
-                min(grant.official_tipoff, grant.events[0].tipoff) - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                (grant.slate_start or min(grant.official_tipoff, grant.events[0].tipoff))
+                - T20_OFFSET
+                - SNAPSHOT_2_T20_GAP
             ).isoformat(),
+            **({"slate_start": grant.slate_start.isoformat()} if grant.slate_start else {}),
             "timing_reference": grant.timing_reference,
         }
 
@@ -559,6 +569,17 @@ class BoardCollector:
                 from fifth_pick.official_slate import load_official_slate, reconcile_coverage
 
                 official = load_official_slate(date)
+                if self._grant.slate_start is not None:
+                    game = official.game_for(scope.away_team, scope.home_team) if official else None
+                    if (
+                        official is None
+                        or game is None
+                        or game.scheduled_tipoff != self._grant.official_tipoff
+                        or min(item.scheduled_tipoff for item in official.games)
+                        != self._grant.slate_start
+                        or official.source != self._grant.timing_reference
+                    ):
+                        raise SourceError("official slate clock differs from the approved series")
                 if (
                     official is not None
                     and not reconcile_coverage(official, events, day=date)[
@@ -696,6 +717,7 @@ class BoardCollector:
                 snapshot,
                 board,
                 event_scope=event_id if self._mode is EvidenceMode.LIVE else None,
+                slate_start=self._grant.slate_start if self._grant else None,
                 record_before=(
                     aware_timestamp(self._timing_binding()["snapshot_1_cutoff"])
                     if snapshot == 1 and self._timing_binding()
@@ -775,7 +797,7 @@ class BoardCollector:
     def _check_live_window(self, run_id: str, snapshot: int, event_id: str, at: datetime) -> None:
         scope = self._scope[event_id]
         chicago = ZoneInfo(SLATE_TIMEZONE)
-        tipoff = scope.tipoff
+        tipoff = (self._grant.slate_start if self._grant else None) or scope.tipoff
         if at >= tipoff or at.astimezone(chicago).date() != tipoff.astimezone(chicago).date():
             raise SourceError("live collection is outside its approved slate or after tipoff")
         if snapshot == 1:
@@ -900,10 +922,12 @@ def _verify_completed_slot(
         cutoff = aware_timestamp(metadata["snapshot_1_cutoff"])
         official = aware_timestamp(metadata.get("official_tipoff"))
         provider = aware_timestamp(metadata.get("provider_tipoff"))
+        anchor = aware_timestamp(metadata["slate_start"]) if "slate_start" in metadata else None
         if (
             mode is not EvidenceMode.LIVE
-            or cutoff != min(official, provider) - T20_OFFSET - SNAPSHOT_2_T20_GAP
-            or any(row.event_start != provider for row in entries)
+            or (anchor is not None and anchor > official)
+            or cutoff != (anchor or min(official, provider)) - T20_OFFSET - SNAPSHOT_2_T20_GAP
+            or any(row.event_start != provider or row.slate_start != anchor for row in entries)
             or (
                 snapshot == 1
                 and (
@@ -912,7 +936,7 @@ def _verify_completed_slot(
                     or any(row.snapshot.recorded_at >= cutoff for row in entries)
                 )
             )
-            or (snapshot != 1 and official != provider)
+            or (snapshot != 1 and anchor is None and official != provider)
         ):
             raise SourceError("stored board completion violates the conservative cutoff")
     if mode is EvidenceMode.LIVE and snapshot == 1:

@@ -70,6 +70,11 @@ class SnapshotEvidence:
     late: bool
     provenance: Provenance
     source_excerpt: Mapping[str, str | float]
+    slate_start: datetime | None = None
+
+    @property
+    def window_start(self) -> datetime:
+        return self.slate_start if self.slate_start is not None else self.event_start
 
     def __post_init__(self) -> None:
         if not isinstance(self.snapshot, Snapshot):
@@ -102,6 +107,10 @@ class SnapshotEvidence:
         ):
             raise SnapshotError("candidate_key does not match the observation identity")
         _require_aware(self.event_start, "event_start")
+        if self.slate_start is not None:
+            _require_aware(self.slate_start, "slate_start")
+            if self.evidence_mode is not EvidenceMode.LIVE:
+                raise SnapshotError("a slate clock requires LIVE evidence")
         if self.target_at is not None:
             _require_aware(self.target_at, "target_at")
         if not isinstance(self.late, bool):
@@ -161,26 +170,26 @@ class SnapshotEvidence:
             if self.target_at is not None or self.late:
                 raise SnapshotError("Snapshot 1 cannot have a target or late flag")
             if (
-                observation.retrieved_at >= self.event_start
-                or self.snapshot.recorded_at >= self.event_start
+                observation.retrieved_at >= self.window_start
+                or self.snapshot.recorded_at >= self.window_start
             ):
                 raise SnapshotError("Snapshot 1 must be recorded before tipoff")
         elif self.snapshot.number == 2:
-            latest_at = self.event_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
+            latest_at = self.window_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
             if self.target_at is None or self.target_at > latest_at or self.late:
                 raise SnapshotError("Snapshot 2 target or late flag is invalid")
             if observation.retrieved_at > latest_at or self.snapshot.recorded_at > latest_at:
                 raise SnapshotError("Snapshot 2 must be recorded by its latest target")
         else:
-            t20_at = self.event_start - T20_OFFSET
+            t20_at = self.window_start - T20_OFFSET
             if self.target_at != t20_at:
                 raise SnapshotError("Snapshot 3 target must be T-20")
-            if self.snapshot.recorded_at >= self.event_start:
+            if self.snapshot.recorded_at >= self.window_start:
                 raise SnapshotError("Snapshot 3 must be recorded before tipoff")
             if (
-                not self.event_start - SNAPSHOT_3_EARLY_WINDOW
+                not self.window_start - SNAPSHOT_3_EARLY_WINDOW
                 <= observation.retrieved_at
-                < self.event_start
+                < self.window_start
             ):
                 raise SnapshotError(
                     "Snapshot 3 observation must be before tipoff and no earlier than T-25"
@@ -313,6 +322,7 @@ def _snapshot_entry(record: SnapshotEvidence) -> dict[str, object]:
         "evidence_mode": record.evidence_mode.value,
         "event_id": record.event_id,
         "event_start": _timestamp(record.event_start),
+        **({"slate_start": _timestamp(record.slate_start)} if record.slate_start else {}),
         "target_at": None if record.target_at is None else _timestamp(record.target_at),
         "late": record.late,
         "recorded_at": _timestamp(record.snapshot.recorded_at),
@@ -357,7 +367,7 @@ def _decode_snapshot(entry: Mapping[str, object]) -> SnapshotEvidence:
         "provenance",
         "source_excerpt",
     }
-    if set(entry) != expected:
+    if set(entry) not in (expected, expected | {"slate_start"}):
         raise SnapshotError("snapshot ledger entry has unknown or missing fields")
     observation_data = entry["observation"]
     provenance_data = entry["provenance"]
@@ -457,6 +467,9 @@ def _decode_snapshot(entry: Mapping[str, object]) -> SnapshotEvidence:
         evidence_mode=evidence_mode,
         event_id=event_id,
         event_start=_parse_timestamp(entry["event_start"], "event_start"),
+        slate_start=_parse_timestamp(entry["slate_start"], "slate_start")
+        if "slate_start" in entry
+        else None,
         target_at=(None if target_at is None else _parse_timestamp(target_at, "target_at")),
         late=late,
         provenance=provenance,
@@ -582,6 +595,13 @@ def read_snapshot_ledger(
     return tuple(entries)
 
 
+def _snapshot_receipt_reason(entry: SnapshotEvidence) -> str | None:
+    if entry.slate_start is None:
+        return None
+    encoded = json.dumps(_snapshot_entry(entry), sort_keys=True, separators=(",", ":")).encode()
+    return f"slate-snapshot-sha256={hashlib.sha256(encoded).hexdigest()}"
+
+
 def _expected_snapshot_receipt(
     run_id: str,
     entry: SnapshotEvidence | MissedSnapshot,
@@ -592,7 +612,7 @@ def _expected_snapshot_receipt(
         event = "SNAPSHOT_LATE" if entry.late else "SNAPSHOT_ACCEPTED"
         result = "RECORDED"
         source = entry.provenance.source
-        reason = None
+        reason = _snapshot_receipt_reason(entry)
         event_key = f"snapshot-accepted-{number}-{entry.candidate_key}"
     else:
         number = entry.number
@@ -657,6 +677,14 @@ def read_receipted_snapshot_ledger(
     return tuple(visible)
 
 
+def shared_slate_start(entries: tuple[SnapshotEvidence | MissedSnapshot, ...]) -> datetime | None:
+    """Return the receipt-bound slate clock while preserving legacy run timing."""
+    starts = {entry.slate_start for entry in entries if isinstance(entry, SnapshotEvidence)}
+    if len(starts) > 1:
+        raise SnapshotError("the run has conflicting slate clocks")
+    return next(iter(starts), None)
+
+
 class SnapshotWorkflow:
     """Collect authorized source-board observations into an append-only snapshot ledger."""
 
@@ -688,6 +716,7 @@ class SnapshotWorkflow:
         *,
         event_scope: str | None = None,
         record_before: datetime | None = None,
+        slate_start: datetime | None = None,
     ) -> tuple[SnapshotEvidence, ...]:
         """Persist a slot from one legitimate M4 board; never overwrite a prior slot."""
 
@@ -709,6 +738,10 @@ class SnapshotWorkflow:
                 raise SnapshotError(
                     "the conservative LIVE Snapshot 1 cutoff has passed or is invalid"
                 )
+        if slate_start is not None:
+            _require_aware(slate_start, "slate_start")
+            if event_scope is None or board.provenance.evidence_mode is not EvidenceMode.LIVE:
+                raise SnapshotError("a slate clock requires scoped LIVE collection")
         self._validate_board(board, now)
         events = {event.event_id: event for event in board.events}
         if event_scope is not None and (
@@ -856,7 +889,9 @@ class SnapshotWorkflow:
             if number > 1 and first is None:
                 self._reject(run_id, number, key, now, result="OUT_OF_ORDER")
                 continue
-            if first is not None and first.event_start != event.commence_time:
+            if first is not None and (
+                first.event_start != event.commence_time or first.slate_start != slate_start
+            ):
                 self._reject(
                     run_id,
                     number,
@@ -889,10 +924,10 @@ class SnapshotWorkflow:
                 if now < first.snapshot.recorded_at:
                     self._reject(run_id, number, key, now, result="OUT_OF_ORDER")
                     continue
-                latest_at = first.event_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                latest_at = first.window_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
                 target_at = snapshot_2_target(
                     first.snapshot.observation.retrieved_at,
-                    first.event_start,
+                    first.window_start,
                 )
                 if target_at is None:
                     missed_entry = self._record_missed(
@@ -959,7 +994,7 @@ class SnapshotWorkflow:
                 if second_recorded_at is not None and now < second_recorded_at:
                     self._reject(run_id, number, key, now, result="OUT_OF_ORDER")
                     continue
-                latest_at = first.event_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                latest_at = first.window_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
                 if second is None and second_missed is None:
                     if now >= latest_at:
                         missed_entry = self._record_missed(
@@ -976,9 +1011,9 @@ class SnapshotWorkflow:
                     else:
                         self._reject(run_id, number, key, now, result="OUT_OF_ORDER")
                         continue
-                target_at = first.event_start - T20_OFFSET
-                window_start = first.event_start - SNAPSHOT_3_EARLY_WINDOW
-                if now >= first.event_start or projection.retrieved_at >= first.event_start:
+                target_at = first.window_start - T20_OFFSET
+                window_start = first.window_start - SNAPSHOT_3_EARLY_WINDOW
+                if now >= first.window_start or projection.retrieved_at >= first.window_start:
                     missed_entry = self._record_missed(
                         run_id,
                         3,
@@ -1011,6 +1046,7 @@ class SnapshotWorkflow:
                 player=player,
                 projection=projection,
                 event_start=event.commence_time,
+                slate_start=slate_start,
                 board=board,
                 now=now,
                 target_at=target_at,
@@ -1027,7 +1063,7 @@ class SnapshotWorkflow:
 
             if (
                 number == 1
-                and snapshot_2_target(projection.retrieved_at, event.commence_time) is None
+                and snapshot_2_target(projection.retrieved_at, record.window_start) is None
             ):
                 missed_entry = self._record_missed(
                     run_id,
@@ -1076,9 +1112,9 @@ class SnapshotWorkflow:
             if existing_missed is not None:
                 self._missed_receipt(run_id, existing_missed)
                 continue
-            latest_at = first.event_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
+            latest_at = first.window_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
             if (
-                snapshot_2_target(first.snapshot.observation.retrieved_at, first.event_start)
+                snapshot_2_target(first.snapshot.observation.retrieved_at, first.window_start)
                 is not None
                 and now < latest_at
             ):
@@ -1156,6 +1192,7 @@ class SnapshotWorkflow:
         player: RegistryPlayer,
         projection: SourceProjection,
         event_start: datetime,
+        slate_start: datetime | None,
         board: SourceBoard,
         now: datetime,
         target_at: datetime | None,
@@ -1203,6 +1240,7 @@ class SnapshotWorkflow:
             evidence_mode=board.provenance.evidence_mode,
             event_id=projection.event_id,
             event_start=event_start,
+            slate_start=slate_start,
             target_at=target_at,
             late=late,
             provenance=provenance,
@@ -1245,9 +1283,9 @@ class SnapshotWorkflow:
                 and self._find_snapshot(entries, 2, first.candidate_key) is None
                 and self._find_missed(entries, 2, first.candidate_key) is None
             ):
-                latest_second = first.event_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                latest_second = first.window_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
                 if (
-                    snapshot_2_target(first.snapshot.observation.retrieved_at, first.event_start)
+                    snapshot_2_target(first.snapshot.observation.retrieved_at, first.window_start)
                     is None
                     or now >= latest_second
                 ):
@@ -1264,9 +1302,9 @@ class SnapshotWorkflow:
                     entries.append(missed_second)
             if number == 2:
                 target_at = snapshot_2_target(
-                    first.snapshot.observation.retrieved_at, first.event_start
+                    first.snapshot.observation.retrieved_at, first.window_start
                 )
-                latest_at = first.event_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                latest_at = first.window_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
                 if target_at is not None and now < latest_at:
                     self._reject(
                         run_id,
@@ -1279,9 +1317,9 @@ class SnapshotWorkflow:
                     continue
                 reason = ReasonCode.SNAPSHOT_2_MISSED
             else:
-                if now < first.event_start - SNAPSHOT_3_EARLY_WINDOW:
+                if now < first.window_start - SNAPSHOT_3_EARLY_WINDOW:
                     continue
-                if now < first.event_start:
+                if now < first.window_start:
                     self._reject(
                         run_id,
                         number,
@@ -1365,7 +1403,7 @@ class SnapshotWorkflow:
                 result="RECORDED",
                 subject=record.candidate_key,
                 source=record.provenance.source,
-                reason=None,
+                reason=_snapshot_receipt_reason(record),
                 run_id=run_id,
                 event_key=f"snapshot-accepted-{record.snapshot.number}-{record.candidate_key}",
             )
@@ -1497,8 +1535,8 @@ def _validate_ledger_order(entries: list[SnapshotEvidence | MissedSnapshot]) -> 
             if isinstance(entry, SnapshotEvidence):
                 first_at = first.snapshot.observation.retrieved_at
                 observed_at = entry.snapshot.observation.retrieved_at
-                latest_at = first.event_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
-                target_at = snapshot_2_target(first_at, first.event_start)
+                latest_at = first.window_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                target_at = snapshot_2_target(first_at, first.window_start)
                 minimum_is_possible = latest_at - first_at >= SNAPSHOT_2_MINIMUM_SEPARATION
                 if (
                     target_at is None
@@ -1516,11 +1554,11 @@ def _validate_ledger_order(entries: list[SnapshotEvidence | MissedSnapshot]) -> 
                 ):
                     raise SnapshotError("persisted Snapshot 2 violates its schedule")
             else:
-                latest_at = first.event_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                latest_at = first.window_start - T20_OFFSET - SNAPSHOT_2_T20_GAP
                 if entry.recorded_at < first.snapshot.recorded_at or (
                     snapshot_2_target(
                         first.snapshot.observation.retrieved_at,
-                        first.event_start,
+                        first.window_start,
                     )
                     is not None
                     and entry.recorded_at < latest_at
@@ -1549,7 +1587,7 @@ def _validate_ledger_order(entries: list[SnapshotEvidence | MissedSnapshot]) -> 
                 and observed_at <= second.snapshot.observation.retrieved_at
             ):
                 raise SnapshotError("Snapshot 3 observation must follow Snapshot 2")
-        elif entry.recorded_at < second_recorded_at or entry.recorded_at < first.event_start:
+        elif entry.recorded_at < second_recorded_at or entry.recorded_at < first.window_start:
             raise SnapshotError("persisted missed Snapshot 3 is out of order")
         state[3] = entry
 
@@ -1568,7 +1606,7 @@ def validate_snapshot_sequence(
         not isinstance(item, MissedSnapshot) for item in missed
     ):
         raise SnapshotError("missed must contain MissedSnapshot records")
-    event_starts = {item.event_start for item in snapshots}
+    event_starts = {(item.event_start, item.slate_start) for item in snapshots}
     if len(event_starts) > 1:
         raise SnapshotError("snapshot event start changed between slots")
     for item in snapshots:

@@ -837,10 +837,13 @@ def _finalize_locked_slate(
 
     proposal_at = datetime.now(UTC)
     if slate_evidence_mode is EvidenceMode.LIVE:
+        from fifth_pick.snapshots import read_receipted_snapshot_ledger, shared_slate_start
+
+        slate_start = shared_slate_start(read_receipted_snapshot_ledger(store, run_id))
         still_open = []
         for item in proposed:
             event = slate_events[str(item["event"])]
-            if proposal_at < event.commence_time:
+            if proposal_at < min(slate_start or event.commence_time, event.commence_time):
                 still_open.append(item)
             else:
                 exclusions.append(

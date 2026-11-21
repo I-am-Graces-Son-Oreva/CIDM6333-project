@@ -392,7 +392,7 @@ def _t20_review_readiness(
             )
             or snapshot_3.snapshot.recorded_at > reviewed_at
             or snapshot_3.snapshot.observation.retrieved_at > reviewed_at
-            or reviewed_at >= snapshot_3.event_start
+            or reviewed_at >= snapshot_3.window_start
         ):
             reasons.append(ReasonCode.T20_CHECK_UNAVAILABLE)
             gaps.append("The review did not occur within its authorized T-20 target window.")

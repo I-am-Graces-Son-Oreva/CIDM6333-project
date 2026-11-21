@@ -431,17 +431,28 @@ class LiveBoardCliTests(unittest.TestCase):
                 1,
             )
             collector.assert_not_called()
-            timing["official"].update(venue_tipoff=TIPOFF, chicago_tipoff=TIPOFF)
-            timing["conservative_snapshot_1_cutoff"] = "2026-11-19T01:50:00+00:00"
-            timing_path.write_text(json.dumps(timing))
-            self.assertEqual(
-                main([*args, "--series", "--snapshot", "1"], prompt=lambda _: confirmation), 0
+            from fifth_pick.official_slate import OfficialGame, OfficialSlate
+
+            earliest = datetime.fromisoformat("2026-11-19T02:50:00+00:00")
+            venue = datetime.fromisoformat(timing["official"]["venue_tipoff"])
+            official = OfficialSlate(
+                "https://www.nba.com/games?date=2026-11-18",
+                (
+                    OfficialGame("Denver", "Boston", earliest),
+                    OfficialGame(event["away_team"], event["home_team"], venue),
+                ),
             )
-            first_grant = collector.call_args.kwargs["live_grant"]
-            clock.now.return_value = datetime.fromisoformat("2026-11-19T01:49:00+00:00")
-            self.assertEqual(
-                main([*args, "--series", "--snapshot", "2"], prompt=lambda _: confirmation), 0
-            )
+            with patch("fifth_pick.live_board_cli.load_official_slate", return_value=official):
+                self.assertEqual(
+                    main([*args, "--series", "--snapshot", "1"], prompt=lambda _: confirmation), 0
+                )
+                first_grant = collector.call_args.kwargs["live_grant"]
+                self.assertEqual(first_grant.slate_start, earliest)
+                self.assertNotEqual(first_grant.official_tipoff, first_grant.events[0].tipoff)
+                clock.now.return_value = datetime.fromisoformat("2026-11-19T01:29:00+00:00")
+                self.assertEqual(
+                    main([*args, "--series", "--snapshot", "2"], prompt=lambda _: confirmation), 0
+                )
             self.assertEqual(collector.call_args.kwargs["live_grant"], first_grant)
             self.assertEqual(first_grant.slots, (1, 2, 3))
             self.assertEqual(collector.call_args.args[1].credit_limit, 15)

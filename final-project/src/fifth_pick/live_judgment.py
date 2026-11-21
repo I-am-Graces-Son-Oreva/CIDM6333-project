@@ -55,7 +55,7 @@ def _scope(
         or at < snapshot.snapshot.observation.retrieved_at
     ):
         return None
-    target = snapshot.event_start - timedelta(minutes=20)
+    target = snapshot.window_start - timedelta(minutes=20)
     if (slot == 2 and at >= target) or (
         slot == 3 and not target <= at <= target + timedelta(minutes=5)
     ):

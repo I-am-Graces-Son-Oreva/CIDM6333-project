@@ -226,16 +226,17 @@ quota counters. Collected coverage and accepted observation counts are separate.
 
 An explicitly approved one-event validation can add `--series --snapshot 1`
 and use the same run, scope, saved manifest and `--series` flag for slots 2 and 3.
-Series collection requires an independently verified official tipoff that
-matches the provider tipoff. Use the saved official slate for the date or
-pass the same `--timing-file FILE` at all three slots. The series check rejects
-missing or disagreeing timing before the paid confirmation. Both tipoffs and
-the official source reference are bound to the collection receipts.
-The terminal asks for the displayed, exact 15-credit series approval at each
-invocation. Each invocation can dispatch at most one five-credit odds request.
-Use `schedule --run-id RUN_ID` to see event-local due status. Early or missed
-slots stop before sending a request. This command captures board observations.
-It does not activate pending supporting sources or change M7's review timing.
+For new LIVE series, save the complete, independently verified official
+NBA slate for the Chicago date. Its earliest scheduled tipoff sets a single
+clock for all events. Snapshot 1 and Snapshot 2 retain their existing spacing
+rules relative to that clock. Snapshot 3 opens 25 minutes before the first
+game and closes 20 minutes before it. The T−20 review opens at that common
+target and retains its existing five-minute LIVE grace period. Final LIVE
+approval must precede the first official game. Each request still must match
+the provider event ID, teams, and recorded provider tipoff. Provider tipoff,
+the selected game's official tipoff, and the shared slate clock remain
+separate in the collection receipts. Existing runs keep their recorded clocks.
+
 
 The first paid LIVE verification is a separately approved board-only smoke for
 one verified event, with at most one free discovery request and one event-odds

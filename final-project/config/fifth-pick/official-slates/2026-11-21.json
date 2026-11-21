@@ -1,0 +1,12 @@
+{
+  "slate_date": "2026-11-21",
+  "source": "https://www.nba.com/games?date=2026-11-21",
+  "games": [
+    {"away_team": "Milwaukee Bucks", "home_team": "Philadelphia 76ers", "scheduled_tipoff": "2026-11-21T12:00:00-06:00"},
+    {"away_team": "Portland Trail Blazers", "home_team": "New York Knicks", "scheduled_tipoff": "2026-11-21T18:30:00-06:00"},
+    {"away_team": "LA Clippers", "home_team": "Dallas Mavericks", "scheduled_tipoff": "2026-11-21T19:00:00-06:00"},
+    {"away_team": "Memphis Grizzlies", "home_team": "Minnesota Timberwolves", "scheduled_tipoff": "2026-11-21T19:00:00-06:00"},
+    {"away_team": "New Orleans Pelicans", "home_team": "San Antonio Spurs", "scheduled_tipoff": "2026-11-21T19:00:00-06:00"},
+    {"away_team": "Boston Celtics", "home_team": "Sacramento Kings", "scheduled_tipoff": "2026-11-21T21:00:00-06:00"}
+  ]
+}

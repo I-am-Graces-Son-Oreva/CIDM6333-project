@@ -13,6 +13,7 @@ from fifth_pick.snapshots import (
     MissedSnapshot,
     SnapshotEvidence,
     read_receipted_snapshot_ledger,
+    shared_slate_start,
     snapshot_2_target,
 )
 from fifth_pick.storage import RunStore
@@ -34,6 +35,7 @@ def schedule_view(store: RunStore, run_id: str, *, as_of: datetime) -> dict[str,
         == context.metadata.slate_date
     ]
     ledger = read_receipted_snapshot_ledger(store, run_id)
+    slate_start = shared_slate_start(ledger)
     slots = {
         (
             entry.candidate_key,
@@ -45,7 +47,7 @@ def schedule_view(store: RunStore, run_id: str, *, as_of: datetime) -> dict[str,
     for (key, number), first in slots.items():
         if number != 1 or not isinstance(first, SnapshotEvidence):
             continue
-        tipoff = first.event_start
+        tipoff = first.window_start
         t20 = tipoff - T20_OFFSET
         latest_second = t20 - SNAPSHOT_2_T20_GAP
         first_at = first.snapshot.observation.retrieved_at
@@ -94,10 +96,12 @@ def schedule_view(store: RunStore, run_id: str, *, as_of: datetime) -> dict[str,
                 "home_team": event.home_team,
                 "away_team": event.away_team,
                 "tipoff": event.commence_time.isoformat(),
-                "snapshot_3_opens_at": (event.commence_time - SNAPSHOT_3_EARLY_WINDOW).isoformat(),
-                "t20_target_at": (event.commence_time - T20_OFFSET).isoformat(),
+                "snapshot_3_opens_at": (
+                    (slate_start or event.commence_time) - SNAPSHOT_3_EARLY_WINDOW
+                ).isoformat(),
+                "t20_target_at": ((slate_start or event.commence_time) - T20_OFFSET).isoformat(),
                 "live_t20_review_closes_at": (
-                    event.commence_time - T20_OFFSET + LIVE_T20_REVIEW_GRACE
+                    (slate_start or event.commence_time) - T20_OFFSET + LIVE_T20_REVIEW_GRACE
                 ).isoformat(),
             }
             for event in sorted(slate, key=lambda item: (item.commence_time, item.event_id))

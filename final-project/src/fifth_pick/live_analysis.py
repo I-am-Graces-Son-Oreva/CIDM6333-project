@@ -206,7 +206,7 @@ def live_analysis_view(
                 blockers.extend(
                     t20_source_gaps(
                         supporting,
-                        target_at=selected_stage.event_start - T20_OFFSET,
+                        target_at=selected_stage.window_start - T20_OFFSET,
                         reviewed_at=now,
                     )
                 )
@@ -400,7 +400,7 @@ def _advance_live_review(
                 ):
                     raise ValidationError("existing LIVE T-20 review differs from assessment state")
                 continue
-            target = rows[0].event_start - timedelta(minutes=20)
+            target = rows[0].window_start - timedelta(minutes=20)
             if not review_window_allows(target, now, live=True):
                 waiting = True
                 continue

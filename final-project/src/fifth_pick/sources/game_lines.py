@@ -14,6 +14,7 @@ from urllib.parse import urlencode
 from fifth_pick.evidence import EvidenceEffect, EvidenceItem, EvidenceKind, EvidenceSignificance
 from fifth_pick.models import Evidence, Provenance
 from fifth_pick.receipts import Receipt
+from fifth_pick.snapshots import read_receipted_snapshot_ledger, shared_slate_start
 from fifth_pick.sources.base import (
     BudgetExceededError,
     EvidenceMode,
@@ -151,7 +152,8 @@ def acquire_game_lines(
         raise MissingApiKeyError("game lines require an environment credential")
     with collection_lock(store, grant.run_id):
         requested_at = clock()
-        target = event.commence_time - timedelta(minutes=20)
+        slate_start = shared_slate_start(read_receipted_snapshot_ledger(store, grant.run_id))
+        target = (slate_start or event.commence_time) - timedelta(minutes=20)
         latest_review = target + timedelta(minutes=5)
         in_window = requested_at.utcoffset() is not None and (
             requested_at < target
@@ -288,6 +290,7 @@ def read_live_game_lines(
         digest = evidence["sha256"]
     except (ValueError, KeyError, TypeError, OverflowError) as exc:
         raise MalformedPayloadError("game-lines receipt metadata is invalid") from exc
+    slate_start = shared_slate_start(read_receipted_snapshot_ledger(store, run_id))
     requested = aware_timestamp(request["timestamp"])
     retrieved = aware_timestamp(response["timestamp"])
     granted = aware_timestamp(grant_row["timestamp"])
@@ -295,7 +298,7 @@ def read_live_game_lines(
     if (
         as_of.utcoffset() is None
         or not granted <= requested <= retrieved <= as_of
-        or as_of >= event.commence_time
+        or as_of >= (slate_start or event.commence_time)
         or phase not in grant.phases
         or bound <= timedelta()
         or grant_row != grant.receipt(granted).to_dict()
@@ -341,7 +344,7 @@ def read_live_game_lines(
         ).to_dict()
     ):
         raise MalformedPayloadError("game-lines receipt does not match event, grant, or phase")
-    target = event.commence_time - timedelta(minutes=20)
+    target = (slate_start or event.commence_time) - timedelta(minutes=20)
     if phase == "analysis" and not requested < target:
         raise MalformedPayloadError("game-lines analysis phase is out of window")
     if phase == "t20" and not target <= requested <= retrieved <= target + timedelta(minutes=5):

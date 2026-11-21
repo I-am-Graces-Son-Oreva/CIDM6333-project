@@ -23,7 +23,11 @@ from fifth_pick.results import RESULTS_FILENAME, _read_results
 from fifth_pick.review import ReviewError, ReviewPhase, start_review_cycle
 from fifth_pick.review_bridge import _artifact_digest, _load_history, _run_lock
 from fifth_pick.slate_manifest import read_slate_run_context
-from fifth_pick.snapshots import read_application_snapshot_ledger
+from fifth_pick.snapshots import (
+    read_application_snapshot_ledger,
+    read_receipted_snapshot_ledger,
+    shared_slate_start,
+)
 from fifth_pick.sources.base import EvidenceMode
 from fifth_pick.sources.odds_api import SOURCE_ID
 from fifth_pick.storage import RunStore, _atomic_write, application_run_store
@@ -37,11 +41,14 @@ def expired_live_selections(store: RunStore, run_id: str, proposal: dict) -> tup
     if board.evidence_mode is not EvidenceMode.LIVE or proposal["state"] != "AWAITING_JOSEPH":
         return ()
     now = datetime.now(UTC)
+    slate_start = shared_slate_start(read_receipted_snapshot_ledger(store, run_id))
     tipoffs = {event.event_id: event.commence_time for event in board.events}
     return tuple(
         row["candidate_key"]
         for row in proposal["proposed"]
-        if row["event"] not in tipoffs or now >= tipoffs[row["event"]]
+        if (slate_start is not None and now >= slate_start)
+        or row["event"] not in tipoffs
+        or now >= tipoffs[row["event"]]
     )
 
 

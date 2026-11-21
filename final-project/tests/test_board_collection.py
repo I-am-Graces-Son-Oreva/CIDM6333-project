@@ -576,6 +576,91 @@ class BoardCollectorTests(unittest.TestCase):
             "REBOUNDS_ASSISTS", {entry.snapshot.observation.category.name for entry in entries}
         )
 
+    def test_live_series_uses_first_official_game_for_later_event(self):
+        from fifth_pick.official_slate import OfficialGame, OfficialSlate
+        from fifth_pick.schedule import schedule_view
+
+        anchor = datetime(2026, 11, 15, 23, 50, tzinfo=UTC)
+        provider = datetime(2026, 11, 16, 2, tzinfo=UTC)
+        official = OfficialSlate(
+            "https://www.nba.com/games?date=2026-11-15",
+            (
+                OfficialGame("New York Knicks", "Boston Celtics", anchor),
+                OfficialGame(
+                    "Dallas Mavericks", "Los Angeles Lakers", provider - timedelta(minutes=10)
+                ),
+            ),
+        )
+        odds = odds_url(EVENT, OddsApiSourceConfig())
+        with (
+            patch("fifth_pick.official_slate.load_official_slate", return_value=official),
+            patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.board_collection._application_clock", return_value=NOW) as clock,
+            patch.object(UrllibTransport, "get", side_effect=self.respond),
+        ):
+            original = self.live_collector(series=True)
+            assert original._grant is not None
+            collector = BoardCollector(
+                self.store,
+                original._policy,
+                transport=UrllibTransport(),
+                live_grant=replace(
+                    original._grant,
+                    official_tipoff=official.games[1].scheduled_tipoff,
+                    slate_start=anchor,
+                    expires_at=anchor,
+                    timing_reference=official.source,
+                ),
+                environ={API_KEY_ENV_VAR: SECRET},
+            )
+            for slot, observed in (
+                (1, NOW),
+                (2, datetime(2026, 11, 15, 21, 30, tzinfo=UTC)),
+                (3, anchor - timedelta(minutes=23)),
+            ):
+                clock.return_value = observed
+                self.update_response(
+                    events_url(),
+                    headers={
+                        "x-requests-last": "0",
+                        "x-requests-used": str(4 * (slot - 1)),
+                        "x-requests-remaining": str(500 - 4 * (slot - 1)),
+                    },
+                )
+                self.update_response(
+                    odds,
+                    headers={
+                        "x-requests-last": "4",
+                        "x-requests-used": str(4 * slot),
+                        "x-requests-remaining": str(500 - 4 * slot),
+                    },
+                )
+
+                def refresh(body, observed_at=observed):
+                    for book in body["bookmakers"]:
+                        for market in book["markets"]:
+                            market["last_update"] = observed_at.isoformat()
+
+                self.change_odds(refresh)
+                entries = collector.collect(RUN, slot, EVENT, request_authorized=True)
+                self.assertTrue(entries)
+                self.assertTrue(
+                    all(
+                        row.event_start == provider and row.window_start == anchor
+                        for row in entries
+                    )
+                )
+            self.assertTrue(all(row.target_at == anchor - timedelta(minutes=20) for row in entries))
+            self.assertEqual(collector.collect(RUN, 3, EVENT, request_authorized=True), entries)
+            status = schedule_view(self.store, RUN, as_of=anchor - timedelta(minutes=20))
+            event_rows = status["events"]
+            assert isinstance(event_rows, list)
+            self.assertEqual(
+                {row["t20_target_at"] for row in event_rows},
+                {(anchor - timedelta(minutes=20)).isoformat()},
+            )
+        self.assertEqual(self.calls, [events_url(), odds] * 3)
+
     def test_live_series_reuses_one_policy_and_only_collects_due_slots(self):
         from unittest.mock import Mock
 
