@@ -12,6 +12,92 @@ EVENT = "2adabff2dca8b2ed4b39540a6a25ffb2"
 
 
 class LiveBoardCliTests(unittest.TestCase):
+    def test_live_menu_opens_saved_board_without_entering_network_discovery(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+
+        from fifth_pick.cli import _live_board_menu
+
+        answers = iter(("3", "board-run", EVENT, "", "", ""))
+        with (
+            redirect_stdout(StringIO()),
+            patch("fifth_pick.cli._board_preflight") as discover,
+            patch("fifth_pick.board_inspect_cli.board_inspect", return_value=0) as inspect,
+        ):
+            self.assertEqual(_live_board_menu(lambda _: next(answers)), 0)
+        discover.assert_not_called()
+        inspect.assert_called_once_with(
+            ["--run-id", "board-run", "--event-id", EVENT, "--snapshot", "1"], pretty=False
+        )
+
+    def test_live_menu_preserves_explicit_collection_and_decision_gates(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+
+        from fifth_pick.cli import _live_board_menu
+
+        collect = iter(("4", "board-run", "2", "scope file.json", "", ""))
+        decide = iter(("9", "board-run"))
+        with (
+            redirect_stdout(StringIO()),
+            patch("fifth_pick.cli.main", return_value=0) as dispatch,
+        ):
+            self.assertEqual(_live_board_menu(lambda _: next(collect)), 0)
+            self.assertEqual(_live_board_menu(lambda _: next(decide)), 0)
+        self.assertEqual(
+            dispatch.call_args_list[0].args[0],
+            [
+                "board-collect",
+                "--run-id",
+                "board-run",
+                "--snapshot",
+                "2",
+                "--scope",
+                "scope file.json",
+                "--series",
+            ],
+        )
+        self.assertTrue(callable(dispatch.call_args_list[0].kwargs["prompt"]))
+        self.assertEqual(dispatch.call_args_list[1].args[0], ["decide", "--run-id", "board-run"])
+        self.assertTrue(dispatch.call_args_list[1].kwargs["_menu_form"])
+
+    def test_live_menu_rejects_demo_run_before_decision_dispatch(self):
+        from fifth_pick.cli import _live_board_menu
+
+        answers = iter(("9", "demo-capture"))
+        with (
+            patch("fifth_pick.cli.is_fixture_workflow", return_value=True),
+            patch("fifth_pick.cli.main") as dispatch,
+        ):
+            self.assertEqual(_live_board_menu(lambda _: next(answers)), 1)
+        dispatch.assert_not_called()
+
+    def test_live_series_uses_crosswalk_without_prompting_for_one_slot_override(self):
+        from fifth_pick.cli import _live_board_menu
+
+        answers = iter(
+            ("4", "board-run", "1", "scope.json", "", "SERIES", "roster.json", "crosswalk.json")
+        )
+        with patch("fifth_pick.cli.main", return_value=0) as dispatch:
+            self.assertEqual(_live_board_menu(lambda _: next(answers)), 0)
+        self.assertEqual(
+            dispatch.call_args.args[0],
+            [
+                "board-collect",
+                "--run-id",
+                "board-run",
+                "--snapshot",
+                "1",
+                "--scope",
+                "scope.json",
+                "--series",
+                "--roster",
+                "roster.json",
+                "--board-identities",
+                "crosswalk.json",
+            ],
+        )
+
     def test_quarantine_cli_binds_earlier_cutoff_and_verified_roster(self):
         from contextlib import redirect_stdout
         from io import StringIO

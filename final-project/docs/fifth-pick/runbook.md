@@ -534,3 +534,13 @@ read-only and can happen after cutoff. It cannot write snapshots, turn a stopped
 capture into a completed run, or release a recommendation. For an official
 three-snapshot attempt, use the existing independently verified scope and
 separately approved series budget from the start.
+
+### Open the LIVE workflow from the terminal menu
+
+Run `.venv/bin/fifth-pick menu` in an interactive terminal and press **L**.
+Choose **View saved slate** or **Inspect retained board** to work offline.
+The LIVE panel also opens scoped and quarantine collection, analysis, T-20,
+Controller assessment, the independent review handoff, and Joseph's decision.
+Collection shows its existing event, timing, and credit confirmation before any
+paid request. Opening the panel itself makes no request. Use **Esc** to return
+to the main menu.

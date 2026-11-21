@@ -39,33 +39,33 @@ def label(value: object) -> str:
     return safe(value).replace("_", " ")
 
 
-def details(value: Any, indent: str = "") -> None:
+def details(value: Any, indent: str = "", *, exact: bool = False) -> None:
     """Display supplemental command details without exposing JSON syntax."""
     if isinstance(value, dict):
         for key, item in value.items():
             heading = label(key).capitalize()
             if isinstance(item, (dict, list)):
                 note(f"{indent}{heading}:", verbatim=True)
-                details(item, indent + "  ")
+                details(item, indent + "  ", exact=exact)
             else:
-                note(f"{indent}{heading}: {_value(item)}", verbatim=True)
+                note(f"{indent}{heading}: {_value(item, exact=exact)}", verbatim=True)
     elif isinstance(value, list):
         if not value:
             note(f"{indent}None", verbatim=True)
         for item in value:
             if isinstance(item, (dict, list)):
                 note(f"{indent}-", verbatim=True)
-                details(item, indent + "  ")
+                details(item, indent + "  ", exact=exact)
             else:
-                note(f"{indent}- {_value(item)}", verbatim=True)
+                note(f"{indent}- {_value(item, exact=exact)}", verbatim=True)
 
 
-def _value(value: object) -> str:
+def _value(value: object, *, exact: bool = False) -> str:
     if value is None:
         return "Unavailable"
     if isinstance(value, bool):
         return "Yes" if value else "No"
-    return compact(value)
+    return safe(value) if exact else compact(value)
 
 
 def platform_name(value: str) -> str:

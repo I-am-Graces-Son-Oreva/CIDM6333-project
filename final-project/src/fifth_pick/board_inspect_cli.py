@@ -216,7 +216,7 @@ def inspect_board(
     return report
 
 
-def board_inspect(arguments: list[str]) -> int:
+def board_inspect(arguments: list[str], *, pretty: bool = True) -> int:
     parser = argparse.ArgumentParser(prog="fifth-pick board-inspect", allow_abbrev=False)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--event-id", required=True)
@@ -260,5 +260,5 @@ def board_inspect(arguments: list[str]) -> int:
             file=sys.stderr,
         )
         return 1
-    print(json.dumps(report, indent=2, sort_keys=True))
+    print(json.dumps(report, indent=2 if pretty else None, sort_keys=True))
     return 0

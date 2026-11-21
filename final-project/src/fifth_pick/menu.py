@@ -474,7 +474,11 @@ def _main_menu(
 
 
 def _capture(
-    terminal: Terminal, invoke: Callable[[Prompt], int], *, show_details: bool = False
+    terminal: Terminal,
+    invoke: Callable[[Prompt], int],
+    *,
+    show_details: bool = False,
+    exact_details: bool = False,
 ) -> dict[str, Any] | None:
     """Present command messages before every prompt and decode its structured output."""
     display = sys.stdout
@@ -498,7 +502,7 @@ def _capture(
                     else:
                         note(compact(line))
                 elif structured:
-                    details(record)
+                    details(record, exact=exact_details)
                 else:
                     payload = record
             for line in errors.getvalue().splitlines():
@@ -1160,7 +1164,9 @@ def run_menu(
                                 "The Fifth Pick · Live Mode · slate status and collection"
                             )
                             if live_action is not None:
-                                _capture(terminal, live_action, show_details=True)
+                                _capture(
+                                    terminal, live_action, show_details=True, exact_details=True
+                                )
                             else:
                                 print("LIVE disabled. A separate owner grant is required.")
                         else:

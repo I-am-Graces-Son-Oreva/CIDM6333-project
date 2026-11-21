@@ -403,10 +403,121 @@ def _board_preflight(
 
 
 def _live_board_menu(read: Callable[[str], str]) -> int:
-    from fifth_pick.live_board_cli import show_board_status
+    """Guide terminal operators through the existing LIVE command gates."""
+    from fifth_pick.board_inspect_cli import board_inspect
 
-    show_board_status(application_run_store(), datetime.now(UTC))
-    return _board_preflight(read)
+    print(
+        "1. View saved slate (offline)\n"
+        "2. Discover NBA events (one zero-credit request)\n"
+        "3. Inspect retained board (offline, preliminary)\n"
+        "4. Collect a scoped snapshot (approval and credit budget required)\n"
+        "5. Analyze Snapshot 2\n"
+        "6. Run T-20 review\n"
+        "7. View final proposal\n"
+        "8. View audit and receipts\n"
+        "9. Record Joseph's decision\n"
+        "10. View independent review handoff\n"
+        "11. Capture Snapshot 1 with identity quarantine (approval required)\n"
+        "12. Preview or record a Controller assessment"
+    )
+    action = read("Choose a LIVE action, or Enter to return: ").strip()
+    if not action:
+        return 0
+    if action in ("1", "2"):
+        command = "board-status" if action == "1" else "board-preflight"
+        day = read("Chicago slate date (YYYY-MM-DD, Enter for today): ").strip()
+        return main([command, *(["--date", day] if day else [])], prompt=read)
+    commands = {
+        "3": "board-inspect",
+        "4": "board-collect",
+        "5": "analyze",
+        "6": "t20",
+        "7": "final",
+        "8": "audit",
+        "9": "decide",
+        "10": "review-handoff",
+        "11": "board-collect",
+        "12": "controller-assess",
+    }
+    if action not in commands:
+        print("Choose one of the displayed LIVE actions.", file=sys.stderr)
+        return 1
+    run_id = read("Run ID: ").strip()
+    if not run_id:
+        return 0
+    if is_fixture_workflow(application_run_store(), run_id):
+        print("That run is a Demo fixture. Open it from the main menu.", file=sys.stderr)
+        return 1
+    arguments = ["--run-id", run_id]
+    if action == "3":
+        event = read("Provider event ID: ").strip()
+        if not event:
+            return 0
+        number = read("Capture slot (1–3, Enter for 1): ").strip() or "1"
+        arguments.extend(("--event-id", event, "--snapshot", number))
+        for option, label in (
+            ("--roster", "Independent roster JSON path"),
+            ("--board-identities", "Board identity crosswalk JSON path"),
+        ):
+            path = read(f"{label} (Enter to skip): ").strip()
+            if path:
+                arguments.extend((option, path))
+        return board_inspect(arguments, pretty=False)
+    if action == "4":
+        number = read("Snapshot slot (1–3): ").strip()
+        if number not in {"1", "2", "3"}:
+            print("Choose a snapshot slot from 1 to 3.", file=sys.stderr)
+            return 1
+        scope = read("Independently verified event scope JSON path (Enter to return): ").strip()
+        if not scope:
+            return 0
+        arguments.extend(("--snapshot", number, "--scope", scope))
+        preflight = read("Saved preflight JSON path (Enter for today's saved file): ").strip()
+        if preflight:
+            arguments.extend(("--preflight", preflight))
+        series = (
+            number != "1"
+            or read("Type SERIES for three slots, or Enter for Snapshot 1 only: ").strip().upper()
+            == "SERIES"
+        )
+        if series:
+            arguments.append("--series")
+        else:
+            timing = read("Independent tipoff JSON path (Enter if none): ").strip()
+            if timing:
+                arguments.extend(("--timing-file", timing))
+        roster = read("Independent roster JSON path (Enter to use scope aliases): ").strip()
+        if roster:
+            identities = read("Board identity crosswalk JSON path: ").strip()
+            if not identities:
+                return 0
+            arguments.extend(("--roster", roster, "--board-identities", identities))
+    elif action == "11":
+        timing = read("Independent tipoff JSON path: ").strip()
+        roster = read("Independent roster JSON path: ").strip() if timing else ""
+        if not roster:
+            return 0
+        arguments.extend(("--snapshot", "1", "--quarantine-labels", "--timing-file", timing))
+        arguments.extend(("--roster", roster))
+        preflight = read("Saved preflight JSON path (Enter for today's saved file): ").strip()
+        if preflight:
+            arguments.extend(("--preflight", preflight))
+    elif action == "12":
+        event = read("Provider event ID: ").strip()
+        candidate = read("Exact candidate key: ").strip() if event else ""
+        if not candidate:
+            return 0
+        number = read("Assessment slot (2 or 3): ").strip()
+        if number not in {"2", "3"}:
+            print("Choose assessment slot 2 or 3.", file=sys.stderr)
+            return 1
+        arguments.extend(("--event-id", event, "--candidate-key", candidate, "--snapshot", number))
+        judgment = read("Controller judgment JSON path (Enter for scope preview): ").strip()
+        if judgment:
+            arguments.extend(("--judgment-file", judgment))
+    elif action == "5":
+        arguments.extend(("--snapshot", "2"))
+    return main([commands[action], *arguments], prompt=read, _menu_form=True)
 
 
 def _board_smoke_command(
