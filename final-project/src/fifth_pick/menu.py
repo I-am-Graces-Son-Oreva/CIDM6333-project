@@ -19,6 +19,8 @@ from fifth_pick.finalization import NO_ENTRY_RECOMMENDATION, _manifest_start_boa
 from fifth_pick.fixture_input import digest, read_object
 from fifth_pick.fixture_workflow import audit_view, candidates_view
 from fifth_pick.menu_presentation import (
+    MARKET_CODES,
+    PLATFORM_CODES,
     ascii_borders,
     audit_hint,
     compact,
@@ -34,6 +36,7 @@ from fifth_pick.menu_presentation import (
     review_assessments,
     selection_fields,
     settlement,
+    slate_table,
     status_name,
     supporting_evidence,
     table,
@@ -60,14 +63,6 @@ OPTIONS = (
     "View Audit and Receipts",
     "Exit",
 )
-PLATFORM_CODES = {"prizepicks": "PP", "underdog": "UD"}
-MARKET_CODES = {
-    "POINTS": ("PTS", "Points"),
-    "REBOUNDS": ("REB", "Rebounds"),
-    "ASSISTS": ("AST", "Assists"),
-    "PRA": ("PRA", "Points + Rebounds + Assists"),
-    "REBOUNDS_ASSISTS": ("RA", "Rebounds + Assists"),
-}
 NAVIGATION = "↑ / ↓ Move   Enter Select   Esc Back   Q Quit"
 Prompt = Callable[[str], str]
 Dispatch = Callable[[Sequence[str], Prompt], int]
@@ -555,6 +550,50 @@ def _show_final(final: dict[str, Any], state: dict[str, Any]) -> None:
         note("Next: Joseph can review the proposal in Approve / Reject / Modify.")
 
 
+def _evidence_cells(
+    item: dict[str, Any], assessment: dict[str, Any], risks: Sequence[str]
+) -> tuple[str, str, str, str]:
+    movement = item.get("projection_movement") or [
+        snapshot["observation"]["projection"] for snapshot in assessment.get("snapshots", ())
+    ]
+    history = {
+        sample["kind"]: (
+            f"{sample['favorable_count']}/{sample['sample_count']}"
+            + (" (partial)" if sample.get("incomplete") else "")
+        )
+        for sample in item.get("history", assessment.get("history", ()))
+    }
+    recorded_reason = item.get("t20_rationale") or assessment.get("methodology_rationale") or ""
+    rationale, _, disclosure = recorded_reason.partition(" Senior LOWER risk: ")
+    if disclosure and disclosure not in risks:
+        rationale = recorded_reason
+    cited = set(assessment.get("supporting_evidence_ids", ()))
+    reason = rationale or " ".join(
+        dict.fromkeys(
+            entry["claim"]
+            for entry in assessment.get("evidence", ())
+            if entry["evidence_id"] in cited
+        )
+    )
+    return (
+        " → ".join(map(str, movement)) or "—",
+        history.get("LAST_8", "—"),
+        history.get("SAME_SEASON_H2H", "—"),
+        reason or "Not recorded.",
+    )
+
+
+def _show_evidence_table(rows: Sequence[Sequence[object]]) -> None:
+    print()
+    note("SUPPORTING EVIDENCE")
+    if rows:
+        print()
+        table(("#", "Player", "Projection path", "Last 8", "H2H", "Why this pick"), rows)
+        note("History shows favorable games / games sampled. — means unavailable.")
+    else:
+        note("No supporting details recorded.")
+
+
 def _show_final_recommendations(final: dict[str, Any], state: dict[str, Any]) -> None:
     separator = " | " if ascii_borders() else " · "
     status = final["state"]
@@ -602,39 +641,12 @@ def _show_final_recommendations(final: dict[str, Any], state: dict[str, Any]) ->
         }.get(status, "RECOMMENDED FINAL SLATE")
     )
     print()
-    legend = {}
-    rows = []
     risks = []
-    evidence_lines = []
+    evidence_rows = []
     gaps = []
     reviews = {review["event_key"]: review for review in state["t20_reviews"]}
     for number, item in enumerate(items, 1):
-        name = f"#{number} {item['player']}"
-        platform = PLATFORM_CODES.get(item["platform"])
-        if platform:
-            legend[platform] = platform_name(item["platform"])
-        market = MARKET_CODES.get(item["category"])
-        if market:
-            legend[market[0]] = market[1]
-        recorded_t20 = item.get("t20_status") or "Pending"
-        t20 = {"STILL STRONG": "Strong", "REMOVE RECOMMENDED": "Remove"}.get(
-            recorded_t20, label(recorded_t20).capitalize()
-        )
-        if t20 != recorded_t20.capitalize():
-            legend[t20] = f"{recorded_t20.title()} at T-20"
-        rows.append(
-            (
-                number,
-                item["player"],
-                platform or platform_name(item["platform"]),
-                market[0] if market else label(item["category"]),
-                item["direction"].title(),
-                item["projection"],
-                (item.get("confidence") or "Pending").title(),
-                t20,
-            )
-        )
-
+        player = item["player"]
         review = reviews.get(item.get("t20_event_key"), {})
         assessment = review.get("current_audit") or {}
         recorded_risks = {claim: claim for claim in item.get("material_risks", ())}
@@ -643,11 +655,14 @@ def _show_final_recommendations(final: dict[str, Any], state: dict[str, Any]) ->
                 claim = entry["claim"]
                 recorded_risks[claim] = f"Contradictory evidence: {claim}"
         risks.append(
-            (name, separator.join(recorded_risks.values()) or "No material risks recorded.")
+            (
+                number,
+                player,
+                separator.join(recorded_risks.values()) or "No material risks recorded.",
+            )
         )
-        supporting = supporting_evidence(item, {**assessment, "gaps": ()})
-        evidence_lines.append(
-            (name, separator.join(supporting) or "No supporting details recorded.")
+        evidence_rows.append(
+            (number, item["player"], *_evidence_cells(item, assessment, tuple(recorded_risks)))
         )
         limitations = dict.fromkeys(
             (
@@ -656,26 +671,19 @@ def _show_final_recommendations(final: dict[str, Any], state: dict[str, Any]) ->
             )
         )
         if limitations:
-            gaps.append((name, separator.join(limitations)))
+            gaps.append((number, player, separator.join(limitations)))
 
-    table(("#", "Player", "Plat", "Market", "Pick", "Line", "Confidence", "T-20"), rows)
-    if legend:
-        print()
-        note(separator.join(f"{code} = {meaning}" for code, meaning in legend.items()))
-    for title, entries in (
-        ("KEY RISKS", risks),
-        ("SUPPORTING EVIDENCE", evidence_lines),
-        ("EVIDENCE GAPS", gaps),
+    slate_table(items)
+    _show_evidence_table(evidence_rows)
+    for title, detail_heading, entries in (
+        ("KEY RISKS", "Key risk", risks),
+        ("EVIDENCE GAPS", "Evidence gap", gaps),
     ):
         if entries:
             print()
             note(title)
             print()
-            for name, content in entries:
-                first, *continuation = wrapped(f"{name}{separator}{content}", margin=2).split("\n")
-                print(first)
-                for line in continuation:
-                    print(f"  {line}")
+            table(("#", "Player", detail_heading), entries)
     print()
     note("Confidence reflects available evidence. No outcome is guaranteed.")
     print()
@@ -818,16 +826,15 @@ def _show_t20_report(store: RunStore, run_id: str, state: dict[str, Any]) -> Non
         ]
         if disclosure := assessed.get("senior_lower_disclosure"):
             recorded_risks.append(disclosure)
+        scope = " (prior assessment)" if not current else ""
         if recorded_risks:
-            source = " (prior assessment)" if not current else ""
-            risks.append((f"#{number} {player}{source}", recorded_risks))
-        supporting = supporting_evidence(
-            {"t20_rationale": assessed.get("methodology_rationale")},
-            {**assessed, "gaps": ()},
-        )
-        if supporting:
-            scope = " (prior assessment)" if not current else ""
-            evidence.append((f"#{number}{scope}", supporting))
+            risks.append(
+                (number, f"{player}{scope}", separator.join(dict.fromkeys(recorded_risks)))
+            )
+        if assessed:
+            evidence.append(
+                (number, f"{player}{scope}", *_evidence_cells({}, assessed, recorded_risks))
+            )
         reasons = dict.fromkeys(
             (
                 *map(label, review.get("reason_codes", ())),
@@ -837,7 +844,7 @@ def _show_t20_report(store: RunStore, run_id: str, state: dict[str, Any]) -> Non
             )
         )
         if reasons:
-            gaps.append((f"#{number}", tuple(reasons)))
+            gaps.append((number, player, separator.join(reasons)))
 
     if rows:
         table(("#", "Player", "Plat", "Market", "Pick", "Line", "T-20 Result"), rows)
@@ -846,22 +853,21 @@ def _show_t20_report(store: RunStore, run_id: str, state: dict[str, Any]) -> Non
             note(separator.join(f"{code} = {text}" for code, text in legend.items()))
     else:
         note("No candidate reviews recorded.")
-    for title, entries, empty in (
-        ("MATERIAL RISKS", risks, "No material risks recorded."),
-        ("SUPPORTING EVIDENCE", evidence, "No supporting details recorded."),
-        ("EVIDENCE GAPS & REVIEW REASONS", gaps, "No evidence gaps or review reasons recorded."),
-    ):
+    print()
+    note("MATERIAL RISKS")
+    if risks:
         print()
-        note(title)
-        if not entries:
-            note(empty)
-        for name, content in entries:
-            first, *continuation = wrapped(
-                f"{name}{separator}{separator.join(content)}", margin=2
-            ).split("\n")
-            print(first)
-            for line in continuation:
-                print(f"  {line}")
+        table(("#", "Player", "Material risk"), risks)
+    else:
+        note("No material risks recorded.")
+    _show_evidence_table(evidence)
+    print()
+    note("EVIDENCE GAPS & REVIEW REASONS")
+    if gaps:
+        print()
+        table(("#", "Player", "Gap or review reason"), gaps)
+    else:
+        note("No evidence gaps or review reasons recorded.")
     print()
     note("T-20 conclusions are recommendations for Joseph’s review.")
     print()

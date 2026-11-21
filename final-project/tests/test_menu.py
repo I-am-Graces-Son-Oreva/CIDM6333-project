@@ -218,6 +218,7 @@ class MenuWorkflowTests(unittest.TestCase):
             *approve,
             "escape",  # Explicitly approve on the second form
             *result,
+            "down",  # Luka follows Joel in the updated ranking
             "enter",
             "down",
             "enter",
@@ -249,7 +250,7 @@ class MenuWorkflowTests(unittest.TestCase):
             "Open Final Recommendations to create the proposal.",
             "KEY RISKS",
             "RECOMMENDED FINAL SLATE",
-            "DECISION SUBMITTED",
+            "OFFICIAL DECISION",
             "Provisional watchlist",
             "STILL STRONG",
             "ASSISTS HIGHER 9.5",
@@ -278,7 +279,16 @@ class MenuWorkflowTests(unittest.TestCase):
         self.assertNotIn('{"approval":', output)
         self.assertNotIn('{"artifact":', output)
         self.assertNotIn(key, output)
-        self.assertIn("SELECTION #1", output)
+        self.assertNotIn("DECISION SUBMITTED", output)
+        approved = output.split("Approved selections", 1)[1].split("Audit record:", 1)[0]
+        self.assertIn("│ # │ Player", approved)
+        self.assertNotIn("SELECTION #1", approved)
+        preview = output.split("Proposed final set", 1)[1].split("Proposed final set", 1)[0]
+        self.assertIn("│ # │ Player", preview)
+        for player in ("Joel Embiid", "Luka Doncic", "Anthony Davis", "Jayson Tatum"):
+            self.assertIn(player, preview)
+        self.assertNotIn("MATERIAL RISKS", preview)
+        self.assertIn("See Final Recommendations for evidence and risks.", preview)
         audit = self.store.run_directory("demo-test") / "final.json"
         self.assertIn(key, audit.read_text())
         self.assertIn(
@@ -379,9 +389,16 @@ class MenuWorkflowTests(unittest.TestCase):
             self.assertEqual(row["t20_status"], "STILL STRONG")
         davis = next(row for row in picks if row["player"] == "Anthony Davis")
         self.assertEqual((davis["category"], davis["direction"]), ("PRA", "LOWER"))
-        self.assertIn("foul trouble", davis["t20_rationale"].lower())
-        self.assertIn("blowout could reduce his minutes", davis["t20_rationale"].lower())
-        self.assertTrue(any("stays close" in risk for risk in davis["material_risks"]))
+        self.assertIn("foul-trouble", davis["t20_rationale"].lower())
+        self.assertNotIn("blowout", davis["t20_rationale"].lower())
+        tatum = next(row for row in picks if row["player"] == "Jayson Tatum")
+        self.assertEqual((tatum["category"], tatum["direction"]), ("PRA", "LOWER"))
+        self.assertIn("No. 1 seed", tatum["t20_rationale"])
+        self.assertIn("No. 20 seed", tatum["t20_rationale"])
+        luka = next(row for row in picks if row["player"] == "Luka Doncic")
+        self.assertEqual((luka["category"], luka["direction"]), ("ASSISTS", "HIGHER"))
+        self.assertIn("last eight", luka["t20_rationale"].lower())
+        self.assertNotIn("blowout", str(luka["material_risks"]).lower())
         embiid = next(row for row in picks if row["player"] == "Joel Embiid")
         self.assertEqual((embiid["category"], embiid["direction"]), ("POINTS", "HIGHER"))
         self.assertIn("head-to-head", embiid["t20_rationale"].lower())
@@ -464,11 +481,19 @@ class MenuWorkflowTests(unittest.TestCase):
         with redirect_stdout(output), patch.dict("os.environ", {"COLUMNS": "80", "TERM": "xterm"}):
             _show_t20_report(self.store, "demo-test", state)
         display = output.getvalue()
-        self.assertEqual(display.count("┌"), 1)
+        self.assertEqual(display.count("┌"), 3)
+        self.assertIn("Why this pick", display)
+        self.assertIn("Gap or review reason", display)
         self.assertIn("UD = Underdog", display)
         self.assertIn("NOT AUTHORIZED", display)
-        self.assertIn("Snapshot 3 evidence was unavailable.", display)
-        self.assertIn("prior assessment", display)
+        reasons = display.split("EVIDENCE GAPS & REVIEW REASONS", 1)[1]
+        detail_cells = [line.split("│")[-2].strip() for line in reasons.splitlines() if "│" in line]
+        self.assertIn("Snapshot 3 evidence was unavailable.", " ".join(detail_cells))
+        evidence = display.split("SUPPORTING EVIDENCE", 1)[1].split(
+            "EVIDENCE GAPS & REVIEW REASONS", 1
+        )[0]
+        player_cells = [line.split("│")[2].strip() for line in evidence.splitlines() if "│" in line]
+        self.assertIn("prior assessment", " ".join(player_cells))
         self.assertNotIn("8.5", display)
         self.assertTrue(all(len(line) <= 80 for line in display.splitlines()))
 
@@ -484,7 +509,7 @@ class MenuWorkflowTests(unittest.TestCase):
         rows = [line for line in output.getvalue().splitlines() if "Luka Doncic" in line]
         self.assertEqual(len(rows), 3)
         self.assertIn("Higher", rows[0])
-        self.assertIn("High", rows[0])
+        self.assertIn("Medium", rows[0])
         self.assertIn("Still strong", rows[0])
         self.assertIn("Remove recommended", rows[1])
         self.assertIn("Pending", rows[1])
@@ -539,10 +564,10 @@ class MenuWorkflowTests(unittest.TestCase):
             ["down"] * 4 + ["enter", "down", "enter", "escape", b"q"],
             (" r ", "Fixture evidence was too limited."),
         )
-        self.assertRegex(output, r"Decision status\s+│ Rejected by Joseph")
+        self.assertIn("Decision status: Rejected by Joseph", output)
         self.assertIn("Rejected selections", output)
         self.assertIn("Luka Doncic", output)
-        self.assertRegex(output, r"Reason\s+│ Fixture evidence was too limited\.")
+        self.assertIn("Reason: Fixture evidence was too limited.", output)
         self.assertIn("No approved selections.", output)
         self.assertNotIn("key=", output)
 
@@ -554,7 +579,7 @@ class MenuWorkflowTests(unittest.TestCase):
 
         self.prepare_proposal("demo-test")
         choice = ["down"] * 4 + ["enter", "down", "enter", "escape"]
-        output = self.run_menu(choice + choice + [b"q"], ("MoDiFy", "9", " m ", "Selection #1"))
+        output = self.run_menu(choice + choice + [b"q"], ("MoDiFy", "9", " m ", "Selection #2"))
         self.assertIn("Enter the selection numbers shown in this proposal", output)
         self.assertIn("Modified by Joseph", output)
         self.assertIn("awaiting a new decision", output)
@@ -608,7 +633,7 @@ class MenuWorkflowTests(unittest.TestCase):
         self.assertIn("No entry recommended. Review the audit and receipts.", output)
         self.assertIn("Decision: Optional (no entry)", output)
         self.assertIn("NO ENTRY RECOMMENDED TODAY.", output)
-        self.assertRegex(output, r"Decision status\s+│ Approved by Joseph")
+        self.assertIn("Decision status: Approved by Joseph", output)
         self.assertIn("No approved selections.", output)
 
 
@@ -683,11 +708,11 @@ class FinalRecommendationsPresentationTests(unittest.TestCase):
                     "proposed": rows[:count],
                 }
                 display = self.render(proposal, state, columns)
-                self.assertEqual(display.count("┌"), 1)
-                self.assertEqual(display.count("├"), count)
-                heading, rest = display.split("KEY RISKS", 1)
-                risks, rest = rest.split("SUPPORTING EVIDENCE", 1)
-                evidence, gaps = rest.split("EVIDENCE GAPS", 1)
+                heading, rest = display.split("SUPPORTING EVIDENCE", 1)
+                self.assertEqual(heading.count("┌"), 1)
+                self.assertEqual(heading.count("├"), count)
+                evidence, rest = rest.split("KEY RISKS", 1)
+                risks, gaps = rest.split("EVIDENCE GAPS", 1)
                 rendered_rows = [
                     [
                         " ".join(word for word in cell if word)
@@ -722,19 +747,30 @@ class FinalRecommendationsPresentationTests(unittest.TestCase):
                 self.assertIn("UD = Underdog", heading)
                 self.assertEqual("RA = Rebounds + Assists" in " ".join(heading.split()), count == 5)
                 self.assertEqual("Pending" in heading, count == 5)
-                self.assertIn("Contradictory evidence:", risks)
+                risk_cells = [
+                    line.split("│")[-2].strip() for line in risks.splitlines() if "│" in line
+                ]
+                risk_details = " ".join(risk_cells)
+                self.assertIn("Contradictory evidence:", risk_details)
                 self.assertEqual(
-                    " ".join(risks.split()).count(
-                        "The latest report contradicts the role estimate."
-                    ),
+                    risk_details.count("The latest report contradicts the role estimate."),
                     1,
                 )
-                self.assertIn("Last 8: 5/8 favorable", " ".join(evidence.split()))
-                self.assertIn("#2 Demonstration Player 2", gaps)
-                self.assertIn("Only a partial history is available.", " ".join(gaps.split()))
+                self.assertEqual(evidence.count("┌"), 1)
+                self.assertEqual(evidence.count("├"), count)
+                self.assertIn("Why this pick", evidence)
+                self.assertEqual(evidence.count("5/8"), count)
+                self.assertEqual(evidence.count("8.5 → 9.0 → 9.5"), count)
+                self.assertEqual(risks.count("┌"), 1)
+                self.assertEqual(gaps.count("┌"), 1)
+                self.assertRegex(gaps, r"│ 2\s+│ Demonstration Player 2")
+                gap_cells = [
+                    line.split("│")[-2].strip() for line in gaps.splitlines() if "│" in line
+                ]
+                self.assertIn("Only a partial history is available.", " ".join(gap_cells))
                 for number in range(1, count + 1):
-                    self.assertIn(f"#{number} Demonstration Player {number}", risks)
-                    self.assertIn(f"ends {number}.", risks)
+                    self.assertRegex(risks, rf"│ {number}\s+│ Demonstration Player {number}")
+                    self.assertIn(f"ends {number}.", risk_details)
                     self.assertNotIn(rows[number - 1]["candidate_key"], display)
 
     def test_decision_status_and_empty_states_do_not_suggest_a_new_approval(self) -> None:
@@ -772,7 +808,7 @@ class FinalRecommendationsPresentationTests(unittest.TestCase):
                 self.assertEqual("┌" in display, bool(items))
                 if items:
                     self.assertIn("No material risks recorded.", display)
-                    self.assertIn("No supporting details recorded.", display)
+                    self.assertIn("Not recorded.", display)
                     fallback = self.render(
                         {
                             "state": status,
@@ -1038,8 +1074,6 @@ class BorderedTableTests(unittest.TestCase):
         revised, removed = output.getvalue().split(
             "Removed from the proposal (original selection numbers)"
         )
-        self.assertIn("SELECTION #1", revised)
-        self.assertIn("Second Candidate", revised)
-        self.assertNotIn("SELECTION #2", revised)
-        self.assertIn("SELECTION #1", removed)
-        self.assertIn("First Candidate", removed)
+        self.assertRegex(revised, r"│ 1\s+│ Second Candidate")
+        self.assertRegex(removed, r"│ 1\s+│ First Candidate")
+        self.assertNotIn("SELECTION #1", output.getvalue())

@@ -841,26 +841,23 @@ def _interactive_decision(
     run_id: str, read: Callable[[str], str], *, menu_form: bool = False
 ) -> dict[str, object]:
     from fifth_pick.approval import JOSEPH_ACTOR
-    from fifth_pick.menu_presentation import fields, picks, review_assessments, selection_keys
+    from fifth_pick.menu_presentation import fields, selection_keys, slate_table
     from fifth_pick.product_review import expired_live_selections, review_status
     from fifth_pick.review import ReviewError
 
     store = application_run_store()
-    fixture_run = (
-        require_complete_fixture(store, run_id) if is_fixture_workflow(store, run_id) else None
-    )
+    fixture_run = is_fixture_workflow(store, run_id)
+    if fixture_run:
+        require_complete_fixture(store, run_id)
     proposal = load_pending_proposal(store, run_id)
-    expired = (
-        ()
-        if is_fixture_workflow(store, run_id)
-        else expired_live_selections(store, run_id, proposal)
-    )
+    expired = () if fixture_run else expired_live_selections(store, run_id, proposal)
     print("Proposed final set")
     proposed = proposal["proposed"]
     assert isinstance(proposed, list)
     if menu_form:
-        assessments = review_assessments(fixture_run.reviews) if fixture_run else None
-        picks(proposed, supporting=True, assessments=assessments)
+        slate_table(proposed)
+        if proposed:
+            print("See Final Recommendations for evidence and risks.")
         for index, item in enumerate(proposed, 1):
             if item["candidate_key"] in expired:
                 print(f"Selection #{index}: decision window closed. Approval unavailable.")
@@ -936,7 +933,7 @@ def _interactive_decision(
         review_exception_sha256=exception_digest,
     )
 
-    if menu_form:
+    if menu_form and not fixture_run:
         print()
         fields(
             "Decision submitted",

@@ -65,8 +65,8 @@
           "kind": "LAST_8",
           "effect": "SUPPORTS",
           "significance": "IMPORTANT",
-          "claim": "Synthetic fixture evidence last8.",
-          "excerpt": "Synthetic fixture excerpt last8.",
+          "claim": "Luka cleared 9.5 assists in six of his last eight simulated games.",
+          "excerpt": "The last eight fixture lines were 10, 8, 11, 12, 9, 10, 12, and 11 assists.",
           "samples": [
             {
               "played_at": "2026-11-07T00:00:00+00:00",
@@ -82,37 +82,37 @@
             },
             {
               "played_at": "2026-11-09T00:00:00+00:00",
-              "value": 11,
+              "value": 8,
               "opponent": "Opponent 3",
               "season": "2026-27"
             },
             {
               "played_at": "2026-11-10T00:00:00+00:00",
-              "value": 12,
+              "value": 11,
               "opponent": "Opponent 4",
               "season": "2026-27"
             },
             {
               "played_at": "2026-11-11T00:00:00+00:00",
-              "value": 13,
+              "value": 12,
               "opponent": "Opponent 5",
               "season": "2026-27"
             },
             {
               "played_at": "2026-11-12T00:00:00+00:00",
-              "value": 14,
+              "value": 9,
               "opponent": "Opponent 6",
               "season": "2026-27"
             },
             {
               "played_at": "2026-11-13T00:00:00+00:00",
-              "value": 15,
+              "value": 10,
               "opponent": "Opponent 7",
               "season": "2026-27"
             },
             {
               "played_at": "2026-11-14T00:00:00+00:00",
-              "value": 10,
+              "value": 12,
               "opponent": "Opponent 8",
               "season": "2026-27"
             },
@@ -120,35 +120,6 @@
               "played_at": "2026-11-15T00:00:00+00:00",
               "value": 11,
               "opponent": "Opponent 9",
-              "season": "2026-27"
-            }
-          ],
-          "facts": {}
-        },
-        {
-          "evidence_id": "h2h",
-          "kind": "SAME_SEASON_H2H",
-          "effect": "SUPPORTS",
-          "significance": "IMPORTANT",
-          "claim": "Synthetic fixture evidence h2h.",
-          "excerpt": "Synthetic fixture excerpt h2h.",
-          "samples": [
-            {
-              "played_at": "2026-10-10T00:00:00+00:00",
-              "value": 14,
-              "opponent": "Synthetic Away",
-              "season": "2025-26"
-            },
-            {
-              "played_at": "2026-11-01T00:00:00+00:00",
-              "value": 14,
-              "opponent": "Other Team",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-03T00:00:00+00:00",
-              "value": 15,
-              "opponent": "Synthetic Away",
               "season": "2026-27"
             }
           ],
@@ -192,12 +163,12 @@
           }
         },
         {
-          "evidence_id": "blowout-risk",
-          "kind": "BLOWOUT_RISK",
+          "evidence_id": "assist-variance",
+          "kind": "OTHER",
           "effect": "CONCERN",
           "significance": "MEANINGFUL",
-          "claim": "Synthetic fixture evidence blowout-risk.",
-          "excerpt": "Synthetic fixture excerpt blowout-risk.",
+          "claim": "Luka finished below 9.5 in two of the last eight simulated games.",
+          "excerpt": "Luka finished below 9.5 in two of the last eight simulated games.",
           "samples": [],
           "facts": {}
         },
@@ -212,197 +183,13 @@
       ],
       "judgment": {
         "disposition": "QUALIFY",
-        "confidence": "HIGH",
-        "rationale": "Synthetic fixture judgment with cited supporting signals.",
+        "confidence": "MEDIUM",
+        "rationale": "The last eight simulated games are the basis for Assists Higher. Luka cleared 9.5 in six of those eight games.",
         "supporting_evidence_ids": [
-          "last8",
-          "role"
+          "last8"
         ],
         "meaningful_risk_ids": [
-          "blowout-risk"
-        ],
-        "sufficient_evidence": true,
-        "major_unresolved_concern": false,
-        "senior_lower_support_ids": [],
-        "senior_lower_disclosure": ""
-      }
-    },
-    "7e8ee5742ba5dacac762875622e082da77f0994010f5a2233e5c03099c58fd17": {
-      "items": [
-        {
-          "evidence_id": "matchup",
-          "kind": "MATCHUP",
-          "effect": "SUPPORTS",
-          "significance": "IMPORTANT",
-          "claim": "Synthetic fixture evidence matchup.",
-          "excerpt": "Synthetic fixture excerpt matchup.",
-          "samples": [],
-          "facts": {
-            "team": "Synthetic Celtics",
-            "opponent": "Synthetic Rockets",
-            "season": "2026-27"
-          }
-        },
-        {
-          "evidence_id": "last8",
-          "kind": "LAST_8",
-          "effect": "SUPPORTS",
-          "significance": "IMPORTANT",
-          "claim": "Synthetic fixture evidence last8.",
-          "excerpt": "Synthetic fixture excerpt last8.",
-          "samples": [
-            {
-              "played_at": "2026-11-07T00:00:00+00:00",
-              "value": 48,
-              "opponent": "Opponent 1",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-08T00:00:00+00:00",
-              "value": 43,
-              "opponent": "Opponent 2",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-09T00:00:00+00:00",
-              "value": 44,
-              "opponent": "Opponent 3",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-10T00:00:00+00:00",
-              "value": 45,
-              "opponent": "Opponent 4",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-11T00:00:00+00:00",
-              "value": 46,
-              "opponent": "Opponent 5",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-12T00:00:00+00:00",
-              "value": 47,
-              "opponent": "Opponent 6",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-13T00:00:00+00:00",
-              "value": 48,
-              "opponent": "Opponent 7",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-14T00:00:00+00:00",
-              "value": 43,
-              "opponent": "Opponent 8",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-15T00:00:00+00:00",
-              "value": 44,
-              "opponent": "Opponent 9",
-              "season": "2026-27"
-            }
-          ],
-          "facts": {}
-        },
-        {
-          "evidence_id": "h2h",
-          "kind": "SAME_SEASON_H2H",
-          "effect": "SUPPORTS",
-          "significance": "IMPORTANT",
-          "claim": "Synthetic fixture evidence h2h.",
-          "excerpt": "Synthetic fixture excerpt h2h.",
-          "samples": [
-            {
-              "played_at": "2026-10-10T00:00:00+00:00",
-              "value": 47,
-              "opponent": "Synthetic Rockets",
-              "season": "2025-26"
-            },
-            {
-              "played_at": "2026-11-01T00:00:00+00:00",
-              "value": 47,
-              "opponent": "Other Team",
-              "season": "2026-27"
-            },
-            {
-              "played_at": "2026-11-03T00:00:00+00:00",
-              "value": 48,
-              "opponent": "Synthetic Rockets",
-              "season": "2026-27"
-            }
-          ],
-          "facts": {}
-        },
-        {
-          "evidence_id": "role",
-          "kind": "ROLE_MINUTES",
-          "effect": "SUPPORTS",
-          "significance": "IMPORTANT",
-          "claim": "Synthetic fixture evidence role.",
-          "excerpt": "Synthetic fixture excerpt role.",
-          "samples": [],
-          "facts": {
-            "role": "synthetic-starter",
-            "minutes_security": "stable"
-          }
-        },
-        {
-          "evidence_id": "game-total",
-          "kind": "GAME_TOTAL",
-          "effect": "SUPPORTS",
-          "significance": "MEANINGFUL",
-          "claim": "Synthetic fixture evidence game-total.",
-          "excerpt": "Synthetic fixture excerpt game-total.",
-          "samples": [],
-          "facts": {
-            "total": 232.5
-          }
-        },
-        {
-          "evidence_id": "spread",
-          "kind": "POINT_SPREAD",
-          "effect": "SUPPORTS",
-          "significance": "MEANINGFUL",
-          "claim": "Synthetic fixture evidence spread.",
-          "excerpt": "Synthetic fixture excerpt spread.",
-          "samples": [],
-          "facts": {
-            "spread": -2.5
-          }
-        },
-        {
-          "evidence_id": "blowout-risk",
-          "kind": "BLOWOUT_RISK",
-          "effect": "CONCERN",
-          "significance": "MEANINGFUL",
-          "claim": "Synthetic fixture evidence blowout-risk.",
-          "excerpt": "Synthetic fixture excerpt blowout-risk.",
-          "samples": [],
-          "facts": {}
-        },
-        {
-          "evidence_id": "availability",
-          "kind": "AVAILABILITY",
-          "effect": "NEUTRAL",
-          "significance": "IMPORTANT",
-          "claim": "Synthetic fixture lists the player as available.",
-          "excerpt": "Jayson Tatum available in this simulated observation."
-        }
-      ],
-      "judgment": {
-        "disposition": "QUALIFY",
-        "confidence": "HIGH",
-        "rationale": "Synthetic fixture judgment with cited supporting signals.",
-        "supporting_evidence_ids": [
-          "last8",
-          "role"
-        ],
-        "meaningful_risk_ids": [
-          "blowout-risk"
+          "assist-variance"
         ],
         "sufficient_evidence": true,
         "major_unresolved_concern": false,
@@ -552,12 +339,12 @@
           }
         },
         {
-          "evidence_id": "blowout-risk",
-          "kind": "BLOWOUT_RISK",
+          "evidence_id": "h2h-sample",
+          "kind": "OTHER",
           "effect": "CONCERN",
           "significance": "MEANINGFUL",
-          "claim": "Synthetic fixture evidence blowout-risk.",
-          "excerpt": "Synthetic fixture excerpt blowout-risk.",
+          "claim": "The head-to-head case uses only two simulated games against this opponent.",
+          "excerpt": "The head-to-head case uses only two simulated games against this opponent.",
           "samples": [],
           "facts": {}
         },
@@ -579,7 +366,7 @@
           "h2h"
         ],
         "meaningful_risk_ids": [
-          "blowout-risk"
+          "h2h-sample"
         ],
         "sufficient_evidence": true,
         "major_unresolved_concern": false,
@@ -735,16 +522,6 @@
           }
         },
         {
-          "evidence_id": "blowout-risk",
-          "kind": "BLOWOUT_RISK",
-          "effect": "SUPPORTS",
-          "significance": "MEANINGFUL",
-          "claim": "A simulated blowout could reduce Davis’s minutes if his team sits him late, leaving fewer opportunities to score, rebound, or assist.",
-          "excerpt": "The scenario projects a lopsided game and a possible early exit for Davis.",
-          "samples": [],
-          "facts": {}
-        },
-        {
           "evidence_id": "availability",
           "kind": "AVAILABILITY",
           "effect": "NEUTRAL",
@@ -757,16 +534,15 @@
           "kind": "FOUL_TROUBLE",
           "effect": "SUPPORTS",
           "significance": "MEANINGFUL",
-          "claim": "Synthetic foul trouble is the main reason for the PRA Lower. Early fouls can limit minutes and opportunities.",
-          "excerpt": "The simulated game notes record early foul trouble and shorter stints."
+          "claim": "Five of eight simulated game logs show Davis picking up at least three fouls by halftime. Early fouls can cut his minutes and PRA opportunities.",
+          "excerpt": "Synthetic foul logs show at least three first-half fouls in five of eight games."
         }
       ],
       "judgment": {
         "disposition": "QUALIFY",
         "confidence": "HIGH",
-        "rationale": "A simulated blowout could reduce his minutes and leave fewer chances to score, rebound, or assist. Early foul trouble could shorten his rotation further. Those minutes risks support PRA Lower.",
+        "rationale": "The synthetic matchup shows high foul-trouble risk: at least three first-half fouls in five of eight simulated games. Early fouls can cut his minutes and PRA opportunities, supporting Lower.",
         "supporting_evidence_ids": [
-          "blowout-risk",
           "foul-trouble",
           "role",
           "last8"
@@ -775,10 +551,107 @@
         "sufficient_evidence": true,
         "major_unresolved_concern": false,
         "senior_lower_support_ids": [
-          "blowout-risk",
           "role"
         ],
-        "senior_lower_disclosure": "If the game stays close and Davis avoids early fouls, a full rotation could let him clear the PRA line."
+        "senior_lower_disclosure": "If Davis avoids early fouls, he can play his full rotation and clear the PRA line."
+      }
+    },
+    "d573922e090472eeeb92f850e6215f6d50e62799b26465fc0cac1f4c179a1c86": {
+      "items": [
+        {
+          "evidence_id": "matchup",
+          "kind": "MATCHUP",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence matchup.",
+          "excerpt": "Synthetic fixture excerpt matchup.",
+          "samples": [],
+          "facts": {
+            "team": "Synthetic Celtics",
+            "opponent": "Synthetic Rockets",
+            "season": "2026-27"
+          }
+        },
+        {
+          "evidence_id": "role",
+          "kind": "ROLE_MINUTES",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence role.",
+          "excerpt": "Synthetic fixture excerpt role.",
+          "samples": [],
+          "facts": {
+            "role": "synthetic-starter",
+            "minutes_security": "stable"
+          }
+        },
+        {
+          "evidence_id": "game-total",
+          "kind": "GAME_TOTAL",
+          "effect": "NEUTRAL",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence game-total.",
+          "excerpt": "Synthetic fixture excerpt game-total.",
+          "samples": [],
+          "facts": {
+            "total": 232.5
+          }
+        },
+        {
+          "evidence_id": "spread",
+          "kind": "POINT_SPREAD",
+          "effect": "NEUTRAL",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence spread.",
+          "excerpt": "Synthetic fixture excerpt spread.",
+          "samples": [],
+          "facts": {
+            "spread": -2.5
+          }
+        },
+        {
+          "evidence_id": "blowout-risk",
+          "kind": "BLOWOUT_RISK",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "In the synthetic slate, the No. 1 seed plays the No. 20 seed. A lopsided game could end Tatum’s minutes early and reduce his chances to reach 41.5 PRA.",
+          "excerpt": "The simulated No. 1 vs. No. 20 matchup carries an early-rest scenario.",
+          "samples": [],
+          "facts": {}
+        },
+        {
+          "evidence_id": "availability",
+          "kind": "AVAILABILITY",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture lists the player as available.",
+          "excerpt": "Jayson Tatum available in this simulated observation."
+        },
+        {
+          "evidence_id": "close-game",
+          "kind": "OTHER",
+          "effect": "CONCERN",
+          "significance": "MEANINGFUL",
+          "claim": "The synthetic seed gap gives no direct evidence of when the coach would rest Tatum.",
+          "excerpt": "The synthetic seed gap gives no direct evidence of when the coach would rest Tatum."
+        }
+      ],
+      "judgment": {
+        "disposition": "QUALIFY",
+        "confidence": "MEDIUM",
+        "rationale": "In the synthetic slate, the No. 1 seed plays the No. 20 seed. A lopsided game could end Tatum’s minutes early and reduce his chances to reach 41.5 PRA.",
+        "supporting_evidence_ids": [
+          "blowout-risk"
+        ],
+        "meaningful_risk_ids": [
+          "close-game"
+        ],
+        "sufficient_evidence": true,
+        "major_unresolved_concern": false,
+        "senior_lower_support_ids": [
+          "blowout-risk"
+        ],
+        "senior_lower_disclosure": "If the game stays close, Tatum could play his full rotation and clear the PRA line."
       }
     }
   }

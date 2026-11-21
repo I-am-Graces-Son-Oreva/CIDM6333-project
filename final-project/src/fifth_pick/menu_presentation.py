@@ -228,6 +228,57 @@ def table(headings: Sequence[str], values: Iterable[Sequence[object]]) -> None:
             fields(f"Record #{index}", zip(headings, row, strict=True))
 
 
+PLATFORM_CODES = {"prizepicks": "PP", "underdog": "UD"}
+MARKET_CODES = {
+    "POINTS": ("PTS", "Points"),
+    "REBOUNDS": ("REB", "Rebounds"),
+    "ASSISTS": ("AST", "Assists"),
+    "PRA": ("PRA", "Points + Rebounds + Assists"),
+    "REBOUNDS_ASSISTS": ("RA", "Rebounds + Assists"),
+}
+
+
+def slate_table(items: Sequence[dict[str, Any]], *, numbers: Sequence[int] = ()) -> None:
+    """Show the proposal in the order used by Joseph's numbered decision."""
+    if not items:
+        note("No selections in this proposal.")
+        return
+    separator = " | " if ascii_borders() else " · "
+    legend = {}
+    rows = []
+    for index, item in enumerate(items, 1):
+        number = numbers[index - 1] if numbers else index
+        platform = PLATFORM_CODES.get(item["platform"])
+        if platform:
+            legend[platform] = platform_name(item["platform"])
+        market = MARKET_CODES.get(item["category"])
+        if market:
+            legend[market[0]] = market[1]
+        recorded_t20 = item.get("t20_status") or "Pending"
+        t20 = {"STILL STRONG": "Strong", "REMOVE RECOMMENDED": "Remove"}.get(
+            recorded_t20, label(recorded_t20).capitalize()
+        )
+        if t20 != recorded_t20.capitalize():
+            legend[t20] = f"{recorded_t20.title()} at T-20"
+        rows.append(
+            (
+                number,
+                item["player"],
+                platform or platform_name(item["platform"]),
+                market[0] if market else label(item["category"]),
+                item["direction"].title(),
+                item["projection"],
+                (item.get("confidence") or "Pending").title(),
+                t20,
+            )
+        )
+
+    table(("#", "Player", "Plat", "Market", "Pick", "Line", "Confidence", "T-20"), rows)
+    if legend:
+        print()
+        note(separator.join(f"{code} = {meaning}" for code, meaning in legend.items()))
+
+
 def status_name(value: str) -> str:
     return {
         "AWAITING_JOSEPH": "Awaiting Joseph's Decision",
@@ -336,7 +387,9 @@ def decision(final: dict[str, Any], audit: dict[str, Any]) -> None:
     ]
     if approval["reason"]:
         overview.append(("Reason", compact(approval["reason"])))
-    fields("Official decision", overview)
+    note("OFFICIAL DECISION")
+    for field, value in overview:
+        note(f"{field}: {value}")
 
     original = next(
         (
@@ -352,19 +405,19 @@ def decision(final: dict[str, Any], audit: dict[str, Any]) -> None:
         return
     if action == "APPROVE":
         print("\nApproved selections")
-        picks(approval["official_final"])
+        slate_table(approval["official_final"])
     elif action == "REJECT":
         print("\nRejected selections")
-        picks(original)
+        slate_table(original)
     else:
         selected = set(approval["decision_selection"])
         removed = [
             (i, item) for i, item in enumerate(original, 1) if item["candidate_key"] not in selected
         ]
         print("\nRetained in the revised proposal")
-        picks(final["proposed"])
+        slate_table(final["proposed"])
         print("\nRemoved from the proposal (original selection numbers)")
-        picks([item for _, item in removed], numbers=[i for i, _ in removed])
+        slate_table([item for _, item in removed], numbers=[i for i, _ in removed])
         print("Joseph must decide on the revised proposal before any settlement.")
     if not (approval["official_final"] or final["proposed"]) or action == "REJECT":
         print("No approved selections." if action != "MODIFY" else "The revised proposal is empty.")
