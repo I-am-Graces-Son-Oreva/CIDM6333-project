@@ -51,10 +51,13 @@ sh final-project/scripts/course-demo.sh
 
 The script runs the standalone CLI against the bundled synthetic inputs.
 Fixture A shows that snapshot 4 is invalid, ambiguous identity and a
-missing grant block lines, and the three timestamped snapshots narrow a 12-player, four-game slate to three proposals.
+missing grant block lines, and the three timestamped snapshots narrow a 12-player, four-game slate to four proposals.
 Luka Doncic’s PrizePicks assists, Jayson Tatum’s Underdog PRA, and Joel Embiid’s
-PrizePicks points await Joseph. Kevin Durant’s line disappears at T-20 and the fourth
-slot stays open. Fixture B removes all provider lines from a temporary copy of
+PrizePicks points and Anthony Davis’s PrizePicks PRA Lower await Joseph. See the
+synthetic head-to-head scoring for Embiid. Davis’s Lower is based on fewer minutes if
+the game gets out of hand or he picks up early fouls. A close game and full rotation
+could let him clear the line.
+Kevin Durant’s unqualified line disappears at T-20. Fixture B removes all provider lines from a temporary copy of
 the third input. The T-20 check then produces `NO ENTRY RECOMMENDED TODAY.`
 The command prints both run IDs and audit commands. A separate CLI process
 reconstructs the bounded review checkpoint from the first run ID. Each run is retained

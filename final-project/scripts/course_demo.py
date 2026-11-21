@@ -55,12 +55,13 @@ def main() -> None:
     print(f"Excluded rows: {', '.join(sorted(rejections))}")
     picks = final["proposed"]
     if (
-        {pick["player"] for pick in picks} != {"Luka Doncic", "Jayson Tatum", "Joel Embiid"}
-        or len(picks) != 3
+        {pick["player"] for pick in picks}
+        != {"Luka Doncic", "Jayson Tatum", "Joel Embiid", "Anthony Davis"}
+        or len(picks) != 4
         or final["slate"]["maximum_selections"] != 4
         or final["state"] != "AWAITING_JOSEPH"
     ):
-        raise SystemExit("Expected three proposals awaiting Joseph under the four-slot ceiling.")
+        raise SystemExit("Expected four proposals awaiting Joseph under the four-slot ceiling.")
     for pick in picks:
         if pick["t20_status"] != "STILL STRONG":
             raise SystemExit("Unexpected T-20 conclusion.")
@@ -70,7 +71,8 @@ def main() -> None:
             f"{pick['player']} | {pick['platform']} | {pick['category']} {pick['direction']} "
             f"| {pick['projection_movement']} | {pick['confidence']} | {pick['t20_status']}"
         )
-    print(f"{final['state']}: 3 of 4 selections proposed. One slot left open.")
+        print(f"  {pick['t20_rationale']}")
+    print(f"{final['state']}: 4 of 4 selections proposed.")
     review = cli(demo_id, "review-status")
     print(f"Native review state: {review['state']} (offline replay below uses a test verdict)")
     recovered = cli(demo_id, "review-handoff")

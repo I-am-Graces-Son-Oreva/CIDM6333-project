@@ -143,7 +143,7 @@ answer and press Enter, or press Esc to cancel. Confirmation screens start on
 3. Choose **Run T-20 Review**, then **View Final Recommendations**. Confirm
    creation of the proposal the first time you open final recommendations.
 4. Try **Record Results** before approval to see settlement blocked.
-5. Open **Approve / Reject / Modify**. The 12-player, four-game fixture proposes three selections and leaves one slot open.
+5. Open **Approve / Reject / Modify**. The 12-player, four-game fixture proposes four selections, including a PRA Lower supported by synthetic blowout and foul-trouble evidence that could reduce playing time.
    The operator reviews the displayed lines and enters an explicit demo decision.
 6. Inspect **View Audit and Receipts**. The screen shows the receipt trail and
    gives the command for the full evidence.

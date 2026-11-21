@@ -255,7 +255,7 @@ class MenuWorkflowTests(unittest.TestCase):
             "ASSISTS HIGHER 9.5",
             "Settlement blocked",
             "Cancelled before submitting the action",
-            "Results: 1/3",
+            "Results: 1/4",
             "verified audit and receipts",
             "Board records",
             "Snapshot history",
@@ -347,7 +347,7 @@ class MenuWorkflowTests(unittest.TestCase):
         self.assertIn("Luka Doncic", output)
         self.assertNotIn("Jayson Tatum", output)
 
-    def test_default_classroom_slate_screens_twelve_players_and_leaves_one_slot_open(self) -> None:
+    def test_default_classroom_slate_screens_twelve_players_and_proposes_four(self) -> None:
         from fifth_pick.fixture_workflow import candidates_view, final_view
 
         self.prepare_proposal("demo-test")
@@ -373,10 +373,18 @@ class MenuWorkflowTests(unittest.TestCase):
         self.assertEqual(slate["maximum_selections"], 4)
         self.assertEqual(
             {row["player"] for row in picks},
-            {"Luka Doncic", "Jayson Tatum", "Joel Embiid"},
+            {"Luka Doncic", "Jayson Tatum", "Joel Embiid", "Anthony Davis"},
         )
         for row in picks:
             self.assertEqual(row["t20_status"], "STILL STRONG")
+        davis = next(row for row in picks if row["player"] == "Anthony Davis")
+        self.assertEqual((davis["category"], davis["direction"]), ("PRA", "LOWER"))
+        self.assertIn("foul trouble", davis["t20_rationale"].lower())
+        self.assertIn("blowout could reduce his minutes", davis["t20_rationale"].lower())
+        self.assertTrue(any("stays close" in risk for risk in davis["material_risks"]))
+        embiid = next(row for row in picks if row["player"] == "Joel Embiid")
+        self.assertEqual((embiid["category"], embiid["direction"]), ("POINTS", "HIGHER"))
+        self.assertIn("head-to-head", embiid["t20_rationale"].lower())
 
     def test_compares_provisional_candidates_in_one_table(self) -> None:
         from contextlib import redirect_stdout

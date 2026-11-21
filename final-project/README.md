@@ -33,7 +33,7 @@ sh final-project/scripts/course-demo.sh
 ```
 
 The script replays checked-in synthetic provider responses. It prints rejected
-inputs, three simulated timestamps, three picks awaiting Joseph and one open slot, an empty proposal
+inputs, three simulated timestamps, four picks awaiting Joseph, an empty proposal
 with a missing third observation, and audit commands for both runs. The
 regression replay exercises review receipt binding, explicit approval before
 simulated settlement, both selection ceilings, and no refill. The menu defaults

@@ -496,19 +496,13 @@
           "kind": "SAME_SEASON_H2H",
           "effect": "SUPPORTS",
           "significance": "IMPORTANT",
-          "claim": "Synthetic fixture evidence h2h.",
-          "excerpt": "Synthetic fixture excerpt h2h.",
+          "claim": "Synthetic same-season head-to-head games against Dallas produced 32 and 35 points, supporting a potential high-scoring matchup.",
+          "excerpt": "Fixture box scores against Synthetic Mavericks: 32 and 35 points.",
           "samples": [
             {
-              "played_at": "2026-10-10T00:00:00+00:00",
-              "value": 34,
+              "played_at": "2026-10-27T00:00:00+00:00",
+              "value": 32,
               "opponent": "Synthetic Mavericks",
-              "season": "2025-26"
-            },
-            {
-              "played_at": "2026-11-01T00:00:00+00:00",
-              "value": 34,
-              "opponent": "Other Team",
               "season": "2026-27"
             },
             {
@@ -579,10 +573,10 @@
       "judgment": {
         "disposition": "QUALIFY",
         "confidence": "HIGH",
-        "rationale": "Synthetic fixture judgment with cited supporting signals.",
+        "rationale": "Synthetic same-season head-to-head scoring of 32 and 35 points supports Points Higher against this opponent.",
         "supporting_evidence_ids": [
           "last8",
-          "role"
+          "h2h"
         ],
         "meaningful_risk_ids": [
           "blowout-risk"
@@ -591,6 +585,200 @@
         "major_unresolved_concern": false,
         "senior_lower_support_ids": [],
         "senior_lower_disclosure": ""
+      }
+    },
+    "38e7bd853ba42362d8560e4eab427026487d12593deff8bada094ef7901ef8aa": {
+      "items": [
+        {
+          "evidence_id": "matchup",
+          "kind": "MATCHUP",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence matchup.",
+          "excerpt": "Synthetic fixture excerpt matchup.",
+          "samples": [],
+          "facts": {
+            "team": "Synthetic Mavericks",
+            "opponent": "Synthetic 76ers",
+            "season": "2026-27"
+          }
+        },
+        {
+          "evidence_id": "last8",
+          "kind": "LAST_8",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence last8.",
+          "excerpt": "Synthetic fixture excerpt last8.",
+          "samples": [
+            {
+              "played_at": "2026-11-07T00:00:00+00:00",
+              "value": 28,
+              "opponent": "Opponent 1",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-08T00:00:00+00:00",
+              "value": 29,
+              "opponent": "Opponent 2",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-09T00:00:00+00:00",
+              "value": 30,
+              "opponent": "Opponent 3",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-10T00:00:00+00:00",
+              "value": 31,
+              "opponent": "Opponent 4",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-11T00:00:00+00:00",
+              "value": 32,
+              "opponent": "Opponent 5",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-12T00:00:00+00:00",
+              "value": 33,
+              "opponent": "Opponent 6",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-13T00:00:00+00:00",
+              "value": 28,
+              "opponent": "Opponent 7",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-14T00:00:00+00:00",
+              "value": 29,
+              "opponent": "Opponent 8",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-15T00:00:00+00:00",
+              "value": 30,
+              "opponent": "Opponent 9",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "h2h",
+          "kind": "SAME_SEASON_H2H",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence h2h.",
+          "excerpt": "Synthetic fixture excerpt h2h.",
+          "samples": [
+            {
+              "played_at": "2026-10-10T00:00:00+00:00",
+              "value": 28,
+              "opponent": "Synthetic 76ers",
+              "season": "2025-26"
+            },
+            {
+              "played_at": "2026-11-01T00:00:00+00:00",
+              "value": 29,
+              "opponent": "Other Team",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-03T00:00:00+00:00",
+              "value": 30,
+              "opponent": "Synthetic 76ers",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "role",
+          "kind": "ROLE_MINUTES",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "In the simulated matchup, early fouls can shorten Davis’s stints and reduce his minutes.",
+          "excerpt": "The synthetic rotation notes show shorter stints when Davis picks up early fouls.",
+          "samples": [],
+          "facts": {
+            "role": "synthetic-starter",
+            "minutes_security": "at risk with early fouls"
+          }
+        },
+        {
+          "evidence_id": "game-total",
+          "kind": "GAME_TOTAL",
+          "effect": "NEUTRAL",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence game-total.",
+          "excerpt": "Synthetic fixture excerpt game-total.",
+          "samples": [],
+          "facts": {
+            "total": 232.5
+          }
+        },
+        {
+          "evidence_id": "spread",
+          "kind": "POINT_SPREAD",
+          "effect": "NEUTRAL",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence spread.",
+          "excerpt": "Synthetic fixture excerpt spread.",
+          "samples": [],
+          "facts": {
+            "spread": -2.5
+          }
+        },
+        {
+          "evidence_id": "blowout-risk",
+          "kind": "BLOWOUT_RISK",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "A simulated blowout could reduce Davis’s minutes if his team sits him late, leaving fewer opportunities to score, rebound, or assist.",
+          "excerpt": "The scenario projects a lopsided game and a possible early exit for Davis.",
+          "samples": [],
+          "facts": {}
+        },
+        {
+          "evidence_id": "availability",
+          "kind": "AVAILABILITY",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture lists the player as available.",
+          "excerpt": "Anthony Davis available in this simulated observation."
+        },
+        {
+          "evidence_id": "foul-trouble",
+          "kind": "FOUL_TROUBLE",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic foul trouble is the main reason for the PRA Lower. Early fouls can limit minutes and opportunities.",
+          "excerpt": "The simulated game notes record early foul trouble and shorter stints."
+        }
+      ],
+      "judgment": {
+        "disposition": "QUALIFY",
+        "confidence": "HIGH",
+        "rationale": "A simulated blowout could reduce his minutes and leave fewer chances to score, rebound, or assist. Early foul trouble could shorten his rotation further. Those minutes risks support PRA Lower.",
+        "supporting_evidence_ids": [
+          "blowout-risk",
+          "foul-trouble",
+          "role",
+          "last8"
+        ],
+        "meaningful_risk_ids": [],
+        "sufficient_evidence": true,
+        "major_unresolved_concern": false,
+        "senior_lower_support_ids": [
+          "blowout-risk",
+          "role"
+        ],
+        "senior_lower_disclosure": "If the game stays close and Davis avoids early fouls, a full rotation could let him clear the PRA line."
       }
     }
   }
