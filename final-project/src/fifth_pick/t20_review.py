@@ -259,29 +259,34 @@ def _is_current_t20_evidence(
     return target_at <= retrieved_at <= reviewed_at
 
 
-def _t20_evidence_gaps(
-    audit: CandidateAudit,
+def t20_source_gaps(
+    evidence: tuple[EvidenceItem, ...],
     *,
     target_at: datetime,
     reviewed_at: datetime,
 ) -> tuple[str, ...]:
-    evidence = audit.evidence
+    """Report missing required source categories at the actual review time."""
     gaps: list[str] = []
-    for label, kinds in (
-        ("AVAILABILITY", _T20_AVAILABILITY_KINDS),
-        ("ROLE_MINUTES or TEAMMATE_ABSENCE", _T20_ROLE_KINDS),
-        ("game context", _T20_GAME_KINDS),
+    matching = tuple(item for item in evidence if item.kind in _T20_GAME_KINDS)
+    if not any(
+        _is_current_t20_evidence(item, target_at=target_at, reviewed_at=reviewed_at)
+        for item in matching
     ):
-        matching = tuple(item for item in evidence if item.kind in kinds)
-        if not any(
-            _is_current_t20_evidence(item, target_at=target_at, reviewed_at=reviewed_at)
-            for item in matching
-        ):
-            state = "missing" if not matching else "stale or outside the T-20 review"
-            gaps.append(f"Required {label} evidence is {state}.")
+        state = "missing" if not matching else "stale or outside the T-20 review"
+        gaps.append(f"Required game context evidence is {state}.")
 
-    cited_ids = set(audit.supporting_evidence_ids) | set(audit.meaningful_risk_ids)
-    cited_ids.update(audit.senior_lower_support_ids)
+    return tuple(gaps)
+
+
+def t20_cited_source_gaps(
+    evidence: tuple[EvidenceItem, ...],
+    cited_ids: set[str],
+    *,
+    target_at: datetime,
+    reviewed_at: datetime,
+) -> tuple[str, ...]:
+    """Check the window for moving facts cited by the Controller."""
+    gaps = []
     for item in evidence:
         if (
             item.evidence_id in cited_ids
@@ -296,7 +301,22 @@ def _t20_evidence_gaps(
                 f"Cited {item.kind.value} evidence {item.evidence_id!r} is stale or outside "
                 "the T-20 review."
             )
-    return tuple(dict.fromkeys(gaps))
+    return tuple(gaps)
+
+
+def _t20_evidence_gaps(
+    audit: CandidateAudit,
+    *,
+    target_at: datetime,
+    reviewed_at: datetime,
+) -> tuple[str, ...]:
+    gaps = t20_source_gaps(audit.evidence, target_at=target_at, reviewed_at=reviewed_at)
+    cited_ids = set(audit.supporting_evidence_ids)
+    cited_ids.update(audit.meaningful_risk_ids, audit.senior_lower_support_ids)
+    cited_gaps = t20_cited_source_gaps(
+        audit.evidence, cited_ids, target_at=target_at, reviewed_at=reviewed_at
+    )
+    return tuple(dict.fromkeys((*gaps, *cited_gaps)))
 
 
 def _t20_review_readiness(

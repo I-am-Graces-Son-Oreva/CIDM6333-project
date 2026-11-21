@@ -282,3 +282,216 @@ coverage saves a sanitized report under `var/fifth-pick/preflight-coverage/`.
 It does not replace a complete collection manifest. An off-date provider
 matchup is shown separately and cannot satisfy the official slate. Paid
 collection and LIVE finalization still require the verified full slate.
+
+### November 21, 2026 one-event pilot
+
+On the Chicago slate date, compare the complete official slate with the
+provider's event IDs, matchups, and tipoffs. The commands below assume six
+games only after that count is verified. Have Joseph review the exact event,
+canonical player grants, and independent alias evidence before preparing the
+scope file. Keep the credential in the invoking process environment.
+
+After separate authorization for quota-free discovery:
+
+```sh
+.venv/bin/fifth-pick board-preflight --date 2026-11-21 --expected-games 6
+.venv/bin/fifth-pick board-status --date 2026-11-21
+```
+
+Enter `PREFLIGHT` at the prompt. Stop on unmatched or incomplete slate
+coverage. Use one verified event, a fresh run ID, and the same files throughout.
+After Joseph authorizes the one-event series and up to 15 board credits:
+
+```sh
+RUN=nba-2026-11-21-board-pilot
+SCOPE=/path/to/reviewed-event-scope.json
+PREFLIGHT=var/fifth-pick/preflight/2026-11-21.json
+
+# Chicago slate date, before T−80, with time for a distinct Snapshot 2.
+.venv/bin/fifth-pick board-collect --run-id "$RUN" --scope "$SCOPE" --preflight "$PREFLIGHT" --series --snapshot 1
+.venv/bin/fifth-pick schedule --run-id "$RUN"
+
+# Only at the due time shown by schedule, through T−80.
+.venv/bin/fifth-pick board-collect --run-id "$RUN" --scope "$SCOPE" --preflight "$PREFLIGHT" --series --snapshot 2
+.venv/bin/fifth-pick analyze --run-id "$RUN" --snapshot 2
+
+# T−25 through T−20, allowing time for the response before the cutoff.
+.venv/bin/fifth-pick board-collect --run-id "$RUN" --scope "$SCOPE" --preflight "$PREFLIGHT" --series --snapshot 3
+.venv/bin/fifth-pick audit --run-id "$RUN"
+```
+
+Joseph types the displayed `APPROVE <event-id> SNAPSHOTS 1-3 15` at each
+slot. Skip a missed window. The CLI uses actual application and provider
+times. Keep the complete slate for the five-selection ceiling when the slate
+has six games.
+
+Optional totals and spreads use a separate grant. Only after explicit approval
+for one bookmaker and up to four additional credits, record the two-phase
+grant after Snapshot 1. Substitute the verified event ID and bookmaker key.
+
+```sh
+.venv/bin/fifth-pick game-lines-grant --run-id "$RUN" --event-id "$EVENT_ID" --bookmaker "$BOOKMAKER" --phase analysis --phase t20 --max-credits 4
+# After a timely Snapshot 2 and before T−20.
+.venv/bin/fifth-pick game-lines-collect --run-id "$RUN" --phase analysis
+# After a timely Snapshot 3, from T−20 through T−15.
+.venv/bin/fifth-pick game-lines-collect --run-id "$RUN" --phase t20
+```
+
+Joseph types `AUTHORIZE GAME LINES` to record the grant and
+`COLLECT GAME LINES` to authorize each collection. Each collection calls the
+quota-free discovery endpoint once, checks the exact scheduled event, then
+allows one two-credit request with no retry. The CLI requires the game lines
+to be no more than ten minutes old. The combined board and optional
+game-lines ceiling is 19 credits. These commands grant no spending authority.
+
+Use `t20 --run-id "$RUN"` during T−20 through T−15 when phase-specific sources
+and Controller assessments have been recorded. Its candidate `blockers` and
+`history_note` fields identify missing inputs. For a board-only experiment,
+end with `audit`. Game context and any cited moving facts must be current
+for LIVE review. The [November 21 methodology revision](methodology-revision-2026-11-21.md)
+makes player availability, injury, teammate absence, and role/minutes optional. History needs approved production access
+and corroborated timing, coverage, and corrections. Follow the independent
+review workflow and Joseph's pre-tipoff decision only if the CLI releases a
+receipt-bound proposal.
+
+### Controller assessment at Snapshot 2 and Snapshot 3
+
+The human Controller previews the exact candidate and stage in the
+application-owned LIVE ledger. Use Snapshot 2 after its timely capture and
+before T−20. Use Snapshot 3 after its timely capture, from T−20 through
+T−15. The command reopens receipts as of the application clock. It displays
+the evidence and a scope digest only after stage validation succeeds.
+
+```sh
+.venv/bin/fifth-pick controller-assess --run-id "$RUN" --event-id "$EVENT_ID" --candidate-key "$KEY" --snapshot 2
+```
+
+Prepare a local judgment file with the preview's `run_id` and
+`scope_sha256`, and the Controller's own `judgment` object. The existing
+judgment fields are `disposition`, `confidence`, `rationale`,
+`supporting_evidence_ids`, `meaningful_risk_ids`, and
+`sufficient_evidence`. Optional fields are `major_unresolved_concern`,
+`senior_lower_support_ids`, and `senior_lower_disclosure`. Use exact evidence
+IDs from the preview. Evidence labels and authority come from the existing
+validation rules. Keep credentials out of the judgment file.
+
+```sh
+.venv/bin/fifth-pick controller-assess --run-id "$RUN" --event-id "$EVENT_ID" --candidate-key "$KEY" --snapshot 2 --judgment-file "$ASSESSMENT_FILE"
+# Repeat preview and submission for --snapshot 3 with its own judgment file.
+```
+
+The Controller types the displayed
+`RECORD CONTROLLER ASSESSMENT <scope_sha256>` in an interactive terminal.
+The command checks the scope again under the run lock. Re-preview changed
+evidence. A missing or stale evidence record is grounds to stop. The CLI
+records an assessment input. Continue with the existing `t20` command,
+independent review of any released proposal, and Joseph's final decision.
+
+The offline context validator accepts separately preserved source bytes,
+attributed facts, and a capture receipt. Current registry entries do not
+authorize a new delivery method. Before integrating a real source, obtain
+explicit approval for its exact source ID, access method, and data kinds.
+Independently verify the publisher and event roster, retain exact source
+excerpts and hashes, and set an approved freshness limit. The validator
+supplies no LIVE evidence on its own.
+
+See the [November 21 methodology revision](methodology-revision-2026-11-21.md)
+for the read-only `history-compare` command and the executable synthetic rehearsal.
+
+### Tatum points pilot after separate approvals
+
+Verify the complete official slate and the event roster. The collector applies
+the existing grants across all 156 players, independent of Senior tier. The
+confirmation preview lists any scoped players who lack bound board labels.
+Resolve them through the identity crosswalk. The CLI authorizes one event
+series per run.
+
+Confirm written DunkAPI raw-retention permission, a fresh free-only balance,
+and exclusive account use before approving capture. Supply an independently
+corroborated Tatum provider ID and team label. If the ID cannot be found
+offline, omit `--expected-provider-id` and add `--identity-only` to a separately
+approved one-credit discovery. Corroborate the resulting
+`discovered_unverified` ID before a history run. Supply the credential
+privately in the process environment.
+
+```sh
+.venv/bin/python -B final-project/scripts/dunkapi_evaluation.py \
+  --player-id jayson-tatum --team-label "$VERIFIED_TEAM_LABEL" \
+  --identity-reference "$INDEPENDENT_IDENTITY_REFERENCE" \
+  --expected-provider-id "$TATUM_PROVIDER_ID" --market POINTS --direction HIGHER \
+  --season-end-year 2027 --authorize-live-free-only "$CONFIRMED_FREE_BALANCE" \
+  --archive-dir "$NEW_PRIVATE_DIRECTORY_OUTSIDE_REPO" \
+  --retention-approval-reference "$RETENTION_APPROVAL_ID"
+```
+
+Expect `matched_operator_pin`, terminal history with at least eight played
+games, and exactly six verified credits if both requests succeed. Stop on an
+unexpected response or next page. The opt-in capture retains exact bytes and
+receipt metadata. Bind the history used to independent actual start and
+completion, exact game and teams, separate coverage, and dated correction
+evidence. Seal and pin each Stage 3 package before the board snapshot retrieval
+time used for comparison.
+
+After separate zero-credit discovery approval and event-series approval, use
+the board collection commands and schedule above. With an eligible Tatum
+Points line, attach the package to the first timely snapshot.
+
+```sh
+.venv/bin/fifth-pick analyze --run-id "$RUN" --snapshot 1 \
+  --history-candidate-key "$KEY" --history-archive "$PACKAGE_DIR" "$PINNED_SHA256"
+```
+
+Repeat `--history-archive DIRECTORY SHA256` for additional packages. Expect
+`historical_comparison.status=ANALYSIS_ONLY`. The outer LIVE view can still
+return `BLOCKED` with exit code 1. Continue through the three genuine
+snapshots, current game context, Controller assessments, independent review,
+and Joseph's pre-tipoff decision only when each existing LIVE gate passes.
+
+### November 21 Boston–Sacramento Snapshot 1 with label quarantine
+
+Use the saved provider preflight and the separately corroborated timing record.
+The grant preserves the provider's 9:10 p.m. Central timestamp, records the
+official 9:00 p.m. Central tipoff, and expires at 7:40 p.m. Central. Complete
+both capture and identity review before that cutoff.
+
+```sh
+.venv/bin/fifth-pick board-collect \
+  --run-id nba-2026-11-21-bos-sac-s1 --snapshot 1 --quarantine-labels \
+  --preflight var/fifth-pick/preflight/2026-11-21.json \
+  --timing-file var/test-evidence/2026-11-21-bos-sac-timing.json \
+  --roster var/test-evidence/2026-11-21-bos-sac-roster.json
+```
+
+Confirm the event and five-credit ceiling, then enter
+`APPROVE b754a1bf84af81d45d4a3a16398daa44 SNAPSHOT 1 5`. The command first
+makes the existing zero-credit schedule and quota check, then at most one
+event-odds request. A paid response can be retained as quarantine even
+when review is cancelled or no player can be verified.
+
+After the command lists the captured labels, supply an independent
+board-identity JSON file. Each record uses `stable_id`, `provider_label`,
+`event_id`, `team`, and `reference` as described above. The file must bind
+the actual provider label to the roster's NBA ID using corroborated
+evidence. A name resemblance alone is insufficient. With a reviewed match,
+type `VERIFY SNAPSHOT 1 IDENTITIES`. Unmatched labels stay in the quarantine
+receipt. If no bindings can be verified in time, press Enter to stop.
+Do not change the run ID to retry a stopped or completed paid attempt.
+
+Use `.venv/bin/fifth-pick audit --run-id nba-2026-11-21-bos-sac-s1` to reopen
+local records. Look for the odds response's quota, label quarantine receipt,
+identity-review receipt, and completed slot. An unfinished reservation or
+quarantine receipt does not establish a completed Snapshot 1.
+
+An interrupted collection may have receipts before the first slate manifest or
+`run.json` is written. The audit command opens these attempts as
+`RECEIPTS_ONLY`. `COLLECTION_STOPPED` means a stop receipt exists.
+`COLLECTION_INCOMPLETE` means the attempt lacks a completed slate record.
+This output is diagnostic and grants no eligibility for analysis or later
+snapshots. An event-odds receipt records the payload digest, quota and
+provenance. It cannot restore the original bytes. For an attempt that ended
+before identity verification, retain the receipts and close out the attempt.
+Do not reuse the payload digest as evidence or retry the paid operation.
+A first collection can also stop after writing some M4 or M5 artifacts.
+Without the matching collection completion receipt, the audit remains
+diagnostic and M5 rows for the reserved slot are excluded from the operational
+ledger. Preserve the files for inspection.

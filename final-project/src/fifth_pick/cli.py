@@ -6,7 +6,7 @@ import json
 import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -49,13 +49,19 @@ USAGE = (
     "  board-status [--date YYYY-MM-DD]\n"
     "  game-lines-grant --run-id RUN_ID --event-id EVENT_ID --bookmaker KEY"
     " --phase {analysis,t20} [--phase {analysis,t20}] --max-credits COUNT\n"
+    "  game-lines-collect --run-id RUN_ID --phase {analysis,t20}\n"
     "  bdl-validate [--auth-only | --identity-only | --stats-only] --confirm\n"
     "  board-collect --run-id RUN_ID --scope FILE [--preflight FILE]"
     " [--series --snapshot {1,2,3}]\n"
     "  menu [--run-id RUN_ID]\n"
     "  analyze --run-id RUN_ID --snapshot {1,2} [--fixture DIRECTORY]\n"
+    "    [--history-candidate-key KEY --history-archive DIRECTORY SHA256]\n"
     "  candidates --run-id RUN_ID\n"
+    "  history-compare --run-id RUN_ID --candidate-key KEY --snapshot {1,2,3}"
+    " --archive DIRECTORY SHA256 [--archive DIRECTORY SHA256 ...]\n"
     "  t20 --run-id RUN_ID [--fixture DIRECTORY]\n"
+    "  controller-assess --run-id RUN_ID --event-id EVENT_ID --candidate-key KEY"
+    " --snapshot {2,3} [--judgment-file FILE]\n"
     "  final --run-id RUN_ID\n"
     "  audit --run-id RUN_ID\n"
     "  schedule --run-id RUN_ID\n"
@@ -122,8 +128,21 @@ def main(
 
         return collect_live_board(arguments[1:], prompt or input)
 
+    if arguments and arguments[0] == "history-compare":
+        from fifth_pick.history_compare_cli import history_compare
+
+        return history_compare(arguments[1:])
+
+    if arguments and arguments[0] == "controller-assess":
+        from fifth_pick.live_judgment_cli import controller_assess
+
+        return controller_assess(arguments[1:], prompt or (input if sys.stdin.isatty() else None))
+
     if arguments and arguments[0] == "game-lines-grant":
         return _game_lines_grant(arguments[1:], prompt or input)
+
+    if arguments and arguments[0] == "game-lines-collect":
+        return _game_lines_collect(arguments[1:], prompt or input)
 
     if arguments and arguments[0] in {"board-preflight", "board-status"}:
         from fifth_pick.live_board_cli import show_board_status
@@ -477,6 +496,116 @@ def _game_lines_grant(arguments: list[str], read: Callable[[str], str]) -> int:
     return 0
 
 
+def _game_lines_collect(arguments: list[str], read: Callable[[str], str]) -> int:
+    from fifth_pick.board_collection import live_slot_has_bound_aliases
+    from fifth_pick.snapshots import T20_OFFSET, SnapshotEvidence, read_receipted_snapshot_ledger
+    from fifth_pick.sources.base import SourceEvent
+    from fifth_pick.sources.game_lines import GameLinesGrant, acquire_game_lines
+    from fifth_pick.sources.odds_api import OddsApiClient
+    from fifth_pick.sources.supporting_fixture import aware_timestamp
+    from fifth_pick.sources.transport import TransportError, UrllibTransport
+    from fifth_pick.t20_review import review_window_allows
+
+    parser = argparse.ArgumentParser(prog="fifth-pick game-lines-collect", allow_abbrev=False)
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--phase", choices=("analysis", "t20"), required=True)
+    try:
+        args = parser.parse_args(arguments)
+    except SystemExit as exc:
+        return 0 if exc.code == 0 else 2
+
+    stage = "saved grant and LIVE slate"
+    try:
+        store = application_run_store()
+        receipts = store.read_receipts(args.run_id)
+        grants = [row for row in receipts if row["event_key"] == "game-lines-live-grant"]
+        if len(grants) != 1:
+            raise ValueError("expected one saved grant")
+        saved = json.loads(grants[0]["reason"] or "")
+        grant = GameLinesGrant(
+            args.run_id,
+            saved["event_id"],
+            saved["bookmaker"],
+            tuple(saved["phases"]),
+            saved["credit_limit"],
+        )
+        granted_at = aware_timestamp(grants[0]["timestamp"])
+        if (
+            grants[0] != grant.receipt(granted_at).to_dict()
+            or granted_at > datetime.now(UTC)
+            or args.phase not in grant.phases
+        ):
+            raise ValueError("saved grant does not authorize this phase")
+        context = read_slate_run_context(store, args.run_id)
+        if not context.event_boards or any(
+            board.evidence_mode is not EvidenceMode.LIVE for board in context.event_boards
+        ):
+            raise ValueError("expected a receipt-bound LIVE slate")
+        events = [row for row in context.event_boards[0].events if row.event_id == grant.event_id]
+        if len(events) != 1:
+            raise ValueError("granted event is not uniquely present")
+        row = events[0]
+        event = SourceEvent(row.event_id, row.home_team, row.away_team, row.commence_time, ())
+        target = event.commence_time - T20_OFFSET
+        slot = 2 if args.phase == "analysis" else 3
+        if not live_slot_has_bound_aliases(args.run_id, slot, event.event_id) or not any(
+            isinstance(snapshot, SnapshotEvidence)
+            and snapshot.event_id == event.event_id
+            and snapshot.snapshot.number == slot
+            and not snapshot.late
+            for snapshot in read_receipted_snapshot_ledger(store, args.run_id)
+        ):
+            print(
+                f"Game-lines collection requires a timely, completed LIVE Snapshot {slot}.",
+                file=sys.stderr,
+            )
+            return 1
+        key = f"game-lines-live-{args.phase}-{event.event_id}"
+        if any(row["event_key"] == key for row in receipts):
+            print("Game-lines phase was already attempted. Inspect the run audit.", file=sys.stderr)
+            return 1
+        print(grant.scope())
+        if (
+            read(
+                f"Joseph only. For {args.phase}, one free quota check and up to 2 credits. "
+                "Type COLLECT GAME LINES: "
+            )
+            != "COLLECT GAME LINES"
+        ):
+            return 1
+        stage = "authorized timing window"
+        now = datetime.now(UTC)
+        if not (now < target if slot == 2 else review_window_allows(target, now, live=True)):
+            raise ValueError("phase is outside its collection window")
+        stage = "quota-free event and balance check"
+        transport = UrllibTransport()
+        current, quota = OddsApiClient(transport=transport).discover_free_events(authorized=True)
+        if event not in current:
+            raise ValueError("provider event no longer matches the LIVE slate")
+        stage = "scoped request, quota reconciliation, and receipt validation"
+        result = acquire_game_lines(
+            store,
+            grant,
+            transport=transport,
+            phase=args.phase,
+            event=event,
+            quota_before=quota,
+            max_age=timedelta(minutes=10),
+            authorized=True,
+        )
+    except TransportError as exc:
+        print(f"Game-lines collection stopped during {stage} ({exc.category}).", file=sys.stderr)
+        return 1
+    except (FifthPickError, OSError, ValueError, TypeError, KeyError, EOFError) as exc:
+        print(
+            f"Game-lines collection stopped during {stage} ({type(exc).__name__}).",
+            file=sys.stderr,
+        )
+        return 1
+    print(json.dumps(asdict(result), default=lambda value: value.isoformat(), sort_keys=True))
+    return 0
+
+
 def _fixture_command(command: str, arguments: list[str]) -> int:
     parser = argparse.ArgumentParser(prog=f"fifth-pick {command}", allow_abbrev=False)
     parser.add_argument("--run-id", required=True)
@@ -484,6 +613,10 @@ def _fixture_command(command: str, arguments: list[str]) -> int:
         parser.add_argument("--fixture", type=Path)
     if command == "analyze":
         parser.add_argument("--snapshot", required=True, type=int, choices=(1, 2))
+        parser.add_argument("--history-candidate-key")
+        parser.add_argument(
+            "--history-archive", nargs=2, action="append", metavar=("DIRECTORY", "SHA256")
+        )
     if command == "review-correct":
         parser.add_argument("--remove", action="append", required=True)
         parser.add_argument("--reason", required=True)
@@ -496,6 +629,26 @@ def _fixture_command(command: str, arguments: list[str]) -> int:
     try:
         if command in {"analyze", "t20"}:
             number = args.snapshot if command == "analyze" else 3
+            historical = None
+            if command == "analyze" and (args.history_candidate_key or args.history_archive):
+                from fifth_pick.history_compare_cli import compare_archives
+
+                if args.fixture is not None or not (
+                    args.history_candidate_key and args.history_archive
+                ):
+                    raise ValueError(
+                        "LIVE history comparison requires a candidate key and archives"
+                    )
+                try:
+                    historical = compare_archives(
+                        args.run_id,
+                        args.history_candidate_key,
+                        number,
+                        args.history_archive,
+                        required_mode=EvidenceMode.LIVE,
+                    )
+                except (TypeError, KeyError, RecursionError) as exc:
+                    raise ValueError("invalid history archive structure") from exc
             if args.fixture is not None:
                 output = collect_fixture_stage(store, args.run_id, number, args.fixture)
             else:
@@ -507,6 +660,8 @@ def _fixture_command(command: str, arguments: list[str]) -> int:
                     else live_analysis_view(store, args.run_id, review=False, snapshot=number)
                 )
                 blocked = output["status"] == "BLOCKED"
+                if historical is not None:
+                    output["historical_comparison"] = historical
         elif command == "final":
             if is_fixture_workflow(store, args.run_id):
                 output, blocked = final_view(store, args.run_id)
@@ -547,9 +702,9 @@ def _fixture_command(command: str, arguments: list[str]) -> int:
                 store, args.run_id, remove=tuple(args.remove), reason=args.reason
             )
         else:
-            from fifth_pick.product_review import product_audit
+            from fifth_pick.product_review import operator_audit
 
-            view = candidates_view if command == "candidates" else product_audit
+            view = candidates_view if command == "candidates" else operator_audit
             output = view(store, args.run_id)
     except (FifthPickError, OSError, ValueError) as exc:
         print(f"{command} stopped: {exc}", file=sys.stderr)

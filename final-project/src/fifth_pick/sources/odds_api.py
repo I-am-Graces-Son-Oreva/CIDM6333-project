@@ -204,6 +204,7 @@ class OddsApiClient:
         observe_response: Callable[[str, datetime, datetime, HttpResponse], None] | None = None,
         observe_request: Callable[[str, datetime], None] | None = None,
         projection_allowed: ProjectionFilter | None = None,
+        review_player_labels: Callable[[tuple[str, ...]], ProjectionFilter] | None = None,
     ) -> SourceBoard:
         """Retrieve the board, or fail closed before spending credits."""
 
@@ -283,6 +284,25 @@ class OddsApiClient:
             latest = parse_quota_headers(response.headers)
             if latest.has_any:
                 quota = latest
+            if review_player_labels is not None:
+                if event_id is None or len(headers) != 1:
+                    raise SourceError("label quarantine requires one selected event")
+                labels: set[str] = set()
+
+                def quarantine(
+                    _event: str,
+                    label: str,
+                    _category: Category,
+                    _direction: Direction,
+                    captured: set[str] = labels,
+                ) -> bool:
+                    captured.add(label)
+                    return False
+
+                self._parse_odds(
+                    response, header.event_id, event_header=header, projection_allowed=quarantine
+                )
+                projection_allowed = review_player_labels(tuple(sorted(labels)))
             outcomes = self._parse_odds(
                 response,
                 header.event_id,

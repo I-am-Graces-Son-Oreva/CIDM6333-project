@@ -1,6 +1,7 @@
 """Bind explicit Controller-supplied assessments to the exact LIVE source state."""
 
 import json
+from collections.abc import Callable
 from dataclasses import asdict
 from datetime import datetime, timedelta
 
@@ -12,6 +13,25 @@ from fifth_pick.snapshots import SnapshotEvidence
 from fifth_pick.sources.base import EvidenceMode
 from fifth_pick.sources.supporting_fixture import aware_timestamp, payload_hash
 from fifth_pick.storage import RunStore, collection_lock
+
+
+def parse_live_judgment(value: object) -> MethodologyJudgment:
+    """Decode the existing judgment schema for Controller submission and receipt replay."""
+    try:
+        if not isinstance(value, dict):
+            raise ValueError
+        fields = dict(value)
+        fields["disposition"] = MethodologyDisposition(fields["disposition"])
+        fields["confidence"] = Confidence(fields["confidence"])
+        fields.setdefault("senior_lower_support_ids", [])
+        for attr in ("supporting_evidence_ids", "meaningful_risk_ids", "senior_lower_support_ids"):
+            values = fields[attr]
+            if not isinstance(values, list):
+                raise ValueError
+            fields[attr] = tuple(values)
+        return MethodologyJudgment(**fields)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValidationError("invalid Controller methodology assessment") from exc
 
 
 def live_judgment_time(store: RunStore, run_id: str, snapshot: SnapshotEvidence) -> datetime | None:
@@ -66,6 +86,7 @@ def record_live_judgment(
     *,
     observed_at: datetime,
     controller_confirmed: bool = False,
+    check_current: Callable[[], None] | None = None,
 ) -> None:
     """Record an explicit assessment input. M6 alone decides qualification."""
     if controller_confirmed is not True:
@@ -85,6 +106,8 @@ def record_live_judgment(
         key,
     )
     with collection_lock(store, run_id):
+        if check_current is not None:
+            check_current()
         store.append_receipt(receipt)
 
 
@@ -125,15 +148,7 @@ def read_live_judgment(
             or reason["scope_sha256"] != scope[1]
         ):
             raise ValueError
-        fields = dict(reason["judgment"])
-        fields["disposition"] = MethodologyDisposition(fields["disposition"])
-        fields["confidence"] = Confidence(fields["confidence"])
-        for attr in ("supporting_evidence_ids", "meaningful_risk_ids", "senior_lower_support_ids"):
-            values = fields[attr]
-            if not isinstance(values, list):
-                raise ValueError
-            fields[attr] = tuple(values)
-        return MethodologyJudgment(**fields)
+        return parse_live_judgment(reason["judgment"])
     except (KeyError, TypeError, ValueError) as exc:
         raise ValidationError(
             "LIVE methodology assessment does not match the source state"

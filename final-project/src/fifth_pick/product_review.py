@@ -25,6 +25,7 @@ from fifth_pick.review_bridge import _artifact_digest, _load_history, _run_lock
 from fifth_pick.slate_manifest import read_slate_run_context
 from fifth_pick.snapshots import read_application_snapshot_ledger
 from fifth_pick.sources.base import EvidenceMode
+from fifth_pick.sources.odds_api import SOURCE_ID
 from fifth_pick.storage import RunStore, _atomic_write, application_run_store
 
 _CORRECTION = "product-review-correction"
@@ -66,6 +67,38 @@ def _correction_binding(store: RunStore, run_id: str) -> dict[str, object] | Non
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         raise ReviewError("product correction binding is incomplete or invalid") from exc
     return value
+
+
+def operator_audit(store: RunStore, run_id: str) -> dict[str, object]:
+    """Open receipt-only attempts for inspection without admitting them as product evidence."""
+    if store.root != application_run_store().root:
+        return product_audit(store, run_id)
+    receipts = store.read_receipts(run_id)
+    source_receipts = [row for row in receipts if row["source"] == SOURCE_ID]
+    if not any(
+        row["event"] == "DFS_BOARD_RESERVED"
+        and row["result"] == "RESERVED"
+        and row["run_id"] == run_id
+        for row in source_receipts
+    ) or any(row["event"] == "DFS_BOARD_COLLECTED" for row in source_receipts):
+        return product_audit(store, run_id)
+    if any(row["run_id"] != run_id for row in receipts):
+        raise ReviewError("collection receipt run mismatch")
+    stopped = any(
+        row["event"] == "DFS_BOARD_STOPPED" and row["source"] == SOURCE_ID for row in receipts
+    )
+    return {
+        "run_id": run_id,
+        "status": "COLLECTION_STOPPED" if stopped else "COLLECTION_INCOMPLETE",
+        "mode": "RECEIPTS_ONLY",
+        "final": None,
+        "finalization_audit": None,
+        "board_manifests": [],
+        "snapshots": [],
+        "t20_reviews": [],
+        "receipts": receipts,
+        "results": None,
+    }
 
 
 def product_audit(store: RunStore, run_id: str) -> dict[str, object]:

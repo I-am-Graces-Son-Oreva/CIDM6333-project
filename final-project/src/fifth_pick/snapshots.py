@@ -629,14 +629,32 @@ def read_receipted_snapshot_ledger(
 
     entries = read_snapshot_ledger(store, run_id)
     receipts = store.read_receipts(run_id)
+    # M5 may have persisted rows before a collector stop or process interruption.
+    # Keep these rows on disk for inspection, outside the operational ledger.
+    reserved = {
+        row["subject"]
+        for row in receipts
+        if row["event"] == "DFS_BOARD_RESERVED" and row["run_id"] == run_id
+    }
+    completed = {
+        row["subject"]
+        for row in receipts
+        if row["event"] == "DFS_BOARD_COLLECTED" and row["run_id"] == run_id
+    }
+    unfinished = reserved - completed
+    visible = []
     for entry in entries:
+        number = entry.snapshot.number if isinstance(entry, SnapshotEvidence) else entry.number
+        if f"{number}:{entry.event_id}" in unfinished:
+            continue
         expected = _expected_snapshot_receipt(run_id, entry)
         matches = tuple(
             receipt for receipt in receipts if receipt.get("event_key") == expected["event_key"]
         )
         if matches != (expected,):
             raise SnapshotError("M5 snapshot ledger record has no matching run receipt")
-    return entries
+        visible.append(entry)
+    return tuple(visible)
 
 
 class SnapshotWorkflow:
@@ -663,7 +681,13 @@ class SnapshotWorkflow:
         self._clock = (lambda: datetime.now(UTC)) if clock is None else clock
 
     def collect(
-        self, run_id: str, number: int, board: SourceBoard, *, event_scope: str | None = None
+        self,
+        run_id: str,
+        number: int,
+        board: SourceBoard,
+        *,
+        event_scope: str | None = None,
+        record_before: datetime | None = None,
     ) -> tuple[SnapshotEvidence, ...]:
         """Persist a slot from one legitimate M4 board; never overwrite a prior slot."""
 
@@ -673,6 +697,18 @@ class SnapshotWorkflow:
             raise SnapshotError("snapshot collection requires a SourceBoard")
         now = self._clock()
         _require_aware(now, "clock")
+        if record_before is not None:
+            _require_aware(record_before, "record_before")
+            if (
+                number != 1
+                or event_scope is None
+                or board.provenance.evidence_mode is not EvidenceMode.LIVE
+                or now >= record_before
+                or board.provenance.retrieved_at >= record_before
+            ):
+                raise SnapshotError(
+                    "the conservative LIVE Snapshot 1 cutoff has passed or is invalid"
+                )
         self._validate_board(board, now)
         events = {event.event_id: event for event in board.events}
         if event_scope is not None and (
@@ -680,6 +716,8 @@ class SnapshotWorkflow:
             or any(projection.event_id != event_scope for projection in board.projections)
         ):
             raise SnapshotError("board projections do not match the collection event scope")
+        if record_before is not None and self._clock() >= record_before:
+            raise SnapshotError("the conservative LIVE Snapshot 1 cutoff passed before saving")
         persist_m4_event_board(self._store, run_id, number, board, now)
         entries = self._read_entries(run_id)
         scoped_entries = [
@@ -978,6 +1016,10 @@ class SnapshotWorkflow:
                 target_at=target_at,
                 late=late,
             )
+            if record_before is not None and self._clock() >= record_before:
+                raise SnapshotError(
+                    "the conservative LIVE Snapshot 1 cutoff passed before recording"
+                )
             self._append_entry(run_id, _snapshot_entry(record), entries)
             entries.append(record)
             self._accepted_receipt(run_id, record)

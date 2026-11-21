@@ -6,6 +6,33 @@ from fifth_pick.sources.base import SourceEvent
 
 
 class PersonalForecastTests(unittest.TestCase):
+    def test_full_frozen_universe_uses_exact_grants_and_event_scope(self):
+        from fifth_pick.authorization import AuthorizationGate
+        from fifth_pick.config import load_configs
+        from fifth_pick.identity import IdentityResolver
+        from fifth_pick.models import LIVE_MVP_CATEGORIES, Direction
+        from fifth_pick.personal_readiness import authorized_projection_filter
+        from fifth_pick.registry import Registry
+
+        registry = Registry.from_universe(load_configs().approved_universe)
+        players = registry.players()
+        self.assertEqual(len(players), 156)
+        gate = AuthorizationGate()
+        resolver = IdentityResolver(
+            registry, {player.canonical_name: (player.player_id,) for player in players}
+        )
+        allowed = authorized_projection_filter(
+            resolver, {"scoped": tuple(player.player_id for player in players)}
+        )
+        for player in players:
+            for category in LIVE_MVP_CATEGORIES:
+                for direction in Direction:
+                    self.assertEqual(
+                        allowed("scoped", player.canonical_name, category, direction),
+                        gate.authorize(player.player_id, category, direction).allowed,
+                    )
+                    self.assertFalse(allowed("other", player.canonical_name, category, direction))
+
     def test_distinguishes_full_slate_from_relevant_and_timely_games(self):
         now = datetime(2026, 11, 18, 23, 0, tzinfo=UTC)
         events = tuple(

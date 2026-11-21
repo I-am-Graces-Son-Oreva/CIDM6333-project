@@ -12,6 +12,114 @@ EVENT = "2adabff2dca8b2ed4b39540a6a25ffb2"
 
 
 class LiveBoardCliTests(unittest.TestCase):
+    def test_quarantine_cli_binds_earlier_cutoff_and_verified_roster(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+
+        event = {
+            "event_id": EVENT,
+            "home_team": "Los Angeles Lakers",
+            "away_team": "Utah Jazz",
+            "tipoff": TIPOFF,
+        }
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            patch("fifth_pick.live_board_cli.datetime", wraps=datetime) as clock,
+            patch("fifth_pick.live_board_cli.BoardCollector") as collector,
+            redirect_stdout(StringIO()),
+        ):
+            root = Path(directory)
+            preflight = root / "preflight.json"
+            roster = root / "roster.json"
+            board = root / "board.json"
+            timing = root / "timing.json"
+            checked = "2026-11-18T10:00:00-06:00"
+            raw = json.dumps(
+                {
+                    "mode": "LIVE_PROVIDER_DISCOVERY_ONLY",
+                    "slate_date": "2026-11-18",
+                    "checked_at": checked,
+                    "quota": {"last": 0, "remaining": 491},
+                    "events": [event],
+                }
+            )
+            preflight.write_text(raw)
+            roster.write_text(
+                json.dumps(
+                    [
+                        {
+                            "stable_id": "1629029",
+                            "canonical_id": "luka-doncic",
+                            "team": event["home_team"],
+                            "reference": "https://example.test/roster",
+                        }
+                    ]
+                )
+            )
+            board.write_text(
+                json.dumps(
+                    [
+                        {
+                            "stable_id": "1629029",
+                            "provider_label": "Luka Doncic",
+                            "event_id": EVENT,
+                            "team": event["home_team"],
+                            "reference": "https://example.test/independent-identity",
+                        }
+                    ]
+                )
+            )
+            cutoff = "2026-11-18T19:40:00-06:00"
+            timing.write_text(
+                json.dumps(
+                    {
+                        "event": event,
+                        "official": {
+                            "venue_tipoff": "2026-11-18T19:00:00-08:00",
+                            "chicago_tipoff": "2026-11-18T21:00:00-06:00",
+                            "source": "https://example.test/official",
+                        },
+                        "provider": {
+                            "chicago_tipoff": "2026-11-18T21:10:00-06:00",
+                            "source": str(preflight),
+                            "checked_at": checked,
+                        },
+                        "conservative_snapshot_1_cutoff": cutoff,
+                    }
+                )
+            )
+            args = [
+                "board-collect",
+                "--run-id",
+                "timed-quarantine",
+                "--snapshot",
+                "1",
+                "--quarantine-labels",
+                "--preflight",
+                str(preflight),
+                "--timing-file",
+                str(timing),
+                "--roster",
+                str(roster),
+            ]
+            clock.now.return_value = datetime.fromisoformat(cutoff)
+            self.assertEqual(main(args, prompt=lambda _: self.fail("expired approval")), 1)
+            collector.assert_not_called()
+            clock.now.return_value = datetime.fromisoformat("2026-11-18T19:39:00-06:00")
+            answers = iter(
+                (f"APPROVE {EVENT} SNAPSHOT 1 5", str(board), "VERIFY SNAPSHOT 1 IDENTITIES")
+            )
+            collector.return_value.collect.return_value = ()
+            self.assertEqual(main(args, prompt=lambda _: next(answers)), 0)
+            kwargs = collector.call_args.kwargs
+            self.assertEqual(kwargs["live_grant"].expires_at, datetime.fromisoformat(cutoff))
+            self.assertEqual(kwargs["live_grant"].events[0].tipoff.isoformat(), TIPOFF)
+            self.assertEqual(
+                kwargs["review_quarantined_labels"](("Luka Doncic", "Unknown"))[0],
+                {"Luka Doncic": "luka-doncic"},
+            )
+            self.assertEqual(preflight.read_text(), raw)
+
     def test_partial_provider_discovery_saves_diagnostics_only(self):
         import io
         import os

@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 
 from fifth_pick.errors import ValidationError
-from fifth_pick.evidence import EvidenceError, EvidenceItem
+from fifth_pick.evidence import EvidenceError, EvidenceItem, EvidenceKind
 from fifth_pick.finalization import (
     FinalizationState,
     _existing_result,
@@ -17,13 +17,18 @@ from fifth_pick.methodology import CandidateCase, EvaluationStatus, evaluate_can
 from fifth_pick.models import Category, ReasonCode
 from fifth_pick.schedule import schedule_view
 from fifth_pick.slate_manifest import read_slate_run_context
-from fifth_pick.snapshots import MissedSnapshot, SnapshotEvidence, read_receipted_snapshot_ledger
+from fifth_pick.snapshots import (
+    T20_OFFSET,
+    MissedSnapshot,
+    SnapshotEvidence,
+    read_receipted_snapshot_ledger,
+)
 from fifth_pick.sources.base import EvidenceMode, SourceError, SourceEvent
 from fifth_pick.sources.game_lines import live_game_line_items
 from fifth_pick.sources.injury_pdf import live_injury_items
 from fifth_pick.sources.live_history import read_live_history_items
 from fifth_pick.storage import RunStore, application_run_store, collection_lock
-from fifth_pick.t20_review import review_t20, review_window_allows
+from fifth_pick.t20_review import review_t20, review_window_allows, t20_source_gaps
 
 
 def read_live_supporting_items(
@@ -128,6 +133,7 @@ def live_analysis_view(
         else:
             missed[entry.candidate_key].append(entry)
     candidates = []
+    run_blockers: dict[str, None] = {}
     for key, rows in snapshots.items():
         scoped = [row for row in rows if row.snapshot.number <= slot]
         if not scoped:
@@ -171,6 +177,40 @@ def live_analysis_view(
         )
         scoped_missed = sorted(row.number for row in missed[key] if row.number <= slot)
         retrospective = len(scoped) != len(rows) or len(scoped_missed) != len(missed[key])
+        blockers = [
+            f"Missing timely Snapshot {number}. Check schedule and collection receipts."
+            for number in range(1, slot + 1)
+            if number not in timely
+        ]
+        if selected_stage is not None and not selected_stage.late and slot >= 2:
+            if judgment is None:
+                blockers.append(f"Missing receipt-bound Controller assessment for Snapshot {slot}.")
+            elif slot == 3 and not audit.methodology_sufficient_evidence:
+                blockers.append("Methodology assessment did not establish sufficient evidence.")
+            if slot == 3:
+                second = next((row for row in scoped if row.snapshot.number == 2), None)
+                if (
+                    second is not None
+                    and not second.late
+                    and (live_judgment_time(store, run_id, second) is None)
+                ):
+                    blockers.append("Missing receipt-bound Controller assessment for Snapshot 2.")
+                blockers.extend(
+                    t20_source_gaps(
+                        supporting,
+                        target_at=selected_stage.event_start - T20_OFFSET,
+                        reviewed_at=now,
+                    )
+                )
+        history_note = (
+            "No receipt-backed last-eight history for this phase. "
+            "Use an approved history source with corroborated chronology and correction checks."
+            if slot >= 2
+            and selected_stage is not None
+            and not any(item.kind is EvidenceKind.LAST_8 for item in supporting)
+            else None
+        )
+        run_blockers.update(dict.fromkeys(blockers))
         candidates.append(
             {
                 "candidate_key": key,
@@ -183,6 +223,17 @@ def live_analysis_view(
                 "board_sequence_complete": timely == [1, 2, 3],
                 "supporting_evidence": [item.to_dict() for item in supporting],
                 "judgment_recorded": judgment is not None,
+                "blockers": blockers,
+                "history_note": history_note,
+                "context_limitations": [
+                    f"{kind.value} was not established by the available phase receipts."
+                    for kind in (
+                        EvidenceKind.AVAILABILITY,
+                        EvidenceKind.TEAMMATE_ABSENCE,
+                        EvidenceKind.ROLE_MINUTES,
+                    )
+                    if slot >= 2 and not any(item.kind is kind for item in supporting)
+                ],
             }
         )
     proposal = _advance_live_review(store, run_id, snapshots, missed, now) if review else None
@@ -204,6 +255,12 @@ def live_analysis_view(
             else "No proposal was released. Required source or assessment evidence is incomplete."
         ),
         "candidates": candidates,
+        "blockers": (
+            []
+            if proposal is not None
+            else list(run_blockers)
+            or ["No candidate passed release checks. Inspect candidate and audit records."]
+        ),
         **({"schedule": schedule_view(store, run_id, as_of=now)} if review else {}),
     }
 

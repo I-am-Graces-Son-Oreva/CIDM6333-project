@@ -15,6 +15,100 @@ from tests.test_fixture_cli import TIMES, TIPOFF
 
 
 class ProductWorkflowTests(unittest.TestCase):
+    def test_audit_opens_receipt_only_collection_without_admitting_evidence(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from unittest.mock import patch
+
+        from fifth_pick.cli import main
+        from fifth_pick.receipts import Receipt
+        from fifth_pick.sources.odds_api import SOURCE_ID
+
+        for key, event, result in (
+            ("reserved", "DFS_BOARD_RESERVED", "RESERVED"),
+            ("quarantine", "DFS_BOARD_LABEL_QUARANTINE", "CAPTURED"),
+            ("stopped", "DFS_BOARD_STOPPED", "STOPPED"),
+        ):
+            self.store.append_receipt(
+                Receipt(
+                    TIMES[0].isoformat(),
+                    event,
+                    result,
+                    "event",
+                    SOURCE_ID,
+                    "diagnostic",
+                    self.run_id,
+                    f"dfs-board-1-event-{key}",
+                )
+            )
+        before = self.store.receipts_path(self.run_id).read_bytes()
+        with (
+            patch("fifth_pick.cli.application_run_store", return_value=self.store),
+            patch("fifth_pick.product_review.application_run_store", return_value=self.store),
+            redirect_stdout(StringIO()) as output,
+        ):
+            self.assertEqual(main(["audit", "--run-id", self.run_id]), 0)
+        audit = json.loads(output.getvalue())
+        self.assertEqual(audit["status"], "COLLECTION_STOPPED")
+        self.assertEqual(audit["snapshots"], [])
+        self.assertIsNone(audit["final"])
+        self.assertEqual(len(audit["receipts"]), 3)
+        self.assertFalse((self.store.run_directory(self.run_id) / "run.json").exists())
+        self.assertEqual(self.store.receipts_path(self.run_id).read_bytes(), before)
+        directory = self.store.run_directory(self.run_id)
+        (directory / "run.json").write_text("{}")
+        (directory / "m4-event-boards.jsonl").write_text("{}\n")
+        with (
+            patch("fifth_pick.cli.application_run_store", return_value=self.store),
+            patch("fifth_pick.product_review.application_run_store", return_value=self.store),
+            redirect_stdout(StringIO()) as partial_output,
+        ):
+            self.assertEqual(main(["audit", "--run-id", self.run_id]), 0)
+        self.assertEqual(json.loads(partial_output.getvalue())["mode"], "RECEIPTS_ONLY")
+
+    def test_live_analysis_can_display_comparison_without_admitting_it(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from unittest.mock import patch
+
+        from fifth_pick.cli import main
+        from fifth_pick.sources.base import EvidenceMode
+
+        key = "a" * 64
+        archive = ["archive", "b" * 64]
+        view = {"status": "BLOCKED", "candidates": [{"supporting_evidence": []}]}
+        result = {"status": "ANALYSIS_ONLY", "counts": {"HIGHER": 1}}
+        with (
+            patch("fifth_pick.cli.application_run_store", return_value=self.store),
+            patch("fifth_pick.live_analysis.live_analysis_view", return_value=view),
+            patch(
+                "fifth_pick.history_compare_cli.compare_archives", return_value=result
+            ) as compare,
+            redirect_stdout(StringIO()) as output,
+        ):
+            self.assertEqual(
+                main(
+                    [
+                        "analyze",
+                        "--run-id",
+                        self.run_id,
+                        "--snapshot",
+                        "2",
+                        "--history-candidate-key",
+                        key,
+                        "--history-archive",
+                        *archive,
+                    ]
+                ),
+                1,
+            )
+        compare.assert_called_once_with(
+            self.run_id, key, 2, [archive], required_mode=EvidenceMode.LIVE
+        )
+        self.assertEqual(json.loads(output.getvalue())["historical_comparison"], result)
+        self.assertEqual(view["candidates"], [{"supporting_evidence": []}])
+        self.assertEqual(self.store.read_receipts(self.run_id), ())
+
     def test_live_commands_without_fixture_route_to_the_receipt_backed_gate(self):
         from contextlib import redirect_stdout
         from io import StringIO

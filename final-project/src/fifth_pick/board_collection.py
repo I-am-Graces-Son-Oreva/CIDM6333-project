@@ -18,6 +18,8 @@ from fifth_pick.receipts import Receipt, redact_text
 from fifth_pick.registry import Registry
 from fifth_pick.slate_manifest import SLATE_TIMEZONE, read_slate_run_context
 from fifth_pick.snapshots import (
+    SNAPSHOT_2_T20_GAP,
+    T20_OFFSET,
     SnapshotEvidence,
     SnapshotWorkflow,
     read_receipted_snapshot_ledger,
@@ -45,6 +47,7 @@ from fifth_pick.sources.odds_api import (
     validate_event_id,
 )
 from fifth_pick.sources.quota import QuotaBudget
+from fifth_pick.sources.supporting_fixture import aware_timestamp
 from fifth_pick.sources.transport import HttpResponse, Transport, UrllibTransport
 from fifth_pick.storage import RunStore, application_run_store, collection_lock
 
@@ -143,6 +146,8 @@ class LiveBoardGrant:
     events: tuple[LiveEventScope, ...]
     slate_event_ids: tuple[str, ...]
     slots: tuple[int, ...] = (1,)
+    official_tipoff: datetime | None = None
+    timing_reference: str | None = None
 
 
 def _application_clock() -> datetime:
@@ -161,10 +166,14 @@ class BoardCollector:
         environ: Mapping[str, str] | None = None,
         clock: Callable[[], datetime] | None = None,
         live_grant: LiveBoardGrant | None = None,
+        review_quarantined_labels: (
+            Callable[[tuple[str, ...]], tuple[dict[str, str], dict[str, str]]] | None
+        ) = None,
     ) -> None:
         self._store = store
         self._policy = policy
         self._grant = live_grant
+        self._review_quarantined_labels = review_quarantined_labels
         self._clock_injected = clock is not None
         self._clock = _application_clock if clock is None else clock
         environment = (
@@ -191,6 +200,30 @@ class BoardCollector:
                 live_grant.slate_event_ids
             ) or not self._scope.keys() <= set(live_grant.slate_event_ids):
                 raise SourceError("LIVE event scope must belong to the approved complete slate")
+            if live_grant.official_tipoff is not None:
+                official = live_grant.official_tipoff
+                if (
+                    live_grant.slots != (1,)
+                    or len(live_grant.events) != 1
+                    or policy.credit_limit != _EVENT_COST
+                    or official.utcoffset() is None
+                    or not live_grant.timing_reference
+                    or not live_grant.timing_reference.startswith("https://")
+                    or live_grant.expires_at
+                    != min(official, live_grant.events[0].tipoff) - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                ):
+                    raise LiveAuthorizationError(
+                        "invalid separately corroborated Snapshot 1 deadline"
+                    )
+        if review_quarantined_labels is not None and (
+            self._mode is not EvidenceMode.LIVE
+            or live_grant is None
+            or live_grant.official_tipoff is None
+            or policy.aliases
+        ):
+            raise LiveAuthorizationError(
+                "label quarantine requires a bounded LIVE Snapshot 1 grant"
+            )
         self._filter = None
         self._resolver = IdentityResolver(
             Registry.from_universe(load_configs().approved_universe), policy.aliases
@@ -199,6 +232,17 @@ class BoardCollector:
             self._filter = authorized_projection_filter(
                 self._resolver, {key: item.player_ids for key, item in self._scope.items()}
             )
+
+    def _timing_binding(self) -> dict[str, object]:
+        grant = self._grant
+        if grant is None or grant.official_tipoff is None:
+            return {}
+        return {
+            "official_tipoff": grant.official_tipoff.isoformat(),
+            "provider_tipoff": grant.events[0].tipoff.isoformat(),
+            "snapshot_1_cutoff": grant.expires_at.isoformat(),
+            "timing_reference": grant.timing_reference,
+        }
 
     def _now(self) -> datetime:
         now = self._clock()
@@ -278,6 +322,7 @@ class BoardCollector:
                     "slots": self._grant.slots,
                     "slate_event_ids": self._grant.slate_event_ids,
                     "events": [event.to_dict() for event in self._grant.events],
+                    **self._timing_binding(),
                 }
             ),
             f"credit_limit={self._policy.credit_limit}",
@@ -381,6 +426,74 @@ class BoardCollector:
         recorded_responses = []
         requested_urls = set()
         event_quota: tuple[int, int] | None = None
+        quarantine_receipts = []
+
+        def review_labels(labels: tuple[str, ...]):
+            self._check_public_text(labels)
+            quarantine_receipts.append(
+                self._store.append_receipt(
+                    self._receipt(
+                        run_id,
+                        f"{stage_key}-quarantine",
+                        "DFS_BOARD_LABEL_QUARANTINE",
+                        "CAPTURED",
+                        subject,
+                        _json(
+                            {
+                                "labels": labels,
+                                "odds_response_sha256": _digest(recorded_responses[-1]),
+                                **self._timing_binding(),
+                            }
+                        ),
+                        self._now(),
+                    )
+                ).receipt
+            )
+            self._check_live_window(run_id, snapshot, event_id, self._now())
+            assert self._review_quarantined_labels is not None
+            aliases, references = self._review_quarantined_labels(labels)
+            self._check_live_window(run_id, snapshot, event_id, self._now())
+            if (
+                not aliases
+                or aliases.keys() != references.keys()
+                or not aliases.keys() <= set(labels)
+                or any(
+                    player not in self._scope[event_id].player_ids for player in aliases.values()
+                )
+                or any(not reference.strip() for reference in references.values())
+            ):
+                raise LiveAuthorizationError(
+                    "no independently verified board identity can be admitted"
+                )
+            self._check_public_text((*aliases.values(), *references.values()))
+            quarantine_receipts.append(
+                self._store.append_receipt(
+                    self._receipt(
+                        run_id,
+                        f"{stage_key}-identity-review",
+                        "DFS_BOARD_LABEL_REVIEW",
+                        "VERIFIED",
+                        subject,
+                        _json(
+                            {
+                                "aliases": aliases,
+                                "references": references,
+                                "unmatched": sorted(set(labels) - aliases.keys()),
+                                "quarantine_sha256": _digest(quarantine_receipts[0]),
+                                **self._timing_binding(),
+                            }
+                        ),
+                        self._now(),
+                    )
+                ).receipt
+            )
+            self._resolver = IdentityResolver(
+                Registry.from_universe(load_configs().approved_universe),
+                {label: (player,) for label, player in aliases.items()},
+            )
+            return authorized_projection_filter(
+                self._resolver, {event_id: self._scope[event_id].player_ids}
+            )
 
         def authorize_request(url: str, at: datetime) -> None:
             if self._mode is not EvidenceMode.LIVE:
@@ -518,11 +631,19 @@ class BoardCollector:
                 observe_request=authorize_request if self._mode is EvidenceMode.LIVE else None,
                 observe_response=observe,
                 projection_allowed=self._filter,
+                review_player_labels=review_labels if self._review_quarantined_labels else None,
             )
             if self._mode is EvidenceMode.LIVE:
                 self._check_live_window(run_id, snapshot, event_id, self._now())
                 self._check_public_text(row.provider_player_name for row in board.projections)
             board = self._validate_board(board, event_id, run_id, first=first)
+            if self._review_quarantined_labels is not None:
+                recorded_at = self._now()
+                if any(
+                    recorded_at - row.source_update_time > self._policy.max_projection_age
+                    for row in board.projections
+                ):
+                    raise SourceError("verified projection expired during identity review")
             entries = SnapshotWorkflow(
                 self._store, self._resolver, AuthorizationGate(), clock=self._now
             ).collect(
@@ -530,8 +651,14 @@ class BoardCollector:
                 snapshot,
                 board,
                 event_scope=event_id if self._mode is EvidenceMode.LIVE else None,
+                record_before=(
+                    self._grant.expires_at if self._grant and self._grant.official_tipoff else None
+                ),
             )
-        except (FifthPickError, ValueError, OSError) as exc:
+            completed_at = self._now()
+            if self._timing_binding():
+                self._check_live_window(run_id, snapshot, event_id, completed_at)
+        except (FifthPickError, ValueError, OSError, EOFError, KeyboardInterrupt) as exc:
             self._store.append_receipt(
                 self._receipt(
                     run_id,
@@ -562,6 +689,12 @@ class BoardCollector:
                 else None
             ),
             "retrieved_at": board.provenance.retrieved_at.isoformat(),
+            **self._timing_binding(),
+            **(
+                {"quarantine_receipts_sha256": _digest(quarantine_receipts)}
+                if quarantine_receipts
+                else {}
+            ),
         }
         self._store.append_receipt(
             self._receipt(
@@ -571,7 +704,7 @@ class BoardCollector:
                 self._mode.name,
                 subject,
                 _json(metadata),
-                self._now(),
+                completed_at,
             )
         )
         return entries
@@ -590,6 +723,8 @@ class BoardCollector:
         if at >= tipoff or at.astimezone(chicago).date() != tipoff.astimezone(chicago).date():
             raise SourceError("live collection is outside its approved slate or after tipoff")
         if snapshot == 1:
+            if self._grant and self._grant.official_tipoff and at >= self._grant.expires_at:
+                raise SourceError("the conservative Snapshot 1 cutoff has passed")
             if snapshot_2_target(at, tipoff) is None:
                 raise SourceError("no time remains for three legitimate observations")
             return
@@ -704,6 +839,36 @@ def _verify_completed_slot(
         )
     ):
         raise SourceError("stored board completion does not match its manifest or snapshots")
+    if "snapshot_1_cutoff" in metadata:
+        cutoff = aware_timestamp(metadata["snapshot_1_cutoff"])
+        official = aware_timestamp(metadata.get("official_tipoff"))
+        provider = aware_timestamp(metadata.get("provider_tipoff"))
+        if (
+            mode is not EvidenceMode.LIVE
+            or snapshot != 1
+            or cutoff != min(official, provider) - T20_OFFSET - SNAPSHOT_2_T20_GAP
+            or aware_timestamp(completion["timestamp"]) >= cutoff
+            or aware_timestamp(metadata.get("retrieved_at")) >= cutoff
+            or any(
+                row.event_start != provider or row.snapshot.recorded_at >= cutoff for row in entries
+            )
+        ):
+            raise SourceError("stored board completion violates the conservative cutoff")
+    if mode is EvidenceMode.LIVE and snapshot == 1:
+        prefix = f"dfs-board-{snapshot}-{event_id}"
+        quarantine_keys = (f"{prefix}-quarantine", f"{prefix}-identity-review")
+        quarantine = {
+            row["event_key"]: row
+            for row in store.read_receipts(run_id)
+            if row["event_key"] in quarantine_keys
+        }
+        if (quarantine or "quarantine_receipts_sha256" in metadata) and (
+            len(quarantine) != 2
+            or "snapshot_1_cutoff" not in metadata
+            or metadata.get("quarantine_receipts_sha256")
+            != _digest([quarantine[key] for key in quarantine_keys])
+        ):
+            raise SourceError("stored board completion has an invalid quarantine receipt chain")
     return entries
 
 

@@ -268,6 +268,227 @@ class BoardCollectorTests(unittest.TestCase):
             environ={API_KEY_ENV_VAR: SECRET},
         )
 
+    def test_quarantine_uses_one_response_and_never_admits_unmatched_labels(self):
+        from fifth_pick.board_collection import live_slot_has_bound_aliases
+
+        self.change_odds(
+            lambda data: data["bookmakers"][0]["markets"][0]["outcomes"].append(
+                {"name": "Over", "description": "Unmatched label", "point": "untrusted"}
+            )
+        )
+        with (
+            patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.board_collection._application_clock", return_value=NOW),
+            patch.object(UrllibTransport, "get", side_effect=self.respond),
+        ):
+            original = self.live_collector()
+            assert original._grant is not None
+            policy = replace(original._policy, aliases={})
+            provider = original._grant.events[0].tipoff
+            cutoff = provider - timedelta(minutes=90)
+            grant = replace(
+                original._grant,
+                policy_sha256=policy.fingerprint(),
+                expires_at=cutoff,
+                official_tipoff=provider - timedelta(minutes=10),
+                timing_reference="https://example.test/official",
+            )
+
+            def review(labels):
+                self.assertIn("Unmatched label", labels)
+                self.assertIn("Luka Doncic", labels)
+                self.assertFalse(live_slot_has_bound_aliases(RUN, 1, EVENT))
+                return {"Luka Doncic": "luka-doncic"}, {
+                    "Luka Doncic": "https://example.test/identity"
+                }
+
+            collector = BoardCollector(
+                self.store,
+                policy,
+                transport=UrllibTransport(),
+                live_grant=grant,
+                environ={API_KEY_ENV_VAR: SECRET},
+                review_quarantined_labels=review,
+            )
+            entries = collector.collect(RUN, 1, EVENT, request_authorized=True)
+            self.assertTrue(entries)
+            self.assertEqual({row.candidate_id for row in entries}, {"luka-doncic"})
+            self.assertTrue(all(row.event_start == provider for row in entries))
+            self.assertTrue(live_slot_has_bound_aliases(RUN, 1, EVENT))
+            self.assertEqual(collector.collect(RUN, 1, EVENT, request_authorized=True), entries)
+        self.assertEqual(self.calls, [events_url(), odds_url(EVENT, OddsApiSourceConfig())])
+        receipts = self.store.read_receipts(RUN)
+        self.assertIn("Unmatched label", str(receipts))
+        self.assertIn(cutoff.isoformat(), str(receipts))
+        self.assertNotIn(SECRET, str(receipts))
+
+    def test_identity_review_crossing_cutoff_leaves_quarantine_without_snapshot_or_retry(self):
+        from fifth_pick.snapshots import read_receipted_snapshot_ledger
+
+        with (
+            patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.board_collection._application_clock", return_value=NOW) as clock,
+            patch.object(UrllibTransport, "get", side_effect=self.respond),
+        ):
+            original = self.live_collector()
+            assert original._grant is not None
+            policy = replace(original._policy, aliases={})
+            provider = original._grant.events[0].tipoff
+            cutoff = provider - timedelta(minutes=90)
+            grant = replace(
+                original._grant,
+                policy_sha256=policy.fingerprint(),
+                expires_at=cutoff,
+                official_tipoff=provider - timedelta(minutes=10),
+                timing_reference="https://example.test/official",
+            )
+
+            def review(_labels):
+                clock.return_value = cutoff
+                return {"Luka Doncic": "luka-doncic"}, {
+                    "Luka Doncic": "https://example.test/identity"
+                }
+
+            collector = BoardCollector(
+                self.store,
+                policy,
+                transport=UrllibTransport(),
+                live_grant=grant,
+                environ={API_KEY_ENV_VAR: SECRET},
+                review_quarantined_labels=review,
+            )
+            with self.assertRaises(SourceError):
+                collector.collect(RUN, 1, EVENT, request_authorized=True)
+            self.assertEqual(read_receipted_snapshot_ledger(self.store, RUN), ())
+            self.assertTrue(
+                any(
+                    row["event"] == "DFS_BOARD_LABEL_QUARANTINE"
+                    for row in self.store.read_receipts(RUN)
+                )
+            )
+            clock.return_value = NOW
+            with self.assertRaisesRegex(SourceError, "unfinished collection"):
+                collector.collect(RUN, 1, EVENT, request_authorized=True)
+        self.assertEqual(self.calls, [events_url(), odds_url(EVENT, OddsApiSourceConfig())])
+
+    def test_interrupted_identity_review_records_stop_without_retry(self):
+        from fifth_pick.snapshots import read_receipted_snapshot_ledger
+
+        with (
+            patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.board_collection._application_clock", return_value=NOW),
+            patch.object(UrllibTransport, "get", side_effect=self.respond),
+        ):
+            original = self.live_collector()
+            assert original._grant is not None
+            policy = replace(original._policy, aliases={})
+            provider = original._grant.events[0].tipoff
+            cutoff = provider - timedelta(minutes=90)
+            grant = replace(
+                original._grant,
+                policy_sha256=policy.fingerprint(),
+                expires_at=cutoff,
+                official_tipoff=provider - timedelta(minutes=10),
+                timing_reference="https://example.test/official",
+            )
+
+            def review(_labels):
+                raise KeyboardInterrupt
+
+            collector = BoardCollector(
+                self.store,
+                policy,
+                transport=UrllibTransport(),
+                live_grant=grant,
+                environ={API_KEY_ENV_VAR: SECRET},
+                review_quarantined_labels=review,
+            )
+            with self.assertRaises(SourceError):
+                collector.collect(RUN, 1, EVENT, request_authorized=True)
+            self.assertEqual(read_receipted_snapshot_ledger(self.store, RUN), ())
+            self.assertTrue(
+                any(
+                    row["event"] == "DFS_BOARD_LABEL_QUARANTINE"
+                    for row in self.store.read_receipts(RUN)
+                )
+            )
+            self.assertTrue(
+                any(
+                    row["event"] == "DFS_BOARD_STOPPED" and row["reason"] == "KeyboardInterrupt"
+                    for row in self.store.read_receipts(RUN)
+                )
+            )
+            with self.assertRaisesRegex(SourceError, "unfinished collection"):
+                collector.collect(RUN, 1, EVENT, request_authorized=True)
+        self.assertEqual(self.calls, [events_url(), odds_url(EVENT, OddsApiSourceConfig())])
+
+    def test_uncommitted_snapshot_rows_are_excluded_from_operational_ledger(self):
+        from fifth_pick.snapshots import (
+            SnapshotWorkflow,
+            read_receipted_snapshot_ledger,
+            read_snapshot_ledger,
+        )
+
+        collect = SnapshotWorkflow.collect
+
+        def collect_then_expire(workflow, *args, **kwargs):
+            entries = collect(workflow, *args, **kwargs)
+            self.assertTrue(entries)
+            clock.return_value = cutoff
+            return entries
+
+        with (
+            patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.board_collection._application_clock", return_value=NOW) as clock,
+            patch.object(UrllibTransport, "get", side_effect=self.respond),
+        ):
+            original = self.live_collector()
+            assert original._grant is not None
+            policy = replace(original._policy, aliases={})
+            provider = original._grant.events[0].tipoff
+            cutoff = provider - timedelta(minutes=90)
+            grant = replace(
+                original._grant,
+                policy_sha256=policy.fingerprint(),
+                expires_at=cutoff,
+                official_tipoff=provider - timedelta(minutes=10),
+                timing_reference="https://example.test/official",
+            )
+
+            def review(_labels):
+                return {"Luka Doncic": "luka-doncic"}, {
+                    "Luka Doncic": "https://example.test/identity"
+                }
+
+            collector = BoardCollector(
+                self.store,
+                policy,
+                transport=UrllibTransport(),
+                live_grant=grant,
+                environ={API_KEY_ENV_VAR: SECRET},
+                review_quarantined_labels=review,
+            )
+            with (
+                patch.object(SnapshotWorkflow, "collect", collect_then_expire),
+                self.assertRaises(SourceError),
+            ):
+                collector.collect(RUN, 1, EVENT, request_authorized=True)
+            self.assertTrue(read_snapshot_ledger(self.store, RUN))
+            clock.return_value = NOW
+            self.assertEqual(read_receipted_snapshot_ledger(self.store, RUN), ())
+            self.assertTrue(
+                any(
+                    row["event"] == "DFS_BOARD_LABEL_QUARANTINE"
+                    for row in self.store.read_receipts(RUN)
+                )
+            )
+            self.assertTrue(
+                any(row["event"] == "DFS_BOARD_STOPPED" for row in self.store.read_receipts(RUN))
+            )
+            with self.assertRaisesRegex(SourceError, "unfinished collection"):
+                collector.collect(RUN, 1, EVENT, request_authorized=True)
+        self.assertEqual(self.calls, [events_url(), odds_url(EVENT, OddsApiSourceConfig())])
+
     def test_live_grant_filters_before_parsing_and_replays_without_network(self):
         from fifth_pick.sources.base import EvidenceMode
 
@@ -455,6 +676,11 @@ class BoardCollectorTests(unittest.TestCase):
                 {EvidenceKind.GAME_TOTAL.value, EvidenceKind.POINT_SPREAD.value},
             )
             self.assertEqual(status["status"], "BLOCKED")
+            diagnostics = " ".join(str(row["blockers"]) for row in candidates)
+            self.assertNotIn("AVAILABILITY", diagnostics)
+            self.assertNotIn("ROLE_MINUTES", diagnostics)
+            self.assertIn("AVAILABILITY", str(candidates[0]["context_limitations"]))
+            self.assertIn("Controller", diagnostics)
             key = rows[0].candidate_key
             observations = tuple(
                 row
@@ -553,6 +779,7 @@ class BoardCollectorTests(unittest.TestCase):
             previous = self.store.read_receipts(RUN)
             result = live_analysis_view(self.store, RUN, review=True)
         self.assertEqual(result["reason"], "T20_CHECK_UNAVAILABLE")
+        self.assertIn("timely Snapshot 2", str(result["blockers"]))
         candidates = result["candidates"]
         assert isinstance(candidates, list)
         self.assertTrue(candidates)

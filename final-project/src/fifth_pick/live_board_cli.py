@@ -5,8 +5,10 @@ import hashlib
 import json
 import sys
 from collections.abc import Callable, Sequence
+from dataclasses import asdict
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from fifth_pick.board_collection import BoardCollector, BoardPolicy, LiveBoardGrant
@@ -128,10 +130,12 @@ def show_board_status(store: RunStore, now: datetime, *, day: date | None = None
 def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> int:
     parser = argparse.ArgumentParser(prog="fifth-pick board-collect")
     parser.add_argument("--run-id", required=True)
-    parser.add_argument("--scope", required=True, type=Path)
+    parser.add_argument("--scope", type=Path)
     parser.add_argument("--preflight", type=Path)
     parser.add_argument("--roster", type=Path)
     parser.add_argument("--board-identities", type=Path)
+    parser.add_argument("--timing-file", type=Path)
+    parser.add_argument("--quarantine-labels", action="store_true")
     parser.add_argument("--series", action="store_true")
     parser.add_argument("--snapshot", type=int, choices=(1, 2, 3), default=1)
     options = parser.parse_args(arguments)
@@ -147,7 +151,20 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
     today = now.astimezone(chicago).date()
     try:
         store.run_directory(options.run_id)
-        draft = json.loads(options.scope.read_text(encoding="utf-8"))
+        quarantine = options.quarantine_labels
+        if (
+            ((quarantine or options.timing_file is not None) and (slot != 1 or options.series))
+            or (
+                quarantine
+                and (
+                    options.scope is not None
+                    or options.roster is None
+                    or options.timing_file is None
+                )
+            )
+            or (not quarantine and options.scope is None)
+        ):
+            raise ValueError("invalid bounded Snapshot 1 options")
         path = options.preflight or preflight_path(store, today)
         if _coverage_is_newer(store, today, path):
             print(
@@ -156,6 +173,24 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             )
             return 1
         report = json.loads(path.read_text(encoding="utf-8"))
+        timing = (
+            json.loads(options.timing_file.read_bytes())
+            if options.timing_file is not None
+            else None
+        )
+        roster = ()
+        draft: dict[str, Any]
+        if quarantine:
+            if timing is None:
+                raise ValueError("quarantine requires a timing record")
+            roster = tuple(RosterIdentity(**row) for row in json.loads(options.roster.read_bytes()))
+            draft = {
+                "event": timing["event"],
+                "slate_game_count": len(report["events"]),
+                "player_ids": [player.canonical_id for player in roster],
+            }
+        else:
+            draft = json.loads(options.scope.read_text(encoding="utf-8"))
         selected = draft["event"]
         event_id = selected["event_id"]
         tipoff = datetime.fromisoformat(selected["tipoff"])
@@ -174,6 +209,28 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
         scope.validate()
         t20 = tipoff - T20_OFFSET
         cutoff = t20 - SNAPSHOT_2_T20_GAP
+        official_tipoff = None
+        timing_reference = None
+        if timing is not None:
+            official_tipoff = datetime.fromisoformat(timing["official"]["venue_tipoff"])
+            timing_reference = timing["official"]["source"]
+            if (
+                timing["event"] != selected
+                or Path(timing["provider"]["source"]).resolve() != path.resolve()
+                or timing["provider"]["checked_at"] != report["checked_at"]
+                or datetime.fromisoformat(timing["provider"]["chicago_tipoff"]) != tipoff
+                or official_tipoff.utcoffset() is None
+                or official_tipoff.astimezone(chicago).date() != today
+                or datetime.fromisoformat(timing["official"]["chicago_tipoff"]) != official_tipoff
+                or not isinstance(timing_reference, str)
+                or not timing_reference.startswith("https://")
+            ):
+                raise ValueError(
+                    "timing record does not match the approved event and saved preflight"
+                )
+            cutoff = min(tipoff, official_tipoff) - T20_OFFSET - SNAPSHOT_2_T20_GAP
+            if datetime.fromisoformat(timing["conservative_snapshot_1_cutoff"]) != cutoff:
+                raise ValueError("recorded conservative cutoff differs")
         deadline = t20 if slot == 3 else cutoff
         if (
             now > deadline
@@ -219,7 +276,16 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
                 file=sys.stderr,
             )
             return 1
-        if options.roster is None and options.board_identities is None:
+        if quarantine:
+            if len({row.stable_id for row in roster}) != len(roster) or any(
+                not row.stable_id.strip()
+                or row.team not in (scope.home_team, scope.away_team)
+                or not row.reference.startswith("https://")
+                for row in roster
+            ):
+                raise ValueError("quarantine requires an independently verified event roster")
+            aliases, alias_evidence = {}, {}
+        elif options.roster is None and options.board_identities is None:
             aliases = draft["aliases"]
             alias_evidence = draft.get("alias_evidence")
         elif options.roster is not None and options.board_identities is not None:
@@ -234,7 +300,7 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             raise ValueError("both independently verified identity sources are required")
         if (
             not isinstance(aliases, dict)
-            or not aliases
+            or (not aliases and not quarantine)
             or not isinstance(alias_evidence, dict)
             or alias_evidence.keys() != aliases.keys()
             or any(
@@ -263,8 +329,20 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
                     "snapshot": slot,
                     "authorized_slots": slots,
                     "deadline_central": deadline.astimezone(chicago).isoformat(),
+                    **(
+                        {
+                            "official_tipoff": official_tipoff.isoformat(),
+                            "official_timing_reference": timing_reference,
+                            "quarantine_provider_labels": quarantine,
+                        }
+                        if official_tipoff is not None
+                        else {}
+                    ),
                     "slate_event_ids": slate_ids,
                     "player_ids": player_ids,
+                    "players_without_bound_board_labels": sorted(
+                        set(player_ids) - set(aliases.values())
+                    ),
                     "provider_aliases": aliases,
                     "alias_evidence": alias_evidence,
                     "maximum_credits": budget,
@@ -289,7 +367,12 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             timedelta(minutes=30),
             {label: (player_id,) for label, player_id in aliases.items()},
             "Joseph terminal review of provider alias evidence SHA-256 "
-            + hashlib.sha256(json.dumps(alias_evidence, sort_keys=True).encode()).hexdigest(),
+            + hashlib.sha256(
+                json.dumps(
+                    [asdict(row) for row in roster] if quarantine else alias_evidence,
+                    sort_keys=True,
+                ).encode()
+            ).hexdigest(),
         )
         grant = LiveBoardGrant(
             options.run_id,
@@ -300,13 +383,73 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             (scope,),
             slate_ids,
             slots,
+            official_tipoff,
+            timing_reference,
         )
+
+        def review_labels(labels: tuple[str, ...]) -> tuple[dict[str, str], dict[str, str]]:
+            print(json.dumps({"status": "QUARANTINED", "event_id": event_id, "labels": labels}))
+            if not labels:
+                raise ValueError("the provider returned no eligible market labels to verify")
+            path_text = (
+                read(
+                    "Path to independent board-identity JSON for these labels, or Enter to stop: "
+                ).strip()
+                if options.board_identities is None
+                else str(options.board_identities)
+            )
+            if not path_text:
+                raise ValueError("identity review cancelled")
+            records = json.loads(Path(path_text).read_bytes())
+            identity_fields = {"stable_id", "provider_label", "event_id", "team", "reference"}
+            if not isinstance(records, list) or any(
+                not isinstance(row, dict)
+                or row.keys() != identity_fields
+                or any(not isinstance(value, str) or not value.strip() for value in row.values())
+                for row in records
+            ):
+                raise ValueError("invalid board-identity record shape")
+            board_ids = tuple(BoardIdentity(**row) for row in records)
+            if any(
+                row.event_id != event_id
+                or row.provider_label not in labels
+                or not row.reference.startswith("https://")
+                for row in board_ids
+            ):
+                raise ValueError("board identities do not match the captured event labels")
+            verified, references = join_event_aliases(scope, roster, board_ids)
+            if not verified:
+                raise ValueError("no corroborated labels match the authorized roster")
+            print(
+                json.dumps(
+                    {"verified_aliases": verified, "alias_evidence": references}, sort_keys=True
+                )
+            )
+            if read("Joseph only. Type VERIFY SNAPSHOT 1 IDENTITIES to admit these matches: ") != (
+                "VERIFY SNAPSHOT 1 IDENTITIES"
+            ):
+                raise ValueError("identity review cancelled")
+            return verified, references
+
         entries = BoardCollector(
-            store, policy, transport=UrllibTransport(), live_grant=grant
+            store,
+            policy,
+            transport=UrllibTransport(),
+            live_grant=grant,
+            review_quarantined_labels=review_labels if quarantine else None,
         ).collect(options.run_id, slot, event_id, request_authorized=True)
-    except (FifthPickError, OSError, ValueError, KeyError, TypeError, AttributeError, EOFError):
+    except (
+        FifthPickError,
+        OSError,
+        ValueError,
+        KeyError,
+        TypeError,
+        AttributeError,
+        EOFError,
+        KeyboardInterrupt,
+    ):
         print(
-            "LIVE collection stopped. Check the scope, credentials, and run receipts.",
+            "LIVE collection stopped. Inspect its local receipts with fifth-pick audit --run-id.",
             file=sys.stderr,
         )
         return 1

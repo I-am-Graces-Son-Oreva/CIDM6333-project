@@ -377,17 +377,16 @@ class T20ReviewTests(unittest.TestCase):
         self.assertIs(review.conclusion, T20Conclusion.STILL_STRONG)
         self.assertTrue(review.readiness_passed)
 
-    def test_missing_t20_availability_context_fails_closed(self) -> None:
+    def test_missing_t20_availability_is_not_a_qualification_gate(self) -> None:
         case = make_t20_case(make_case(), availability=False)
 
         review = self.review(case, prepare_t20=False)
 
         self.assertIs(review.current_audit.status, EvaluationStatus.QUALIFIED)
-        self.assertIs(review.conclusion, T20Conclusion.REMOVE_RECOMMENDED)
-        self.assertIn(ReasonCode.T20_CHECK_UNAVAILABLE, review.reason_codes)
-        self.assertTrue(any("AVAILABILITY" in gap for gap in review.readiness_gaps))
+        self.assertIs(review.conclusion, T20Conclusion.STILL_STRONG)
+        self.assertFalse(any("AVAILABILITY" in gap for gap in review.readiness_gaps))
 
-    def test_stale_t20_availability_context_fails_closed(self) -> None:
+    def test_stale_uncited_optional_availability_does_not_block(self) -> None:
         case = make_t20_case(make_case(), availability=False)
         stale_availability = make_evidence_item(
             case.snapshots[0].candidate_key,
@@ -399,8 +398,8 @@ class T20ReviewTests(unittest.TestCase):
 
         review = self.review(case, prepare_t20=False)
 
-        self.assertIs(review.conclusion, T20Conclusion.REMOVE_RECOMMENDED)
-        self.assertTrue(
+        self.assertIs(review.conclusion, T20Conclusion.STILL_STRONG)
+        self.assertFalse(
             any("AVAILABILITY" in gap and "stale" in gap for gap in review.readiness_gaps)
         )
 
@@ -429,15 +428,23 @@ class T20ReviewTests(unittest.TestCase):
         self.assertTrue(review.readiness_passed)
         self.assertFalse(any("PROJECTION_MOVEMENT" in gap for gap in review.readiness_gaps))
 
-    def test_missing_t20_role_and_teammate_context_fails_closed(self) -> None:
-        case = make_t20_case(make_case(), role_context=False)
+    def test_missing_t20_role_and_teammate_context_is_not_a_gate(self) -> None:
+        case = make_case()
+        assert case.judgment is not None
+        case = make_t20_case(
+            replace(
+                case,
+                evidence=tuple(item for item in case.evidence if item.kind not in T20_ROLE_CONTEXT),
+                judgment=replace(case.judgment, supporting_evidence_ids=("last8", "h2h")),
+            ),
+            role_context=False,
+        )
 
         review = self.review(case, prepare_t20=False)
 
         self.assertIs(review.current_audit.status, EvaluationStatus.QUALIFIED)
-        self.assertIs(review.conclusion, T20Conclusion.REMOVE_RECOMMENDED)
-        self.assertTrue(any("ROLE_MINUTES" in gap for gap in review.readiness_gaps))
-        self.assertTrue(any("TEAMMATE_ABSENCE" in gap for gap in review.readiness_gaps))
+        self.assertIs(review.conclusion, T20Conclusion.STILL_STRONG)
+        self.assertTrue(review.readiness_passed)
 
     def test_missing_t20_game_context_fails_closed(self) -> None:
         case = make_t20_case(make_case(), game_context=False)

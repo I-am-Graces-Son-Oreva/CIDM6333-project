@@ -17,10 +17,14 @@ from fifth_pick.review_bridge import process_request
 from fifth_pick.snapshots import snapshot_2_target
 from fifth_pick.sources.availability import replay_official_document, replay_official_edition
 from fifth_pick.sources.base import EvidenceMode, SourceEvent
+from fifth_pick.sources.dunkapi_evidence_package import replay_evidence_package
+from fifth_pick.sources.dunkapi_history import HistoryScope
 from fifth_pick.sources.game_lines import replay_game_lines_request, verify_game_lines_replay
 from fifth_pick.sources.injury_pdf import read_injury_status
 from fifth_pick.sources.transport import HttpResponse
 from tests.m6_support import EVENT_ID, TIPOFF, candidate_key, make_case
+from tests.test_dunkapi_evidence_package import package, seal
+from tests.test_dunkapi_replay import REGISTRY, ROW, digest, encoded
 from tests.test_supporting_sources import game_lines_payload
 
 RUN = "offline-demo"
@@ -28,6 +32,108 @@ START = TIPOFF - timedelta(hours=6)
 MIDPOINT = snapshot_2_target(START, TIPOFF)
 assert MIDPOINT is not None
 TIMES = (START, MIDPOINT, TIPOFF - timedelta(minutes=20))
+
+
+def replay_demo_history(root: Path, slot: int) -> tuple[list[dict], list[str]]:
+    """Build clearly synthetic archives and replay them at the fixture slot clock."""
+    at = TIMES[slot - 1]
+    samples, arguments = [], []
+    for number in range(1, 9):
+        played = TIPOFF - timedelta(days=number)
+        game_date = played.date()
+        game_id = str(900 + number)
+        row = {**ROW, "game_id": game_id, "date": game_date.isoformat(), "ast": 10 + number}
+        _, pages, timing_bytes, coverage, correction, manifest = package(row)
+        identity = encoded(
+            {"data": {"players": [{"player_id": "101", "name": "Luka Doncic", "team": "GS"}]}}
+        )
+        timing = json.loads(timing_bytes)
+        scope = HistoryScope("101", 2027, game_date, game_date, 100, 1)
+        request = asdict(scope) | {
+            "first_date": game_date.isoformat(),
+            "last_date": game_date.isoformat(),
+        }
+        teams = ("Synthetic Home", "Synthetic Away")
+        prior_team = "Synthetic Away" if number == 1 else "Synthetic Historical Opponent"
+        timing.update(
+            event_id=EVENT_ID,
+            event_teams=list(teams),
+            request=request,
+            retrieved_at=(at - timedelta(minutes=4)).isoformat(),
+            identity_sha256=digest(identity),
+        )
+        timing["identity"].update(
+            canonical_player_id="luka-doncic",
+            provider_name="Luka Doncic",
+            canonical_team=teams[0],
+        )
+        timing["games"][0].update(
+            game_id=game_id,
+            game_date=game_date.isoformat(),
+            canonical_player_id="luka-doncic",
+            home_team=teams[0],
+            away_team=prior_team,
+            player_team=teams[0],
+            game_timezone="UTC",
+            actual_played_at=played.isoformat(),
+            actual_completed_at=(played + timedelta(hours=2)).isoformat(),
+        )
+        timing_bytes = encoded(timing)
+        subject = {
+            "event_id": EVENT_ID,
+            "event_teams": list(teams),
+            "canonical_player_id": "luka-doncic",
+            "game_id": game_id,
+            "request": request,
+        }
+        coverage.update(
+            subject=subject,
+            game_ids=[game_id],
+            observed_at=(at - timedelta(minutes=3)).isoformat(),
+        )
+        correction.update(subject=subject, observed_at=(at - timedelta(minutes=2)).isoformat())
+        correction["stats"]["assists"] = row["ast"]
+        manifest.update(
+            subject=subject,
+            corroboration_sha256=digest(timing_bytes),
+            sealed_at=(at - timedelta(minutes=1)).isoformat(),
+            pages=[timing["pages"][0] | {"retrieved_at": timing["retrieved_at"]}],
+        )
+        manifest_bytes = seal(coverage, correction, manifest)
+        pin = digest(manifest_bytes)
+        replay = replay_evidence_package(
+            manifest_bytes,
+            identity_body=identity,
+            pages=pages,
+            corroboration_body=timing_bytes,
+            coverage_body=encoded(coverage),
+            correction_body=encoded(correction),
+            expected_manifest_sha256=pin,
+            scope=scope,
+            registry=REGISTRY,
+            canonical_player_id="luka-doncic",
+            event_id=EVENT_ID,
+            event_teams=teams,
+            game_id=game_id,
+            as_of=at,
+            coverage_max_age=timedelta(minutes=30),
+            correction_max_age=timedelta(minutes=30),
+        )
+        sample = replay.game.sample(Category.ASSISTS)
+        samples.append(asdict(sample) | {"played_at": sample.played_at.isoformat()})
+        directory = root / f"history-{slot}-{game_id}"
+        directory.mkdir()
+        for name, body in {
+            "manifest.json": manifest_bytes,
+            "identity.json": identity,
+            "page-0.json": pages[0][1],
+            "corroboration.json": timing_bytes,
+            "coverage.json": encoded(coverage),
+            "correction.json": encoded(correction),
+        }.items():
+            (directory / name).write_bytes(body)
+        arguments.extend(("--archive", str(directory), pin))
+    return samples, arguments
 
 
 def write_fixtures(root: Path, *, projection: bool = True, supporting: bool = True) -> None:
@@ -314,8 +420,8 @@ class FixtureCliTests(unittest.TestCase):
         self.assertIn("receipt-verified", error)
         store = storage.application_run_store()
         bundle = review_material(store, RUN)
-        for digest in source_digests:
-            self.assertIn(digest, str(bundle["review_material"]))
+        for source_digest in source_digests:
+            self.assertIn(source_digest, str(bundle["review_material"]))
         request = {key: value for key, value in bundle.items() if key != "review_material"}
         request.update(
             kind="VERDICT",
@@ -348,6 +454,79 @@ class FixtureCliTests(unittest.TestCase):
         self.assertEqual(result["t20_projection"], 9.5)
         self.assertTrue(result["fixture"])
         self.assertIsInstance(json.loads(self.view("evaluate")), dict)
+
+    def test_revised_history_pipeline_offline(self) -> None:
+        write_fixtures(self.fixtures)
+        key = candidate_key("Luka Doncic", category=Category.ASSISTS)
+        self.stage(1)
+        for slot in (2, 3):
+            samples, archives = replay_demo_history(self.root, slot)
+            stage_file = self.fixtures / str(slot) / "stage.json"
+            stage = json.loads(stage_file.read_bytes())
+            assessment = stage["evidence"][key]
+            assessment["items"] = [
+                item
+                for item in assessment["items"]
+                if item["kind"]
+                not in {
+                    "AVAILABILITY",
+                    "ROLE_MINUTES",
+                    "TEAMMATE_ABSENCE",
+                    "SAME_SEASON_H2H",
+                }
+            ]
+            last8 = next(item for item in assessment["items"] if item["kind"] == "LAST_8")
+            last8["samples"] = samples
+            assessment["judgment"].update(
+                confidence="MEDIUM",
+                supporting_evidence_ids=["last8"],
+                meaningful_risk_ids=["blowout-risk"],
+                rationale="Synthetic Controller assessment of replayed history and disclosed risk.",
+            )
+            stage_file.write_text(json.dumps(stage))
+            self.stage(slot)
+            before = self.inventory()
+            command = (
+                "history-compare",
+                "--run-id",
+                RUN,
+                "--candidate-key",
+                key,
+                "--snapshot",
+                str(slot),
+            )
+            code, output, errors = self.command(*command, *archives)
+            self.assertEqual(code, 0, errors)
+            result = json.loads(output)
+            self.assertEqual((result["status"], result["line"]), ("ANALYSIS_ONLY", 8 + slot / 2))
+            self.assertEqual(result["archive_provenance"], "synthetic")
+            self.assertEqual(result["counts"], {"HIGHER": 8, "LOWER": 0, "PUSH": 0})
+            self.assertEqual(self.command(*command, *archives, *archives[:3])[0], 1)
+            self.assertEqual(self.command(*command, *archives[:2], "0" * 64)[0], 1)
+            self.assertEqual(self.inventory(), before)
+
+        final = json.loads(self.view("final"))
+        (pick,) = final["proposed"]
+        self.assertEqual(
+            (pick["confidence"], pick["projection"], pick["t20_status"]),
+            ("MEDIUM", 9.5, "STILL STRONG"),
+        )
+        bundle = review_material(self.store, RUN)
+        request = {name: value for name, value in bundle.items() if name != "review_material"}
+        request.update(
+            kind="VERDICT",
+            verdict_json=json.dumps(
+                {"status": "PASS", "summary": "Synthetic reviewer", "findings": []}
+            ),
+        )
+        review = process_request(json.dumps(request), self.store, TIMES[2])
+        self.assertEqual(review.exit_code, 0, review.response)
+        self.assertEqual(review_status(self.store, RUN)["state"], "REVIEWED_FOR_JOSEPH")
+        code, _, errors = self.command("decide", "--run-id", RUN, answers=("APPROVE",))
+        self.assertEqual(code, 0, errors)
+        self.assertTrue(
+            any(row["event"] == "JOSEPH_APPROVED" for row in self.store.read_receipts(RUN))
+        )
 
     def test_missing_third_observation_never_qualifies(self) -> None:
         write_fixtures(self.fixtures, projection=False)

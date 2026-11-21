@@ -13,6 +13,88 @@ from tests.test_supporting_sources import EVENT, NOW, game_lines_payload
 
 
 class GameLinesLiveTests(unittest.TestCase):
+    def test_collect_cli_uses_saved_grant_then_verified_quota_and_never_repeats(self):
+        from contextlib import redirect_stderr, redirect_stdout
+        from io import StringIO
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        from fifth_pick.cli import main
+        from fifth_pick.snapshots import SnapshotEvidence
+        from fifth_pick.sources.game_lines import GameLinesGrant, record_game_lines_grant
+        from fifth_pick.sources.odds_api import events_url
+        from fifth_pick.sources.transport import UrllibTransport
+
+        now = datetime.now(UTC)
+        event = replace(EVENT, commence_time=now + timedelta(hours=2))
+        context = SimpleNamespace(
+            event_boards=(SimpleNamespace(evidence_mode=EvidenceMode.LIVE, events=(event,)),)
+        )
+        args = ["game-lines-collect", "--run-id", "series", "--phase", "analysis"]
+        board = game_lines_payload()[0]
+        board["commence_time"] = event.commence_time.isoformat()
+        board["bookmakers"][0]["last_update"] = now.isoformat()
+        discovery = {
+            key: board[key]
+            for key in ("id", "sport_key", "home_team", "away_team", "commence_time")
+        }
+        responses = [
+            HttpResponse(
+                200,
+                {"x-requests-last": "0", "x-requests-used": "10", "x-requests-remaining": "8"},
+                json.dumps([discovery]).encode(),
+            ),
+            HttpResponse(
+                200,
+                {"x-requests-last": "2", "x-requests-used": "12", "x-requests-remaining": "6"},
+                json.dumps([board]).encode(),
+            ),
+        ]
+        with (
+            TemporaryDirectory() as directory,
+            redirect_stdout(StringIO()),
+            redirect_stderr(StringIO()),
+        ):
+            store = RunStore(directory)
+            with (
+                patch("fifth_pick.cli.application_run_store", return_value=store),
+                patch("fifth_pick.cli.read_slate_run_context", return_value=context),
+                patch("fifth_pick.board_collection.live_slot_has_bound_aliases", return_value=True),
+                patch("fifth_pick.snapshots.read_receipted_snapshot_ledger") as ledger,
+                patch(
+                    "fifth_pick.sources.odds_api.os.environ",
+                    {"THE_ODDS_API_KEY": "test-credential"},
+                ),
+                patch.object(UrllibTransport, "get", side_effect=responses) as get,
+            ):
+                self.assertEqual(main(args, prompt=lambda _: "COLLECT GAME LINES"), 1)
+                record_game_lines_grant(
+                    store,
+                    GameLinesGrant("series", event.event_id, "fixture-book", ("analysis",), 2),
+                    now,
+                )
+                snapshot = Mock(
+                    spec=SnapshotEvidence,
+                    event_id=event.event_id,
+                    snapshot=SimpleNamespace(number=2),
+                    late=True,
+                )
+                ledger.return_value = (snapshot,)
+                self.assertEqual(main(args, prompt=lambda _: "COLLECT GAME LINES"), 1)
+                snapshot.late = False
+                self.assertEqual(main(args, prompt=lambda _: "cancel"), 1)
+                get.assert_not_called()
+                self.assertEqual(main(args, prompt=lambda _: "COLLECT GAME LINES"), 0)
+                self.assertEqual(main(args, prompt=lambda _: "COLLECT GAME LINES"), 1)
+                self.assertEqual(get.call_count, 2)
+                self.assertEqual(get.call_args_list[0].args[0], events_url())
+            self.assertTrue(
+                any(
+                    row["event"] == "LIVE_GAME_LINES_VALIDATED"
+                    for row in store.read_receipts("series")
+                )
+            )
+
     def test_missing_approval_and_interrupted_response_do_not_dispatch_again(self):
         from fifth_pick.sources.game_lines import (
             GameLinesGrant,

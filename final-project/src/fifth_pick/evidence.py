@@ -361,6 +361,11 @@ def _validate_evidence_items(
     return tuple(sorted(validated, key=lambda item: item.evidence_id))
 
 
+def history_line_outcome(value: float, line: float) -> str:
+    """Classify a historical value against the exact recorded platform line."""
+    return "HIGHER" if value > line else "LOWER" if value < line else "PUSH"
+
+
 def summarize_history(
     item: EvidenceItem,
     *,
@@ -401,15 +406,12 @@ def summarize_history(
         )
         incomplete = not samples
 
-    higher = sum(sample.value > line for sample in samples)
-    lower = sum(sample.value < line for sample in samples)
-    pushes = sum(sample.value == line for sample in samples)
+    outcomes = tuple(history_line_outcome(sample.value, line) for sample in samples)
+    higher = outcomes.count("HIGHER")
+    lower = outcomes.count("LOWER")
+    pushes = outcomes.count("PUSH")
     favorable = higher if direction is Direction.HIGHER else lower
     unfavorable = lower if direction is Direction.HIGHER else higher
-    outcomes = tuple(
-        "HIGHER" if sample.value > line else "LOWER" if sample.value < line else "PUSH"
-        for sample in samples
-    )
     return HistorySummary(
         kind=item.kind,
         sample_count=len(samples),
