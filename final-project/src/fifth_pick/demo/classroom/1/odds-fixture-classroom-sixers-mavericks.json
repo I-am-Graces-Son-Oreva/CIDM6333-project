@@ -1,0 +1,54 @@
+{
+  "id": "fixture-classroom-sixers-mavericks",
+  "sport_key": "basketball_nba",
+  "commence_time": "2026-11-15T20:00:00+00:00",
+  "home_team": "Synthetic 76ers",
+  "away_team": "Synthetic Mavericks",
+  "bookmakers": [
+    {
+      "key": "prizepicks",
+      "last_update": "2026-11-15T14:00:00+00:00",
+      "markets": [
+        {
+          "key": "player_points",
+          "last_update": "2026-11-15T14:00:00+00:00",
+          "outcomes": [
+            {
+              "name": "Over",
+              "description": "Joel Embiid",
+              "point": 27.5
+            }
+          ]
+        },
+        {
+          "key": "player_points_rebounds_assists",
+          "last_update": "2026-11-15T14:00:00+00:00",
+          "outcomes": [
+            {
+              "name": "Under",
+              "description": "Anthony Davis",
+              "point": 37.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "underdog",
+      "last_update": "2026-11-15T14:00:00+00:00",
+      "markets": [
+        {
+          "key": "player_points",
+          "last_update": "2026-11-15T14:00:00+00:00",
+          "outcomes": [
+            {
+              "name": "Over",
+              "description": "Tyrese Maxey",
+              "point": 22.5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

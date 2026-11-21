@@ -16,6 +16,7 @@ from uuid import uuid4
 
 from fifth_pick.errors import FifthPickError
 from fifth_pick.finalization import NO_ENTRY_RECOMMENDATION, _manifest_start_board
+from fifth_pick.fixture_input import digest, read_object
 from fifth_pick.fixture_workflow import audit_view, candidates_view
 from fifth_pick.menu_presentation import (
     ascii_borders,
@@ -47,7 +48,8 @@ from fifth_pick.menu_presentation import (
 from fifth_pick.slate_manifest import read_slate_run_context
 from fifth_pick.storage import RunStore
 
-DEMO = Path(__file__).with_name("demo")
+LEGACY_DEMO = Path(__file__).with_name("demo")
+DEMO = LEGACY_DEMO / "classroom"
 OPTIONS = (
     "Analyze NBA Slate",
     "View Candidates and Rankings",
@@ -1009,6 +1011,11 @@ def _perform(
     stages = len(state["stages"])
     final = state["final"]
     base = ["--run-id", run_id]
+    fixtures = DEMO
+    if stages in (1, 2):
+        legacy_aliases = read_object(LEGACY_DEMO / "1" / "stage.json")["aliases"]
+        if state["stages"][0]["aliases_digest"] == digest(legacy_aliases):
+            fixtures = LEGACY_DEMO
 
     def run(*args: str) -> dict[str, Any] | None:
         return _capture(terminal, lambda read: dispatch(args, read))
@@ -1035,7 +1042,9 @@ def _perform(
             return
         number = stages + 1
         confirm(f"Record Snapshot {number} using the bundled offline fixture?")
-        row = run("analyze", *base, "--snapshot", str(number), "--fixture", str(DEMO / str(number)))
+        row = run(
+            "analyze", *base, "--snapshot", str(number), "--fixture", str(fixtures / str(number))
+        )
         if row:
             fields(
                 "Snapshot recorded",
@@ -1063,7 +1072,7 @@ def _perform(
             return
         if stages == 2:
             confirm("Record Snapshot 3 and run the offline T-20 review?")
-            if not run("t20", *base, "--fixture", str(DEMO / "3")):
+            if not run("t20", *base, "--fixture", str(fixtures / "3")):
                 return
             state = _read_state(store, run_id)
         separator = " | " if ascii_borders() else " · "

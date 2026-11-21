@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 from typing import Any, cast
 
 from fifth_pick.fixture_workflow import collect_fixture_stage, final_view
-from fifth_pick.menu import DEMO
+from fifth_pick.menu import LEGACY_DEMO
 from fifth_pick.product_review import review_handoff, review_material, review_status
 from fifth_pick.review_bridge import process_request
 from fifth_pick.schedule import schedule_view
@@ -136,7 +136,7 @@ class ProductWorkflowTests(unittest.TestCase):
 
     def collect(self, count):
         for slot in range(1, count + 1):
-            collect_fixture_stage(self.store, self.run_id, slot, DEMO / str(slot))
+            collect_fixture_stage(self.store, self.run_id, slot, LEGACY_DEMO / str(slot))
 
     def test_fresh_controller_handoff_is_bounded_and_read_only(self):
         from contextlib import redirect_stderr, redirect_stdout

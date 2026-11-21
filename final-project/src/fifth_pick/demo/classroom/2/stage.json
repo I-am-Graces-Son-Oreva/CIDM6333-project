@@ -1,0 +1,780 @@
+{
+  "mode": "fixture",
+  "observed_at": "2026-11-15T16:50:00+00:00",
+  "aliases": {
+    "Luka Doncic": [
+      "luka-doncic"
+    ],
+    "Ambiguous Guard": [
+      "luka-doncic",
+      "jayson-tatum"
+    ],
+    "LeBron James": [
+      "lebron-james"
+    ],
+    "Austin Reaves": [
+      "austin-reaves"
+    ],
+    "Devin Booker": [
+      "devin-booker"
+    ],
+    "Jayson Tatum": [
+      "jayson-tatum"
+    ],
+    "Jaylen Brown": [
+      "jaylen-brown"
+    ],
+    "Derrick White": [
+      "derrick-white"
+    ],
+    "Kevin Durant": [
+      "kevin-durant"
+    ],
+    "Alperen Sengun": [
+      "alperen-sengun"
+    ],
+    "Joel Embiid": [
+      "joel-embiid"
+    ],
+    "Tyrese Maxey": [
+      "tyrese-maxey"
+    ],
+    "Anthony Davis": [
+      "anthony-davis"
+    ]
+  },
+  "evidence": {
+    "75f465d51420188007e48460ab00109c47670409571f8c3b93aacba38a921066": {
+      "items": [
+        {
+          "evidence_id": "matchup",
+          "kind": "MATCHUP",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence matchup.",
+          "excerpt": "Synthetic fixture excerpt matchup.",
+          "samples": [],
+          "facts": {
+            "team": "Synthetic Home",
+            "opponent": "Synthetic Away",
+            "season": "2026-27"
+          }
+        },
+        {
+          "evidence_id": "last8",
+          "kind": "LAST_8",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence last8.",
+          "excerpt": "Synthetic fixture excerpt last8.",
+          "samples": [
+            {
+              "played_at": "2026-11-07T00:00:00+00:00",
+              "value": 15,
+              "opponent": "Opponent 1",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-08T00:00:00+00:00",
+              "value": 10,
+              "opponent": "Opponent 2",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-09T00:00:00+00:00",
+              "value": 11,
+              "opponent": "Opponent 3",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-10T00:00:00+00:00",
+              "value": 12,
+              "opponent": "Opponent 4",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-11T00:00:00+00:00",
+              "value": 13,
+              "opponent": "Opponent 5",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-12T00:00:00+00:00",
+              "value": 14,
+              "opponent": "Opponent 6",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-13T00:00:00+00:00",
+              "value": 15,
+              "opponent": "Opponent 7",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-14T00:00:00+00:00",
+              "value": 10,
+              "opponent": "Opponent 8",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-15T00:00:00+00:00",
+              "value": 11,
+              "opponent": "Opponent 9",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "h2h",
+          "kind": "SAME_SEASON_H2H",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence h2h.",
+          "excerpt": "Synthetic fixture excerpt h2h.",
+          "samples": [
+            {
+              "played_at": "2026-10-10T00:00:00+00:00",
+              "value": 14,
+              "opponent": "Synthetic Away",
+              "season": "2025-26"
+            },
+            {
+              "played_at": "2026-11-01T00:00:00+00:00",
+              "value": 14,
+              "opponent": "Other Team",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-03T00:00:00+00:00",
+              "value": 15,
+              "opponent": "Synthetic Away",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "role",
+          "kind": "ROLE_MINUTES",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence role.",
+          "excerpt": "Synthetic fixture excerpt role.",
+          "samples": [],
+          "facts": {
+            "role": "synthetic-starter",
+            "minutes_security": "stable"
+          }
+        },
+        {
+          "evidence_id": "game-total",
+          "kind": "GAME_TOTAL",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence game-total.",
+          "excerpt": "Synthetic fixture excerpt game-total.",
+          "samples": [],
+          "facts": {
+            "total": 232.5
+          }
+        },
+        {
+          "evidence_id": "spread",
+          "kind": "POINT_SPREAD",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence spread.",
+          "excerpt": "Synthetic fixture excerpt spread.",
+          "samples": [],
+          "facts": {
+            "spread": -2.5
+          }
+        },
+        {
+          "evidence_id": "blowout-risk",
+          "kind": "BLOWOUT_RISK",
+          "effect": "CONCERN",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence blowout-risk.",
+          "excerpt": "Synthetic fixture excerpt blowout-risk.",
+          "samples": [],
+          "facts": {}
+        },
+        {
+          "evidence_id": "availability",
+          "kind": "AVAILABILITY",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture lists the player as available.",
+          "excerpt": "Luka Doncic available in this simulated observation."
+        }
+      ],
+      "judgment": {
+        "disposition": "QUALIFY",
+        "confidence": "HIGH",
+        "rationale": "Synthetic fixture judgment with cited supporting signals.",
+        "supporting_evidence_ids": [
+          "last8",
+          "role"
+        ],
+        "meaningful_risk_ids": [
+          "blowout-risk"
+        ],
+        "sufficient_evidence": true,
+        "major_unresolved_concern": false,
+        "senior_lower_support_ids": [],
+        "senior_lower_disclosure": ""
+      }
+    },
+    "7e8ee5742ba5dacac762875622e082da77f0994010f5a2233e5c03099c58fd17": {
+      "items": [
+        {
+          "evidence_id": "matchup",
+          "kind": "MATCHUP",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence matchup.",
+          "excerpt": "Synthetic fixture excerpt matchup.",
+          "samples": [],
+          "facts": {
+            "team": "Synthetic Celtics",
+            "opponent": "Synthetic Rockets",
+            "season": "2026-27"
+          }
+        },
+        {
+          "evidence_id": "last8",
+          "kind": "LAST_8",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence last8.",
+          "excerpt": "Synthetic fixture excerpt last8.",
+          "samples": [
+            {
+              "played_at": "2026-11-07T00:00:00+00:00",
+              "value": 48,
+              "opponent": "Opponent 1",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-08T00:00:00+00:00",
+              "value": 43,
+              "opponent": "Opponent 2",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-09T00:00:00+00:00",
+              "value": 44,
+              "opponent": "Opponent 3",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-10T00:00:00+00:00",
+              "value": 45,
+              "opponent": "Opponent 4",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-11T00:00:00+00:00",
+              "value": 46,
+              "opponent": "Opponent 5",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-12T00:00:00+00:00",
+              "value": 47,
+              "opponent": "Opponent 6",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-13T00:00:00+00:00",
+              "value": 48,
+              "opponent": "Opponent 7",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-14T00:00:00+00:00",
+              "value": 43,
+              "opponent": "Opponent 8",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-15T00:00:00+00:00",
+              "value": 44,
+              "opponent": "Opponent 9",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "h2h",
+          "kind": "SAME_SEASON_H2H",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence h2h.",
+          "excerpt": "Synthetic fixture excerpt h2h.",
+          "samples": [
+            {
+              "played_at": "2026-10-10T00:00:00+00:00",
+              "value": 47,
+              "opponent": "Synthetic Rockets",
+              "season": "2025-26"
+            },
+            {
+              "played_at": "2026-11-01T00:00:00+00:00",
+              "value": 47,
+              "opponent": "Other Team",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-03T00:00:00+00:00",
+              "value": 48,
+              "opponent": "Synthetic Rockets",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "role",
+          "kind": "ROLE_MINUTES",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence role.",
+          "excerpt": "Synthetic fixture excerpt role.",
+          "samples": [],
+          "facts": {
+            "role": "synthetic-starter",
+            "minutes_security": "stable"
+          }
+        },
+        {
+          "evidence_id": "game-total",
+          "kind": "GAME_TOTAL",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence game-total.",
+          "excerpt": "Synthetic fixture excerpt game-total.",
+          "samples": [],
+          "facts": {
+            "total": 232.5
+          }
+        },
+        {
+          "evidence_id": "spread",
+          "kind": "POINT_SPREAD",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence spread.",
+          "excerpt": "Synthetic fixture excerpt spread.",
+          "samples": [],
+          "facts": {
+            "spread": -2.5
+          }
+        },
+        {
+          "evidence_id": "blowout-risk",
+          "kind": "BLOWOUT_RISK",
+          "effect": "CONCERN",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence blowout-risk.",
+          "excerpt": "Synthetic fixture excerpt blowout-risk.",
+          "samples": [],
+          "facts": {}
+        },
+        {
+          "evidence_id": "availability",
+          "kind": "AVAILABILITY",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture lists the player as available.",
+          "excerpt": "Jayson Tatum available in this simulated observation."
+        }
+      ],
+      "judgment": {
+        "disposition": "QUALIFY",
+        "confidence": "HIGH",
+        "rationale": "Synthetic fixture judgment with cited supporting signals.",
+        "supporting_evidence_ids": [
+          "last8",
+          "role"
+        ],
+        "meaningful_risk_ids": [
+          "blowout-risk"
+        ],
+        "sufficient_evidence": true,
+        "major_unresolved_concern": false,
+        "senior_lower_support_ids": [],
+        "senior_lower_disclosure": ""
+      }
+    },
+    "08d7497f51c7e1f0810e6e6bc39143b8896c2a7e3b50c2e05d141dca896d0a95": {
+      "items": [
+        {
+          "evidence_id": "matchup",
+          "kind": "MATCHUP",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence matchup.",
+          "excerpt": "Synthetic fixture excerpt matchup.",
+          "samples": [],
+          "facts": {
+            "team": "Synthetic Rockets",
+            "opponent": "Synthetic Celtics",
+            "season": "2026-27"
+          }
+        },
+        {
+          "evidence_id": "last8",
+          "kind": "LAST_8",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence last8.",
+          "excerpt": "Synthetic fixture excerpt last8.",
+          "samples": [
+            {
+              "played_at": "2026-11-07T00:00:00+00:00",
+              "value": 32,
+              "opponent": "Opponent 1",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-08T00:00:00+00:00",
+              "value": 27,
+              "opponent": "Opponent 2",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-09T00:00:00+00:00",
+              "value": 28,
+              "opponent": "Opponent 3",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-10T00:00:00+00:00",
+              "value": 29,
+              "opponent": "Opponent 4",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-11T00:00:00+00:00",
+              "value": 30,
+              "opponent": "Opponent 5",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-12T00:00:00+00:00",
+              "value": 31,
+              "opponent": "Opponent 6",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-13T00:00:00+00:00",
+              "value": 32,
+              "opponent": "Opponent 7",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-14T00:00:00+00:00",
+              "value": 27,
+              "opponent": "Opponent 8",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-15T00:00:00+00:00",
+              "value": 28,
+              "opponent": "Opponent 9",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "h2h",
+          "kind": "SAME_SEASON_H2H",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence h2h.",
+          "excerpt": "Synthetic fixture excerpt h2h.",
+          "samples": [
+            {
+              "played_at": "2026-10-10T00:00:00+00:00",
+              "value": 31,
+              "opponent": "Synthetic Celtics",
+              "season": "2025-26"
+            },
+            {
+              "played_at": "2026-11-01T00:00:00+00:00",
+              "value": 31,
+              "opponent": "Other Team",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-03T00:00:00+00:00",
+              "value": 32,
+              "opponent": "Synthetic Celtics",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "role",
+          "kind": "ROLE_MINUTES",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence role.",
+          "excerpt": "Synthetic fixture excerpt role.",
+          "samples": [],
+          "facts": {
+            "role": "synthetic-starter",
+            "minutes_security": "stable"
+          }
+        },
+        {
+          "evidence_id": "game-total",
+          "kind": "GAME_TOTAL",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence game-total.",
+          "excerpt": "Synthetic fixture excerpt game-total.",
+          "samples": [],
+          "facts": {
+            "total": 232.5
+          }
+        },
+        {
+          "evidence_id": "spread",
+          "kind": "POINT_SPREAD",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence spread.",
+          "excerpt": "Synthetic fixture excerpt spread.",
+          "samples": [],
+          "facts": {
+            "spread": -2.5
+          }
+        },
+        {
+          "evidence_id": "blowout-risk",
+          "kind": "BLOWOUT_RISK",
+          "effect": "CONCERN",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence blowout-risk.",
+          "excerpt": "Synthetic fixture excerpt blowout-risk.",
+          "samples": [],
+          "facts": {}
+        },
+        {
+          "evidence_id": "availability",
+          "kind": "AVAILABILITY",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture lists the player as available.",
+          "excerpt": "Kevin Durant available in this simulated observation."
+        }
+      ],
+      "judgment": {
+        "disposition": "QUALIFY",
+        "confidence": "HIGH",
+        "rationale": "Synthetic fixture judgment with cited supporting signals.",
+        "supporting_evidence_ids": [
+          "last8",
+          "role"
+        ],
+        "meaningful_risk_ids": [
+          "blowout-risk"
+        ],
+        "sufficient_evidence": true,
+        "major_unresolved_concern": false,
+        "senior_lower_support_ids": [],
+        "senior_lower_disclosure": ""
+      }
+    },
+    "5f968d14804c62ff7b7095b3ef4f7450adc7091689dae2099a12f83064765ebd": {
+      "items": [
+        {
+          "evidence_id": "matchup",
+          "kind": "MATCHUP",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence matchup.",
+          "excerpt": "Synthetic fixture excerpt matchup.",
+          "samples": [],
+          "facts": {
+            "team": "Synthetic 76ers",
+            "opponent": "Synthetic Mavericks",
+            "season": "2026-27"
+          }
+        },
+        {
+          "evidence_id": "last8",
+          "kind": "LAST_8",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence last8.",
+          "excerpt": "Synthetic fixture excerpt last8.",
+          "samples": [
+            {
+              "played_at": "2026-11-07T00:00:00+00:00",
+              "value": 35,
+              "opponent": "Opponent 1",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-08T00:00:00+00:00",
+              "value": 30,
+              "opponent": "Opponent 2",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-09T00:00:00+00:00",
+              "value": 31,
+              "opponent": "Opponent 3",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-10T00:00:00+00:00",
+              "value": 32,
+              "opponent": "Opponent 4",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-11T00:00:00+00:00",
+              "value": 33,
+              "opponent": "Opponent 5",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-12T00:00:00+00:00",
+              "value": 34,
+              "opponent": "Opponent 6",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-13T00:00:00+00:00",
+              "value": 35,
+              "opponent": "Opponent 7",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-14T00:00:00+00:00",
+              "value": 30,
+              "opponent": "Opponent 8",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-15T00:00:00+00:00",
+              "value": 31,
+              "opponent": "Opponent 9",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "h2h",
+          "kind": "SAME_SEASON_H2H",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence h2h.",
+          "excerpt": "Synthetic fixture excerpt h2h.",
+          "samples": [
+            {
+              "played_at": "2026-10-10T00:00:00+00:00",
+              "value": 34,
+              "opponent": "Synthetic Mavericks",
+              "season": "2025-26"
+            },
+            {
+              "played_at": "2026-11-01T00:00:00+00:00",
+              "value": 34,
+              "opponent": "Other Team",
+              "season": "2026-27"
+            },
+            {
+              "played_at": "2026-11-03T00:00:00+00:00",
+              "value": 35,
+              "opponent": "Synthetic Mavericks",
+              "season": "2026-27"
+            }
+          ],
+          "facts": {}
+        },
+        {
+          "evidence_id": "role",
+          "kind": "ROLE_MINUTES",
+          "effect": "SUPPORTS",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture evidence role.",
+          "excerpt": "Synthetic fixture excerpt role.",
+          "samples": [],
+          "facts": {
+            "role": "synthetic-starter",
+            "minutes_security": "stable"
+          }
+        },
+        {
+          "evidence_id": "game-total",
+          "kind": "GAME_TOTAL",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence game-total.",
+          "excerpt": "Synthetic fixture excerpt game-total.",
+          "samples": [],
+          "facts": {
+            "total": 232.5
+          }
+        },
+        {
+          "evidence_id": "spread",
+          "kind": "POINT_SPREAD",
+          "effect": "SUPPORTS",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence spread.",
+          "excerpt": "Synthetic fixture excerpt spread.",
+          "samples": [],
+          "facts": {
+            "spread": -2.5
+          }
+        },
+        {
+          "evidence_id": "blowout-risk",
+          "kind": "BLOWOUT_RISK",
+          "effect": "CONCERN",
+          "significance": "MEANINGFUL",
+          "claim": "Synthetic fixture evidence blowout-risk.",
+          "excerpt": "Synthetic fixture excerpt blowout-risk.",
+          "samples": [],
+          "facts": {}
+        },
+        {
+          "evidence_id": "availability",
+          "kind": "AVAILABILITY",
+          "effect": "NEUTRAL",
+          "significance": "IMPORTANT",
+          "claim": "Synthetic fixture lists the player as available.",
+          "excerpt": "Joel Embiid available in this simulated observation."
+        }
+      ],
+      "judgment": {
+        "disposition": "QUALIFY",
+        "confidence": "HIGH",
+        "rationale": "Synthetic fixture judgment with cited supporting signals.",
+        "supporting_evidence_ids": [
+          "last8",
+          "role"
+        ],
+        "meaningful_risk_ids": [
+          "blowout-risk"
+        ],
+        "sufficient_evidence": true,
+        "major_unresolved_concern": false,
+        "senior_lower_support_ids": [],
+        "senior_lower_disclosure": ""
+      }
+    }
+  }
+}

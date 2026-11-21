@@ -33,7 +33,7 @@ sh final-project/scripts/course-demo.sh
 ```
 
 The script replays checked-in synthetic provider responses. It prints rejected
-inputs, three simulated timestamps, a one-pick proposal, an empty proposal
+inputs, three simulated timestamps, three picks awaiting Joseph and one open slot, an empty proposal
 with a missing third observation, and audit commands for both runs. The
 regression replay exercises review receipt binding, explicit approval before
 simulated settlement, both selection ceilings, and no refill. The menu defaults
@@ -108,7 +108,7 @@ Use Route A only. See the [gate record](docs/fifth-pick/gates.md).
 | Location | Purpose |
 | --- | --- |
 | [src/fifth_pick](src/fifth_pick/) | Python CLI package |
-| [Bundled examples](src/fifth_pick/demo/) | Three synthetic observations and [example audit output](docs/fifth-pick/evidence/course-demo-f39cf82.jsonl) |
+| [Bundled classroom fixtures](src/fifth_pick/demo/classroom/) | Three synthetic observations and [example audit output](docs/fifth-pick/evidence/course-demo-f39cf82.jsonl) |
 | [tests](tests/) | Fifth Pick tests and source fixtures |
 | [config/fifth-pick](config/fifth-pick/) | Frozen universe, source policy, methodology, and governance |
 | [docs](docs/) | Design, guides, presentation, and preserved evidence |

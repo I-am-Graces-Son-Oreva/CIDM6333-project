@@ -10,7 +10,7 @@ In **Demo Mode**, select **Analyze NBA Slate** twice to collect the first two
 fictional observations. Inspect **View Candidates and Rankings** and confirm
 the watchlist is provisional. Select **Run T-20 Review** and inspect **View
 Final Recommendations**. An attempt to record results before explicit approval
-stops. Open **Approve / Reject / Modify**, review the exact line, and explicitly
+stops. Open **Approve / Reject / Modify**, review the exact lines, and explicitly
 choose the synthetic demo decision. Then **Record Results** and inspect
 **View Audit and Receipts**. No provider key or network access is needed.
 
@@ -51,8 +51,10 @@ sh final-project/scripts/course-demo.sh
 
 The script runs the standalone CLI against the bundled synthetic inputs.
 Fixture A shows that snapshot 4 is invalid, ambiguous identity and a
-missing grant block lines, and the three timestamped observations support
-one proposal. Fixture B removes the provider lines from a temporary copy of
+missing grant block lines, and the three timestamped snapshots narrow a 12-player, four-game slate to three proposals.
+Luka Doncic’s PrizePicks assists, Jayson Tatum’s Underdog PRA, and Joel Embiid’s
+PrizePicks points await Joseph. Kevin Durant’s line disappears at T-20 and the fourth
+slot stays open. Fixture B removes all provider lines from a temporary copy of
 the third input. The T-20 check then produces `NO ENTRY RECOMMENDED TODAY.`
 The command prints both run IDs and audit commands. A separate CLI process
 reconstructs the bounded review checkpoint from the first run ID. Each run is retained

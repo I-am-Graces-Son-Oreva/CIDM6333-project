@@ -4,7 +4,7 @@
 
 The Fifth Pick is a Python CLI for disciplined NBA fantasy-prop selection.
 It validates evidence, applies the frozen selection rules, and leaves the
-final decision to Joseph. The classroom rehearsal uses synthetic data.
+final decision to Joseph. The classroom rehearsal uses a synthetic four-game slate with 12 players.
 
 - [Final project README](final-project/README.md)
 - Technical design · [PDF](final-project/docs/fifth-pick/technical-design.pdf) · [HTML](final-project/docs/fifth-pick/technical-design.html)

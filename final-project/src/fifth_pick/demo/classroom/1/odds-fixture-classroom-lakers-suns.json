@@ -1,0 +1,65 @@
+{
+  "id": "fixture-classroom-lakers-suns",
+  "sport_key": "basketball_nba",
+  "commence_time": "2026-11-15T20:00:00+00:00",
+  "home_team": "Synthetic Lakers",
+  "away_team": "Synthetic Suns",
+  "bookmakers": [
+    {
+      "key": "prizepicks",
+      "last_update": "2026-11-15T14:00:00+00:00",
+      "markets": [
+        {
+          "key": "player_points",
+          "last_update": "2026-11-15T14:00:00+00:00",
+          "outcomes": [
+            {
+              "name": "Over",
+              "description": "LeBron James",
+              "point": 22.5
+            }
+          ]
+        },
+        {
+          "key": "player_points_rebounds_assists",
+          "last_update": "2026-11-15T14:00:00+00:00",
+          "outcomes": [
+            {
+              "name": "Under",
+              "description": "Austin Reaves",
+              "point": 28.5
+            }
+          ]
+        },
+        {
+          "key": "player_rebounds_assists",
+          "last_update": "2026-11-15T14:00:00+00:00",
+          "outcomes": [
+            {
+              "name": "Over",
+              "description": "LeBron James",
+              "point": 13.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "underdog",
+      "last_update": "2026-11-15T14:00:00+00:00",
+      "markets": [
+        {
+          "key": "player_points",
+          "last_update": "2026-11-15T14:00:00+00:00",
+          "outcomes": [
+            {
+              "name": "Over",
+              "description": "Devin Booker",
+              "point": 25.5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

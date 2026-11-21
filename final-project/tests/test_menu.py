@@ -255,7 +255,7 @@ class MenuWorkflowTests(unittest.TestCase):
             "ASSISTS HIGHER 9.5",
             "Settlement blocked",
             "Cancelled before submitting the action",
-            "Results: 1/1",
+            "Results: 1/3",
             "verified audit and receipts",
             "Board records",
             "Snapshot history",
@@ -308,6 +308,76 @@ class MenuWorkflowTests(unittest.TestCase):
                 )
             self.assertEqual(main(["final", "--run-id", run_id]), 0)
 
+    def test_menu_resumes_original_bundled_demo(self) -> None:
+        from contextlib import redirect_stdout
+
+        from fifth_pick.menu import LEGACY_DEMO
+
+        with redirect_stdout(io.StringIO()):
+            self.assertEqual(
+                main(
+                    [
+                        "analyze",
+                        "--run-id",
+                        "demo-test",
+                        "--snapshot",
+                        "1",
+                        "--fixture",
+                        str(LEGACY_DEMO / "1"),
+                    ]
+                ),
+                0,
+            )
+        output = self.run_menu(
+            [
+                "enter",
+                "down",
+                "enter",
+                "escape",
+                "down",
+                "down",
+                "enter",
+                "down",
+                "enter",
+                "escape",
+                b"q",
+            ]
+        )
+        self.assertIn("T-20 REVIEW", output)
+        self.assertIn("Luka Doncic", output)
+        self.assertNotIn("Jayson Tatum", output)
+
+    def test_default_classroom_slate_screens_twelve_players_and_leaves_one_slot_open(self) -> None:
+        from fifth_pick.fixture_workflow import candidates_view, final_view
+
+        self.prepare_proposal("demo-test")
+        candidates = candidates_view(self.store, "demo-test")["candidates"]
+        assert isinstance(candidates, list)
+        self.assertEqual(len({row["player"] for row in candidates}), 12)
+        self.assertEqual({row["platform"] for row in candidates}, {"prizepicks", "underdog"})
+        self.assertEqual(
+            {row["category"] for row in candidates},
+            {"POINTS", "REBOUNDS", "ASSISTS", "PRA", "REBOUNDS_ASSISTS"},
+        )
+        self.assertEqual({row["direction"] for row in candidates}, {"HIGHER", "LOWER"})
+        durant = next(row for row in candidates if row["player"] == "Kevin Durant")
+        self.assertEqual(durant["snapshots"], [1, 2])
+        self.assertEqual(durant["status"], "REMOVE RECOMMENDED")
+        final, blocked = final_view(self.store, "demo-test")
+        self.assertFalse(blocked)
+        self.assertEqual(final["state"], "AWAITING_JOSEPH")
+        slate = final["slate"]
+        picks = final["proposed"]
+        assert isinstance(slate, dict) and isinstance(picks, list)
+        self.assertEqual(slate["game_count"], 4)
+        self.assertEqual(slate["maximum_selections"], 4)
+        self.assertEqual(
+            {row["player"] for row in picks},
+            {"Luka Doncic", "Jayson Tatum", "Joel Embiid"},
+        )
+        for row in picks:
+            self.assertEqual(row["t20_status"], "STILL STRONG")
+
     def test_compares_provisional_candidates_in_one_table(self) -> None:
         from contextlib import redirect_stdout
 
@@ -334,12 +404,15 @@ class MenuWorkflowTests(unittest.TestCase):
             _show_candidates(self.store, "demo-test", _read_state(self.store, "demo-test"))
         screen = output.getvalue()
         self.assertEqual(screen.count("┌"), 1)
-        self.assertEqual(screen.count("Pending"), 2)
-        self.assertIn("Evidence gap", screen)
+        self.assertIn("Pending", screen)
+        self.assertIn("LeBron James", screen)
+        self.assertIn("Kevin Durant", screen)
+        statuses = [line.split("│")[-2].strip() for line in screen.splitlines() if "│" in line]
+        self.assertIn("Evidence gap", " ".join(statuses))
         self.assertNotIn("Still strong", screen)
         self.assertIn("PP = PrizePicks", screen)
         self.assertIn("AST = Assists", screen)
-        self.assertNotIn("UD =", screen)
+        self.assertIn("UD = Underdog", screen)
         self.assertTrue(all(len(line) <= 80 for line in screen.splitlines()))
         header = next(line for line in screen.splitlines() if "Confidence" in line)
         self.assertEqual(
@@ -401,7 +474,7 @@ class MenuWorkflowTests(unittest.TestCase):
         with redirect_stdout(output), patch.dict("os.environ", {"COLUMNS": "100", "TERM": "xterm"}):
             _show_candidates(self.store, "demo-test", _read_state(self.store, "demo-test"))
         rows = [line for line in output.getvalue().splitlines() if "Luka Doncic" in line]
-        self.assertEqual(len(rows), 2)
+        self.assertEqual(len(rows), 3)
         self.assertIn("Higher", rows[0])
         self.assertIn("High", rows[0])
         self.assertIn("Still strong", rows[0])

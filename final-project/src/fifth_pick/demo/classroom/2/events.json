@@ -1,0 +1,30 @@
+[
+  {
+    "id": "fixture-m6-event",
+    "sport_key": "basketball_nba",
+    "commence_time": "2026-11-15T20:00:00+00:00",
+    "home_team": "Synthetic Home",
+    "away_team": "Synthetic Away"
+  },
+  {
+    "id": "fixture-classroom-lakers-suns",
+    "sport_key": "basketball_nba",
+    "commence_time": "2026-11-15T20:00:00+00:00",
+    "home_team": "Synthetic Lakers",
+    "away_team": "Synthetic Suns"
+  },
+  {
+    "id": "fixture-classroom-celtics-rockets",
+    "sport_key": "basketball_nba",
+    "commence_time": "2026-11-15T20:00:00+00:00",
+    "home_team": "Synthetic Celtics",
+    "away_team": "Synthetic Rockets"
+  },
+  {
+    "id": "fixture-classroom-sixers-mavericks",
+    "sport_key": "basketball_nba",
+    "commence_time": "2026-11-15T20:00:00+00:00",
+    "home_team": "Synthetic 76ers",
+    "away_team": "Synthetic Mavericks"
+  }
+]

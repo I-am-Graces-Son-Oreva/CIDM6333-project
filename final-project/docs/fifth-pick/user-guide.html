@@ -148,8 +148,10 @@ sh final-project/scripts/course-demo.sh</code></pre>
         <li>Choose <strong>Run T-20 Review</strong>. This records Snapshot 3 and rechecks candidates
           at the fixture’s simulated twenty-minute checkpoint.</li>
         <li>Choose <strong>View Final Recommendations</strong> and confirm creation of the proposal.
-          The positive example shows Luka Doncic, PrizePicks, Assists Higher 9.5,
-          <code>HIGH</code> confidence and <code>STILL STRONG</code> at T-20.</li>
+          The synthetic four-game slate starts with 12 players. Three selections await
+          approval: Luka Doncic (PrizePicks Assists Higher 9.5), Jayson Tatum
+          (Underdog PRA Higher 41.5), and Joel Embiid (PrizePicks Points Higher 28.5).
+          The fourth slot stays open.</li>
         <li>Choose <strong>Record Results</strong> before approval to see the settlement guard.</li>
         <li>Open <strong>Approve / Reject / Modify</strong> to see the exact proposal and the
           decision form. In Demo Mode, you can enter <code>APPROVE</code>, <code>REJECT</code>, or
@@ -166,8 +168,7 @@ sh final-project/scripts/course-demo.sh</code></pre>
         <code>uv run --offline --no-sync fifth-pick menu --run-id RUN_ID</code> with
         that ID substituted.</p>
       <h3>Record the synthetic settlement after approval</h3>
-      <p>In <strong>Record Results</strong>, select the approved pick and enter the
-        following values. Type <code>FIXTURE</code> at the settlement reference
+      <p>In <strong>Record Results</strong>, select Luka Doncic’s approved assists pick and enter the following values. Type <code>FIXTURE</code> at the settlement reference
         prompt to use the selected pick’s synthetic reference.</p>
       <dl>
         <dt>Outcome and source</dt>
@@ -187,7 +188,7 @@ sh final-project/scripts/course-demo.sh</code></pre>
         run ID for each new scenario and keep it the same throughout the run.</p>
       <pre><code>fp() { uv run --offline --no-sync fifth-pick "$@"; }
 run_id="course-$(date +%Y%m%d-%H%M%S)-$$"
-demo=final-project/src/fifth_pick/demo
+demo=final-project/src/fifth_pick/demo/classroom
 
 fp analyze --run-id "$run_id" --snapshot 1 --fixture "$demo/1"
 fp analyze --run-id "$run_id" --snapshot 2 --fixture "$demo/2"

@@ -143,8 +143,8 @@ answer and press Enter, or press Esc to cancel. Confirmation screens start on
 3. Choose **Run T-20 Review**, then **View Final Recommendations**. Confirm
    creation of the proposal the first time you open final recommendations.
 4. Try **Record Results** before approval to see settlement blocked.
-5. Open **Approve / Reject / Modify**. Joseph reviews the displayed selection
-   and types his decision explicitly.
+5. Open **Approve / Reject / Modify**. The 12-player, four-game fixture proposes three selections and leaves one slot open.
+   The operator reviews the displayed lines and enters an explicit demo decision.
 6. Inspect **View Audit and Receipts**. The screen shows the receipt trail and
    gives the command for the full evidence.
 
@@ -155,8 +155,8 @@ To demonstrate settlement after approval, select the approved pick under
 The fixture excerpt is `Synthetic PrizePicks Luka Doncic Assists Higher 9.5 settled HIT.`
 Review the excerpt against the displayed pick before entering `YES`.
 
-The fixture is bundled under `final-project/src/fifth_pick/demo/` and uses the same synthetic
-inputs as the deterministic CLI integration tests.
+The fixture is bundled under `final-project/src/fifth_pick/demo/classroom/`.
+The original one-game fixture remains available for regression tests and existing runs.
 
 ### Product evidence and live board preparation
 

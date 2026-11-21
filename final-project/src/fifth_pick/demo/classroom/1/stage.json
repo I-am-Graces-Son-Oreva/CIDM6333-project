@@ -1,0 +1,47 @@
+{
+  "mode": "fixture",
+  "observed_at": "2026-11-15T14:00:00+00:00",
+  "aliases": {
+    "Luka Doncic": [
+      "luka-doncic"
+    ],
+    "Ambiguous Guard": [
+      "luka-doncic",
+      "jayson-tatum"
+    ],
+    "LeBron James": [
+      "lebron-james"
+    ],
+    "Austin Reaves": [
+      "austin-reaves"
+    ],
+    "Devin Booker": [
+      "devin-booker"
+    ],
+    "Jayson Tatum": [
+      "jayson-tatum"
+    ],
+    "Jaylen Brown": [
+      "jaylen-brown"
+    ],
+    "Derrick White": [
+      "derrick-white"
+    ],
+    "Kevin Durant": [
+      "kevin-durant"
+    ],
+    "Alperen Sengun": [
+      "alperen-sengun"
+    ],
+    "Joel Embiid": [
+      "joel-embiid"
+    ],
+    "Tyrese Maxey": [
+      "tyrese-maxey"
+    ],
+    "Anthony Davis": [
+      "anthony-davis"
+    ]
+  },
+  "evidence": {}
+}
