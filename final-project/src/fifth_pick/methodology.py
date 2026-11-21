@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from datetime import datetime
 from enum import StrEnum
+from zoneinfo import ZoneInfo
 
 from fifth_pick.authorization import AuthorizationGate
 from fifth_pick.config import load_configs
@@ -585,7 +586,7 @@ def evaluate_candidate(
     foul_trouble = foul_trouble or (
         False if registry_player is None else registry_player.foul_trouble
     )
-    history = _history_summaries(evidence, candidate)
+    history = _history_summaries(evidence, candidate, event_start=snapshots[0].event_start)
     gaps = list(canonical_gaps)
     summaries = {summary.kind: summary for summary in history}
     last8 = summaries.get(EvidenceKind.LAST_8)
@@ -902,7 +903,7 @@ def _projection_movement(snapshots: tuple[SnapshotEvidence, ...]) -> ProjectionM
 
 
 def _history_summaries(
-    evidence: tuple[EvidenceItem, ...], candidate: Candidate
+    evidence: tuple[EvidenceItem, ...], candidate: Candidate, *, event_start: datetime | None = None
 ) -> tuple[HistorySummary, ...]:
     matchup = next((item for item in evidence if item.kind is EvidenceKind.MATCHUP), None)
     facts = {} if matchup is None else matchup.facts or {}
@@ -920,16 +921,39 @@ def _history_summaries(
                     opponent=str(opponent or "unknown"),
                 )
             )
-        elif item.kind is EvidenceKind.SAME_SEASON_H2H and season and opponent:
-            summaries.append(
-                summarize_history(
-                    item,
-                    line=candidate.projection,
-                    direction=candidate.direction,
-                    current_season=str(season),
-                    opponent=str(opponent),
+        elif item.kind is EvidenceKind.SAME_SEASON_H2H:
+            h2h_season, h2h_opponent = season, opponent
+            if (
+                matchup is None
+                and item.evidence_mode is EvidenceMode.LIVE
+                and event_start is not None
+                and event_start.utcoffset() is not None
+                and item.facts is not None
+                and item.facts.get("event_id") == candidate.event
+                and item.facts.get("corroboration_sha256")
+            ):
+                # The LIVE history reader already restricted these rows to the
+                # independently corroborated event opponent and requested season.
+                scopes = {(sample.season, sample.opponent) for sample in item.samples}
+                chicago = event_start.astimezone(ZoneInfo("America/Chicago"))
+                year = chicago.year if chicago.month >= 10 else chicago.year - 1
+                expected = f"{year}-{(year + 1) % 100:02d}"
+                if len(scopes) == 1 and all(
+                    sample.played_at < event_start for sample in item.samples
+                ):
+                    ((recorded_season, recorded_opponent),) = scopes
+                    if recorded_season == expected:
+                        h2h_season, h2h_opponent = recorded_season, recorded_opponent
+            if h2h_season and h2h_opponent:
+                summaries.append(
+                    summarize_history(
+                        item,
+                        line=candidate.projection,
+                        direction=candidate.direction,
+                        current_season=str(h2h_season),
+                        opponent=str(h2h_opponent),
+                    )
                 )
-            )
     return tuple(sorted(summaries, key=lambda summary: summary.kind.value))
 
 

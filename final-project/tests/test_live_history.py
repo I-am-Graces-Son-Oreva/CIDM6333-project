@@ -5,7 +5,9 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from fifth_pick.models import Category
+from fifth_pick.evidence import EvidenceKind
+from fifth_pick.methodology import _history_summaries
+from fifth_pick.models import Candidate, Category, Direction, Platform
 from fifth_pick.receipts import Receipt
 from fifth_pick.sources.base import SourceError
 from fifth_pick.sources.bdl_history import HistoryRetrieval
@@ -149,7 +151,27 @@ class LiveHistoryTests(unittest.TestCase):
                         self.assertEqual(store.read_receipts("run"), ())
                     else:
                         self.assertEqual(sorted(len(item.samples) for item in issue(proof)), [8, 8])
-                        self.assertEqual(sorted(len(item.samples) for item in read()), [8, 8])
+                        items = read()
+                        self.assertEqual(sorted(len(item.samples) for item in items), [8, 8])
+                        candidate = Candidate(
+                            "Luka Doncic",
+                            Platform.PRIZEPICKS,
+                            Category.POINTS,
+                            Direction.HIGHER,
+                            22.5,
+                            "event",
+                        )
+                        summaries = {
+                            summary.kind: summary
+                            for summary in _history_summaries(items, candidate, event_start=NOW)
+                        }
+                        self.assertEqual(summaries[EvidenceKind.SAME_SEASON_H2H].higher_count, 8)
+                        wrong_season = _history_summaries(
+                            items, candidate, event_start=NOW.replace(year=2027)
+                        )
+                        self.assertNotIn(
+                            EvidenceKind.SAME_SEASON_H2H, {summary.kind for summary in wrong_season}
+                        )
                         with self.assertRaisesRegex(SourceError, "archive already exists"):
                             issue(proof)
                         (path / f"{KEY}-response.json").write_bytes(b"{}")

@@ -1,6 +1,7 @@
 """Receipt-backed LIVE board and supporting-source analysis."""
 
 from collections import defaultdict
+from dataclasses import asdict, replace
 from datetime import UTC, datetime, timedelta
 
 from fifth_pick.errors import ValidationError
@@ -13,7 +14,12 @@ from fifth_pick.finalization import (
     finalize_slate,
 )
 from fifth_pick.live_judgment import live_judgment_time, read_live_judgment
-from fifth_pick.methodology import CandidateCase, EvaluationStatus, evaluate_candidate
+from fifth_pick.methodology import (
+    CandidateCase,
+    EvaluationStatus,
+    _history_summaries,
+    evaluate_candidate,
+)
 from fifth_pick.models import Category, ReasonCode
 from fifth_pick.schedule import schedule_view
 from fifth_pick.slate_manifest import read_slate_run_context
@@ -26,7 +32,7 @@ from fifth_pick.snapshots import (
 from fifth_pick.sources.base import EvidenceMode, SourceError, SourceEvent
 from fifth_pick.sources.game_lines import live_game_line_items
 from fifth_pick.sources.injury_pdf import live_injury_items
-from fifth_pick.sources.live_history import read_live_history_items
+from fifth_pick.sources.live_history import live_history_source_approved, read_live_history_items
 from fifth_pick.storage import RunStore, application_run_store, collection_lock
 from fifth_pick.t20_review import review_t20, review_window_allows, t20_source_gaps
 
@@ -134,6 +140,8 @@ def live_analysis_view(
             missed[entry.candidate_key].append(entry)
     candidates = []
     run_blockers: dict[str, None] = {}
+    if slot >= 2 and not live_history_source_approved():
+        run_blockers["No approved LIVE player-history source is configured."] = None
     for key, rows in snapshots.items():
         scoped = [row for row in rows if row.snapshot.number <= slot]
         if not scoped:
@@ -211,9 +219,42 @@ def live_analysis_view(
             else None
         )
         run_blockers.update(dict.fromkeys(blockers))
+        observations = [
+            {
+                "snapshot": row.snapshot.number,
+                "platform": row.snapshot.observation.platform.value,
+                "market": row.snapshot.observation.category.value,
+                "direction": row.snapshot.observation.direction.value,
+                "line": row.snapshot.observation.projection,
+                "observed_at": row.snapshot.observation.retrieved_at.isoformat(),
+                "source_updated_at": row.snapshot.observation.source_update_time.isoformat(),
+                "late": row.late,
+            }
+            for row in sorted(scoped, key=lambda entry: entry.snapshot.number)
+        ]
+        history_comparisons = []
+        if audit.authorization_allowed and selected_stage is not None and not selected_stage.late:
+            phase_line = selected_stage.snapshot.observation
+            phase_history = tuple(
+                item
+                for item in supporting
+                if item.evidence_mode is EvidenceMode.LIVE
+                and item.candidate_key == key
+                and phase_line.retrieved_at <= item.evidence.provenance.retrieved_at <= evidence_at
+            )
+            summaries = _history_summaries(
+                phase_history,
+                replace(audit.candidate, projection=phase_line.projection),
+                event_start=selected_stage.event_start,
+            )
+            history_comparisons = [asdict(summary) for summary in summaries]
         candidates.append(
             {
                 "candidate_key": key,
+                "player_id": audit.candidate_id,
+                "player": audit.candidate.player,
+                "observations": observations,
+                "historical_comparisons": history_comparisons,
                 "event": audit.candidate.event,
                 "status": "PROVISIONAL" if retrospective else audit.status.value,
                 "reasons": [] if retrospective else [reason.value for reason in audit.exclusions],

@@ -93,7 +93,7 @@ provenance and authority. BALLDONTLIE Teams and Players returned HTTP 200 in
 Joseph's scoped checks. The Stats request returned HTTP 401. Support was
 contacted and the history gap remains open. Paid Odds API requests require
 Joseph's explicit budget. See the [source verification record](docs/fifth-pick/source-verification.md)
-and [LIVE runbook](docs/fifth-pick/runbook.md).
+and [LIVE runbook](docs/fifth-pick/runbook.md). The [LIVE delivery ledger](docs/fifth-pick/live-delivery-ledger.md) records the latest verified state and resume commands.
 
 The offline demonstration exercises production validation and decision logic
 with synthetic inputs. Full LIVE coverage, supporting evidence, and a completed

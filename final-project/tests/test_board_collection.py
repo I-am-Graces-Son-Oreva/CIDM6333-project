@@ -575,7 +575,13 @@ class BoardCollectorTests(unittest.TestCase):
     def test_live_series_reuses_one_policy_and_only_collects_due_slots(self):
         from unittest.mock import Mock
 
-        from fifth_pick.evidence import EvidenceKind
+        from fifth_pick.evidence import (
+            EvidenceEffect,
+            EvidenceItem,
+            EvidenceKind,
+            EvidenceSignificance,
+            PerformanceSample,
+        )
         from fifth_pick.live_analysis import live_analysis_view, read_live_supporting_items
         from fifth_pick.live_judgment import read_live_judgment, record_live_judgment
         from fifth_pick.methodology import (
@@ -585,7 +591,7 @@ class BoardCollectorTests(unittest.TestCase):
             MethodologyJudgment,
             evaluate_candidate,
         )
-        from fifth_pick.models import ReasonCode
+        from fifth_pick.models import Evidence, ReasonCode
         from fifth_pick.snapshots import SnapshotEvidence, read_receipted_snapshot_ledger
         from fifth_pick.sources.base import EvidenceMode, SourceEvent
         from fifth_pick.sources.game_lines import (
@@ -643,6 +649,42 @@ class BoardCollectorTests(unittest.TestCase):
                 rows = collector.collect(RUN, slot, EVENT, request_authorized=True)
                 self.assertTrue(rows)
                 self.assertTrue(all(row.snapshot.number == slot and not row.late for row in rows))
+                if slot == 2:
+                    stage = rows[0]
+                    line = stage.snapshot.observation.projection
+                    sample = EvidenceItem(
+                        "history-phase-test",
+                        stage.candidate_key,
+                        EvidenceKind.LAST_8,
+                        Evidence("Controlled history test", stage.provenance),
+                        EvidenceMode.LIVE,
+                        EvidenceEffect.NEUTRAL,
+                        EvidenceSignificance.IMPORTANT,
+                        samples=(
+                            PerformanceSample(at - timedelta(days=1), line, "Boston", "2026-27"),
+                        ),
+                    )
+
+                    def phase_items(
+                        _run, key, *_args, bound=sample, candidate=stage.candidate_key, **_kwargs
+                    ):
+                        return (bound,) if key == candidate else ()
+
+                    with patch(
+                        "fifth_pick.live_analysis.read_live_supporting_items",
+                        side_effect=phase_items,
+                    ):
+                        phase_report = live_analysis_view(
+                            self.store, RUN, review=False, snapshot=2, as_of=at
+                        )
+                    phase_rows = phase_report["candidates"]
+                    assert isinstance(phase_rows, list)
+                    phase_row = next(
+                        row for row in phase_rows if row["candidate_key"] == stage.candidate_key
+                    )
+                    self.assertEqual(phase_row["historical_comparisons"][0]["push_count"], 1)
+                    self.assertEqual(phase_report["status"], "BLOCKED")
+
             self.assertEqual(collector.collect(RUN, 3, EVENT, request_authorized=True), rows)
             manifest_event = next(
                 event
@@ -834,6 +876,11 @@ class BoardCollectorTests(unittest.TestCase):
         for candidate in candidates:
             self.assertEqual(candidate["timely_snapshot_slots"], [1])
             self.assertFalse(candidate["board_sequence_complete"])
+            self.assertEqual(candidate["player_id"], "luka-doncic")
+            self.assertEqual(candidate["observations"][0]["snapshot"], 1)
+            self.assertIn("line", candidate["observations"][0])
+            self.assertIn("platform", candidate["observations"][0])
+        self.assertIn("approved LIVE player-history source", str(result["blockers"]))
         self.assertEqual(self.store.read_receipts(RUN), previous)
         self.assertEqual(self.calls, [events_url(), odds_url(EVENT, OddsApiSourceConfig())])
 

@@ -104,16 +104,21 @@ def read_live_history_items(
     )
 
 
-def _require_history_source() -> None:
+def live_history_source_approved() -> bool:
+    """Check the existing production access policy without contacting a provider."""
     source = next(
         (item for item in load_configs().approved_sources.sources if item.source_id == _SOURCE),
         None,
     )
-    if (
-        source is None
-        or source.access_method != _METHOD
-        or source.terms_review_status != "approved"
-    ):
+    return (
+        source is not None
+        and source.access_method == _METHOD
+        and source.terms_review_status == "approved"
+    )
+
+
+def _require_history_source() -> None:
+    if not live_history_source_approved():
         raise LiveAuthorizationError("production player-history access is not approved")
 
 
