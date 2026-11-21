@@ -241,7 +241,7 @@ class LiveBoardCliTests(unittest.TestCase):
             args = ["board-preflight", "--date", "2026-11-19", "--expected-games", "4"]
             self.assertEqual(main(args, prompt=lambda _: "PREFLIGHT"), 1)
             request.assert_called_once()
-            self.assertEqual(request.call_args.args[0], events_url())
+            self.assertEqual(request.call_args.args[0].partition("?")[0], events_url())
             root = Path(directory)
             self.assertFalse((root / "preflight/2026-11-19.json").exists())
             saved = json.loads((root / "preflight-coverage/2026-11-19.json").read_text())
@@ -321,6 +321,15 @@ class LiveBoardCliTests(unittest.TestCase):
                 [row["event_id"] for row in saved["events"]], [f"tomorrow-{i}" for i in range(4)]
             )
             self.assertEqual(main(["board-status", "--date", "2026-11-19"]), 0)
+            from urllib.parse import parse_qs, urlsplit
+
+            self.assertEqual(
+                parse_qs(urlsplit(request.call_args.args[0]).query),
+                {
+                    "commenceTimeFrom": ["2026-11-19T06:00:00Z"],
+                    "commenceTimeTo": ["2026-11-20T05:59:59Z"],
+                },
+            )
             self.assertEqual(request.call_count, 2)
             status = json.loads(stdout.getvalue().splitlines()[-1])
             self.assertEqual(status["selection_ceiling"], 4)

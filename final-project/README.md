@@ -87,9 +87,10 @@ See the
 ## Sources and LIVE limits
 
 The Odds API `us_dfs` route supplies platform lines. A line or optional
-multiplier alone supplies no calibrated hit probability. Historical
-performance, availability, and Joseph's frozen policy each have separate
-provenance and authority. BALLDONTLIE Teams and Players returned HTTP 200 in
+multiplier alone supplies no calibrated hit probability. Historical performance, contextual information, and Joseph's frozen policy
+each have separate provenance and authority. New LIVE series anchor their
+shared Snapshot 3 and T−20 windows to the earliest official tipoff. The
+classroom fixture and recorded legacy runs keep their own timestamps. BALLDONTLIE Teams and Players returned HTTP 200 in
 Joseph's scoped checks. The Stats request returned HTTP 401. Support was
 contacted and the history gap remains open. Paid Odds API requests require
 Joseph's explicit budget. See the [source verification record](docs/fifth-pick/source-verification.md)

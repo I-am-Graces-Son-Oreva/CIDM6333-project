@@ -312,8 +312,10 @@ def _board_preflight(
         client.require_credentials()
         if read("One quota-free event-list request. Type PREFLIGHT to proceed: ") != "PREFLIGHT":
             return 1
+        midnight = datetime.combine(slate_date, datetime.min.time(), tzinfo=timezone)
+        end = midnight + timedelta(days=1) - timedelta(seconds=1)
         events, quota = client.discover_free_events(
-            authorized=True, observe_response=capture_response
+            authorized=True, commence_range=(midnight, end), observe_response=capture_response
         )
     except MissingApiKeyError as exc:
         print(f"Board preflight stopped: {exc}", file=sys.stderr)

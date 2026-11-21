@@ -104,6 +104,7 @@ class PersonalForecastTests(unittest.TestCase):
         import io
         import os
         from unittest.mock import patch
+        from urllib.parse import parse_qs, urlsplit
 
         from fifth_pick.cli import _board_preflight
         from fifth_pick.sources.odds_api import API_KEY_ENV_VAR, events_url
@@ -129,17 +130,27 @@ class PersonalForecastTests(unittest.TestCase):
             with self.subTest(stage=stage, status=status):
                 stderr = io.StringIO()
                 with (
+                    patch("fifth_pick.cli.datetime", wraps=datetime) as clock,
                     patch.dict(os.environ, {API_KEY_ENV_VAR: secret}),
                     patch.object(UrllibTransport, "get") as request,
                     contextlib.redirect_stderr(stderr),
                 ):
+                    clock.now.return_value = datetime.fromisoformat("2026-11-21T08:00:00-06:00")
                     if isinstance(outcome, Exception):
                         request.side_effect = outcome
                     else:
                         request.return_value = outcome
                     self.assertEqual(_board_preflight(lambda _: "PREFLIGHT"), 1)
                 request.assert_called_once()
-                self.assertEqual(request.call_args.args[0], events_url())
+                url = request.call_args.args[0]
+                self.assertEqual(url.partition("?")[0], events_url())
+                self.assertEqual(
+                    parse_qs(urlsplit(url).query),
+                    {
+                        "commenceTimeFrom": ["2026-11-21T06:00:00Z"],
+                        "commenceTimeTo": ["2026-11-22T05:59:59Z"],
+                    },
+                )
                 output = stderr.getvalue()
                 self.assertIn(f"stage={stage}", output)
                 self.assertIn(

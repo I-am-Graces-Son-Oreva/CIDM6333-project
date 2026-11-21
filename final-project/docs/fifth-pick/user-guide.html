@@ -56,6 +56,37 @@
       h2, h3 { break-after: avoid; }
     }
   </style>
+<style media="print">
+ @page { size: letter; margin: .62in .69in .64in;
+   @top-right { content: "THE FIFTH PICK  /  CIDM 6333"; font: 8pt system-ui; color: #45566b; }
+   @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt system-ui; color: #45566b; }
+ }
+ html { font-size: 10.5pt; }
+ body { background: #fff; line-height: 1.34; }
+ header { padding: 0 0 12pt; border-bottom-width: 2pt; }
+ header h1 { font-size: 31pt; line-height: 1.05; }
+ header p { margin-block: 8pt; }
+ header, h1, h2, h3, caption { break-after: avoid; }
+ section { padding-block: 7pt; }
+ h2 { font-size: 20pt; margin-bottom: 6pt; }
+ h3 { font-size: 13pt; margin-block: 10pt 3pt; }
+ p, li { orphans: 2; widows: 2; }
+ dt { break-after: avoid; }
+ dd { margin-bottom: 7pt; }
+ pre { break-inside: avoid; }
+ .wrap, p, li { max-width: none; }
+ .table-wrap { overflow: visible; margin-block: 9pt; }
+ th, td { padding: 5pt 7pt; }
+ tbody th { min-width: 0; }
+ tr { break-inside: avoid; }
+ table { font-size: 10pt; }
+ pre { font-size: 9pt; white-space: pre-wrap; overflow-wrap: anywhere; }
+ code { overflow-wrap: anywhere; }
+ .callout, .flow { break-inside: avoid; }
+ a { color: #075a56; }
+ footer { padding: 8pt 0 0; }
+ * { print-color-adjust: exact; }
+ </style>
 </head>
 <body>
   <a class="skip" href="#main">Skip to user guide</a>
@@ -245,10 +276,16 @@ fp evaluate --run-id "$run_id"</code></pre>
       <p>Live Mode is separate from the classroom fixture. The approved fantasy
         board route is The Odds API <code>us_dfs</code>. LIVE collection requires
         verified scope and Joseph’s explicit paid-request budget. Real observation
-        windows, complete required evidence and a pre-tipoff owner decision govern
-        a LIVE run. Consult the <a href="runbook.md">operations runbook</a> and the
+        windows, required evidence, and an owner decision before the first official
+        game govern a new LIVE series. All games share the first official NBA
+        tipoff as their timing reference. Snapshot 3 opens 25 minutes before
+        that tipoff and closes 20 minutes before it. T−20 review then runs
+        for five minutes. Provider timestamps remain in the audit records.
+        A slate with incomplete provider coverage stays blocked. The classroom
+        replay uses synthetic data and runs without provider credentials. Consult the <a href="runbook.md">operations runbook</a> and the
         <a href="live-operational-amendment.md">LIVE operational amendment</a>
-        for prerequisites and review rules.</p>
+        for prerequisites and review rules. See the
+        <a href="live-delivery-ledger.md">LIVE delivery ledger</a> for current validation status.</p>
     </section>
 
     <section id="troubleshooting">

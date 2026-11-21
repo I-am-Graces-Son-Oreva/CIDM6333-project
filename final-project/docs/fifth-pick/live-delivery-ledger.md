@@ -131,3 +131,29 @@ For November 21, the common Snapshot 3 window is 11:35–11:40 a.m. Central,
 and the existing review grace ends at 11:45 a.m. Central. Snapshots 1 and 2
 must leave the same required time before this earlier target. No paid
 collection or backfill was performed.
+
+At 11:13 a.m. Central on November 21, `board-status` reported
+`SNAPSHOT_1_WINDOW_CLOSED` for all six games under the shared clock.
+No Milwaukee–Philadelphia collection receipt or saved event crosswalk was found.
+The event-specific 15-credit authorization was unused when the window closed.
+
+The [official November 22 slate](https://www.nba.com/games?date=2026-11-22)
+has seven games and starts with Detroit at Atlanta at 2:30 p.m. Central.
+The local official slate is ready for reconciliation. Snapshot 1 closes at
+1:10 p.m. Central. Snapshot 3 runs from 2:05 to 2:10 p.m. Central, followed
+by T−20 review through 2:15 p.m. Central. The next step is the zero-credit
+`board-preflight --date 2026-11-22` from the credential-enabled terminal.
+Provider event IDs, verified player scope and a new event-specific collection
+budget remain outstanding.
+
+The November 21 11:16 a.m. Central preflight for November 22 returned only
+six November 21 events and charged zero credits. The CLI now sends the
+documented date bounds to the same quota-free events route, using Chicago
+midnight boundaries converted to UTC. The 46 focused tests passed. The live
+result of a date-scoped preflight remains unverified.
+
+The date-scoped LIVE preflight at 11:18:20 a.m. Central on November 21
+returned zero events for November 22. It charged zero credits, with 487
+remaining. No collection manifest was written. Retry the free preflight on
+the morning of November 22, allowing time before the 1:10 p.m. Central
+Snapshot 1 cutoff for identity verification and event-specific approval.

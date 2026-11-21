@@ -16,6 +16,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Final
+from urllib.parse import urlencode
 
 from fifth_pick.models import Category, Direction, Platform
 from fifth_pick.receipts import redact_text
@@ -371,13 +372,26 @@ class OddsApiClient:
         self,
         *,
         authorized: bool = False,
+        commence_range: tuple[datetime, datetime] | None = None,
         observe_response: Callable[[str, datetime, datetime, HttpResponse], None] | None = None,
     ) -> tuple[tuple[SourceEvent, ...], QuotaSnapshot]:
         """Fetch only the free list and verify the provider recorded no charge."""
         if authorized is not True:
             raise LiveAuthorizationError("quota check requires explicit authorization")
         credential = self._read_api_key()
-        response, _ = self._get(events_url(), credential, observe_response, None)
+        url = events_url()
+        if commence_range is not None:
+            start, end = commence_range
+            if start.utcoffset() is None or end.utcoffset() is None or start >= end:
+                raise SourceError("event discovery requires an increasing, aware time range")
+            parameters = {
+                name: bound.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+                for name, bound in zip(
+                    ("commenceTimeFrom", "commenceTimeTo"), (start, end), strict=True
+                )
+            }
+            url = f"{url}?{urlencode(parameters)}"
+        response, _ = self._get(url, credential, observe_response, None)
         quota = parse_quota_headers(response.headers)
         if quota.last != 0 or quota.remaining is None or quota.used is None:
             raise FreeQuotaVerificationError("provider response did not verify a free quota check")

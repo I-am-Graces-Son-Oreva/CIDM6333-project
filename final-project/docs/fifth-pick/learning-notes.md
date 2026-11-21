@@ -28,10 +28,16 @@ A **fixture** is a prepared example. Demo Mode feeds synthetic JSON through the 
 - **Sample and last eight.** A sample is the group of recorded games used for a comparison. The last-eight view takes up to eight recent usable games and reports an incomplete sample when appropriate. Think of an athlete's last eight timed drills. You can count results faster, slower, or equal to today's target.
 - **Head-to-head (H2H).** This view uses games in the same season against the same opponent. It can give matchup context, and the sample can be small. Here H2H means player history against an opponent.
 - **Counts and confidence.** For three practice games with 8, 10, and 11 assists, at a 9.5 line there are two above, one below, and zero equal. The counts describe those three games. The application's HIGH confidence is a qualitative evidence judgment based on cited support and meaningful risks. Three practice games give little basis for estimating the chance of a future result.
-- **Context.** Minutes, role, availability, opponent, game total, point spread, and potential blowout can change how past performance applies. A runner's practice times have different implications when the next race is on a different surface or the runner is injured. In LIVE, a material gap can prevent qualification.
+- **Context.** Minutes, role, availability, opponent, game total, point spread, and potential blowout can change how past performance applies. A runner's practice times have different implications when the next race is on a different surface or the runner is injured. In LIVE, missing required historical or game-environment evidence can prevent qualification. Availability, role, and minutes are optional context. Missing optional context supplies no support for a direction or confidence.
 
 [Evidence summaries](../../src/fifth_pick/evidence.py) · [Frozen methodology](../superpowers/specs/2026-11-13-fifth-pick-design.md)
 
 ## Trace a decision
 
-Follow the first two snapshots into the provisional watchlist, then the third at the game's T-20 checkpoint into a reviewed proposal. A late reading cannot replace a missed snapshot. Review and explicit approval precede grading of the exact approved selection. DNP means did not play, VOID means the result is void, and `RESULT UNAVAILABLE` records missing trustworthy result evidence. As in reviewing a race, judge whether you followed the process separately from where you finished. [Runbook](runbook.md) · [Assurance](assurance.md)
+Follow the first two snapshots into the provisional watchlist, then the third into T−20 review. The demo uses its recorded fixture clock. A new LIVE series uses the first official tipoff across the entire slate. A late reading cannot replace a missed snapshot. Review and explicit approval precede grading of the exact approved selection. DNP means did not play, VOID means the result is void, and `RESULT UNAVAILABLE` records missing trustworthy result evidence. As in reviewing a race, judge whether you followed the process separately from where you finished. [Runbook](runbook.md) · [Assurance](assurance.md)
+
+## Explain it back
+
+- Trace one projection from input JSON to the CLI screen. Point to the exact player, market, direction, and timestamp that Python validates.
+- Explain why two results above a line in three past games do not establish a calibrated win probability. Then show what the CLI reports when evidence is incomplete.
+- Open one receipt and explain what its digest can establish. Describe how the Controller, independent Reviewer, and Joseph each contribute to the final decision.

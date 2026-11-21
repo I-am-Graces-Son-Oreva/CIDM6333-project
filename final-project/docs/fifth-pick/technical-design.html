@@ -45,6 +45,33 @@
       tr { break-inside: avoid; }
     }
   </style>
+<style media="print">
+ @page { size: letter; margin: .62in .69in .64in;
+   @top-right { content: "THE FIFTH PICK  /  CIDM 6333"; font: 8pt system-ui; color: #45566b; }
+   @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt system-ui; color: #45566b; }
+ }
+ html { font-size: 11pt; }
+ body { line-height: 1.43; }
+ header { padding: 0 0 12pt; border-bottom-width: 2pt; }
+ header h1 { font-size: 31pt; line-height: 1.05; }
+ header p { margin-block: 8pt; }
+ header, h1, h2, h3, caption { break-after: avoid; }
+ section { padding-block: 15pt; }
+ h2 { font-size: 21pt; margin-bottom: 7pt; }
+ h3 { font-size: 13pt; margin-block: 12pt 3pt; }
+ p, li { orphans: 2; widows: 2; }
+ .wrap, p, li { max-width: none; }
+ .table-wrap { overflow: visible; margin-block: 9pt; }
+ th, td { padding: 5pt 7pt; }
+ tbody th { min-width: 0; }
+ table { font-size: 10pt; }
+ pre { font-size: 9pt; white-space: pre-wrap; overflow-wrap: anywhere; }
+ code { overflow-wrap: anywhere; }
+ .callout, .flow { break-inside: avoid; }
+ a { color: #075a56; }
+ footer { padding: 8pt 0 0; }
+ * { print-color-adjust: exact; }
+ </style>
 </head>
 <body>
   <a class="skip" href="#main">Skip to technical design</a>
@@ -76,7 +103,7 @@
           <tbody>
             <tr><th scope="row">Slate and board</th><td>Bind the verified full official slate and reconcile provider event coverage on the Chicago date. Guard collection with exact event scope, provider identity evidence, event-local timing, and a pinned credit budget. <a href="../../src/fifth_pick/official_slate.py">Official slate</a> · <a href="../../src/fifth_pick/board_collection.py">Board collection</a></td></tr>
             <tr><th scope="row">Evidence and ranking</th><td>Bind the platform-specific board to canonical identity and exact authorization. Verify the snapshot ledger and evidence provenance before canonical candidate evaluation and qualitative ranking. <a href="../../src/fifth_pick/snapshots.py">Snapshots</a> · <a href="../../src/fifth_pick/methodology.py">Methodology</a> · <a href="../../src/fifth_pick/ranking.py">Ranking</a></td></tr>
-            <tr><th scope="row">Review and release</th><td>Check refreshed evidence and current values at the event’s T−20. Apply the slate ceiling, preserve the frozen pool, and bind the exact proposal and its review history to receipts before Joseph decides. <a href="../../src/fifth_pick/t20_review.py">T−20 review</a> · <a href="../../src/fifth_pick/finalization.py">Finalization</a> · <a href="../../src/fifth_pick/product_review.py">Proposal review</a></td></tr>
+            <tr><th scope="row">Review and release</th><td>Check refreshed evidence and current values at the applicable T−20. Apply the slate ceiling, preserve the frozen pool, and bind the exact proposal and its review history to receipts before Joseph decides. <a href="../../src/fifth_pick/t20_review.py">T−20 review</a> · <a href="../../src/fifth_pick/finalization.py">Finalization</a> · <a href="../../src/fifth_pick/product_review.py">Proposal review</a></td></tr>
             <tr><th scope="row">Decision and results</th><td>Persist an explicit <code>APPROVE</code>, <code>REJECT</code>, or subset-only <code>MODIFY</code>. Grade only the exact receipt-bound approved selection with trustworthy result provenance. Track process and outcomes separately. <a href="../../src/fifth_pick/approval.py">Approval</a> · <a href="../../src/fifth_pick/results.py">Results</a> · <a href="../../src/fifth_pick/evaluation.py">Evaluation</a></td></tr>
           </tbody>
         </table>
@@ -99,10 +126,10 @@
     <section id="methodology" aria-labelledby="methodology-heading">
       <h2 id="methodology-heading">Methodology and deterministic controls</h2>
       <ol>
-        <li><strong>Observe three times.</strong> Snapshot 1 is the initial accepted observation. Snapshot 2 targets the midpoint between Snapshot 1 and T−20, capped at T−80, with a 60-minute separation when achievable. Snapshot 3 is the accepted observation in the inclusive T−25 to T−20 interval. A missed window stays missed. <a href="../../src/fifth_pick/snapshots.py">Observation rules</a></li>
-        <li><strong>Evaluate evidence.</strong> Check last eight games, same-season head-to-head by exact opponent, availability, role and minutes, matchup, and game environment when required. Record conflicts and gaps with provenance. Senior HIGHER has ranking priority, Senior LOWER has stricter evidence requirements, and foul trouble and movement are contextual signals. Confidence is HIGH, MEDIUM, or LOW. These are qualitative judgments with deterministic validation and ordering. <a href="../superpowers/specs/2026-11-13-fifth-pick-design.md">Frozen methodology</a> · <a href="../../src/fifth_pick/evidence.py">Evidence validation</a></li>
+        <li><strong>Observe three times.</strong> Snapshot 1 is the initial accepted observation. Snapshot 2 targets the midpoint between Snapshot 1 and T−20, capped at T−80, with a 60-minute separation when achievable. Snapshot 3 is the accepted observation in the inclusive T−25 to T−20 interval. For a new LIVE series, count back from the first official NBA tipoff on the slate. Retain each event’s provider timestamp in the receipts. The classroom fixture keeps its recorded clock. A missed window stays missed. <a href="../../src/fifth_pick/snapshots.py">Observation rules</a></li>
+        <li><strong>Evaluate evidence.</strong> Check last eight games, same-season head-to-head by exact opponent, and the required game environment. Availability, injury, teammate absence, and role or minutes are optional context. Missing context supplies no support for a direction or confidence. Record conflicts and gaps with provenance. Senior HIGHER has ranking priority, Senior LOWER has stricter evidence requirements, and foul trouble and movement are contextual signals. Confidence is HIGH, MEDIUM, or LOW. These are qualitative judgments with deterministic validation and ordering. <a href="../superpowers/specs/2026-11-13-fifth-pick-design.md">Frozen methodology</a> · <a href="../../src/fifth_pick/evidence.py">Evidence validation</a></li>
         <li><strong>Freeze the pool and recheck.</strong> The receipt-bound full slate sets a ceiling of four picks for one to four games and five for five or more. Each canonical player can occupy one slot. LIVE review completes from T−20 through T−15 inclusive, with moving evidence retrieved at or after T−20 and by completion. Wait for outstanding reviews still inside their event windows, omit expired candidates, and keep vacancies open. Joseph alone can promote LOW. If the slate cannot support an entry, the CLI can emit <strong>NO ENTRY RECOMMENDED TODAY.</strong> <a href="live-operational-amendment.md">LIVE timing and release</a> · <a href="../../src/fifth_pick/finalization.py">Pool and ceilings</a></li>
-        <li><strong>Settle with provenance.</strong> Approval is explicit, applies to the exact reviewed LIVE selection, and must precede tipoff and settlement. <code>DNP</code> and <code>VOID</code> have separate result statuses. Untrustworthy or absent evidence yields <code>RESULT UNAVAILABLE</code>. Process compliance and settlement outcomes are evaluated separately. <a href="../../src/fifth_pick/results.py">Settlement</a> · <a href="../../src/fifth_pick/evaluation.py">Evaluation</a></li>
+        <li><strong>Settle with provenance.</strong> Approval is explicit, applies to the exact reviewed LIVE selection, and must precede the first official game for a new LIVE series. Settlement requires a recorded approval. <code>DNP</code> and <code>VOID</code> have separate result statuses. Untrustworthy or absent evidence yields <code>RESULT UNAVAILABLE</code>. Process compliance and settlement outcomes are evaluated separately. <a href="../../src/fifth_pick/results.py">Settlement</a> · <a href="../../src/fifth_pick/evaluation.py">Evaluation</a></li>
       </ol>
     </section>
 
@@ -135,9 +162,9 @@
         <li><strong>Native professor-alignment checks.</strong> OpenCode 1.18.20 discovered all three Fifth Pick roles and the project skills. A loopback fixture model completed two real native skill calls for project evidence validation and Superpowers verification. A local Qwen3 4B attempt timed out before completing a skill call. The fixture verifies host routing. <a href="harness.md#professor-alignment-native-checks-and-fresh-session-recovery">Native checks</a></li>
         <li><strong>M10.</strong> Accepted with qualification for OpenCode 1.18.20. Four implementation gates exited 0 with 510 tests. Isolated native evidence covers adapter activation, an initial PASS, an invalid verdict that stopped, and a separate FAIL → revision attempt → PASS correction run. Native withholding of both edit and Bash/shell-write tools is verified, with reads exposed. Route A correlated request-to-denial evidence remains BLOCKED for both write routes. Live second-FAIL/CONCERNS escalation remains unverified, with offline regression coverage. <a href="gates.md#m10-formal-acceptance-with-qualification">M10 acceptance</a> · <a href="gates.md#m10-native-reviewer-tool-withholding-evidence">Native tool evidence</a></li>
         <li><strong>M11 course closeout.</strong> A clean clone of <code>f39cf82</code> passed all four gates with 595 tests. The end-to-end synthetic demo recorded 30 receipts, an exact proposal, an explicit decision, and fixture settlement. An independent documentation recheck matched the receipt artifact. <a href="gates.md#m11-offline-course-closeout--november-18-2026">M11 gate record</a> · <a href="demo.md">Demo walkthrough</a> · <a href="evidence/course-demo-f39cf82.jsonl">Demo receipts</a></li>
-        <li><strong>Supporting-source checkpoint.</strong> The source record reports all four gates passing with 629 tests and a focused 17-test run. Constrained replay verified that a refresh without a prior receipt-bound assessment cannot create a review or proposal. A positive LIVE path still needs an admitted receipt-bound interpretation producer and current role/minutes and teammate-absence evidence. <a href="source-verification.md#receipt-issuer-and-live-orchestration-checkpoint">Integration checkpoint</a></li>
+        <li><strong>Supporting-source checkpoint.</strong> The source record reports all four gates passing with 629 tests and a focused 17-test run. Constrained replay verified that a refresh without a prior receipt-bound assessment cannot create a review or proposal. This checkpoint predates the current methodology. The current workflow requires admitted historical evidence and receipt-bound Controller and independent Reviewer checks. <a href="source-verification.md#receipt-issuer-and-live-orchestration-checkpoint">Integration checkpoint</a></li>
       </ul>
-      <p>Real provider coverage, complete corroborated player history, official injury document acquisition and extraction, positive LIVE T−20, and native review and settlement of a real NBA proposal remain open for product validation. Historical discovery and provider checks have limited scope. The synthetic settlement demonstrates workflow and audit behavior. The project makes no supported hit-rate or profitability claim. <a href="source-verification.md">Source evidence and scope</a> · <a href="product-completion.md">Product coverage matrix</a></p>
+      <p>Complete real provider coverage, corroborated player history, positive LIVE T−20, and native review and settlement of a real NBA proposal remain open for product validation. Historical discovery and provider checks have limited scope. The synthetic settlement demonstrates workflow and audit behavior. The project makes no supported hit-rate or profitability claim. <a href="source-verification.md">Source evidence and scope</a> · <a href="live-delivery-ledger.md">Current LIVE delivery ledger</a></p>
     </section>
   </main>
   <footer class="wrap"><a href="user-guide.html">Read the user guide</a> · <a href="../../README.md">Return to the Fifth Pick README</a></footer>

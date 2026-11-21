@@ -1,0 +1,41 @@
+{
+  "slate_date": "2026-11-22",
+  "source": "https://www.nba.com/games?date=2026-11-22",
+  "games": [
+    {
+      "away_team": "Detroit Pistons",
+      "home_team": "Atlanta Hawks",
+      "scheduled_tipoff": "2026-11-22T14:30:00-06:00"
+    },
+    {
+      "away_team": "Oklahoma City Thunder",
+      "home_team": "Miami Heat",
+      "scheduled_tipoff": "2026-11-22T17:00:00-06:00"
+    },
+    {
+      "away_team": "Dallas Mavericks",
+      "home_team": "Utah Jazz",
+      "scheduled_tipoff": "2026-11-22T18:00:00-06:00"
+    },
+    {
+      "away_team": "Orlando Magic",
+      "home_team": "Washington Wizards",
+      "scheduled_tipoff": "2026-11-22T18:00:00-06:00"
+    },
+    {
+      "away_team": "Denver Nuggets",
+      "home_team": "Chicago Bulls",
+      "scheduled_tipoff": "2026-11-22T18:00:00-06:00"
+    },
+    {
+      "away_team": "Indiana Pacers",
+      "home_team": "New York Knicks",
+      "scheduled_tipoff": "2026-11-22T19:00:00-06:00"
+    },
+    {
+      "away_team": "Boston Celtics",
+      "home_team": "Golden State Warriors",
+      "scheduled_tipoff": "2026-11-22T19:30:00-06:00"
+    }
+  ]
+}
