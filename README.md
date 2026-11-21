@@ -8,12 +8,13 @@ final decision to Joseph. The classroom rehearsal uses synthetic data.
 
 - [Final project README](final-project/README.md)
 - Technical design · [PDF](final-project/docs/fifth-pick/technical-design.pdf) · [HTML](final-project/docs/fifth-pick/technical-design.html)
+- Evidence and ranking code · [Snapshots](final-project/src/fifth_pick/snapshots.py) · [Methodology](final-project/src/fifth_pick/methodology.py) · [Ranking](final-project/src/fifth_pick/ranking.py)
 - User guide · [PDF](final-project/docs/fifth-pick/user-guide.pdf) · [HTML](final-project/docs/fifth-pick/user-guide.html)
 - [Offline demonstration](final-project/docs/fifth-pick/demo.md)
 - [Presentation walkthrough](final-project/docs/fifth-pick/presentation.md)
 
-The PDFs open directly from the GitHub repository once this commit is published.
-Reading them requires only access to the repository.
+The PDFs are readable in GitHub. If a link in the PDF preview does not open,
+use the direct links above or download the PDF and open it in a PDF reader.
 
 From the repository root, start the interactive CLI in Demo Mode:
 

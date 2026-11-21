@@ -9,6 +9,7 @@ final decision. The application has no entry submission or wagering path.
 ## Start here
 
 - Technical design · [PDF](docs/fifth-pick/technical-design.pdf) · [HTML](docs/fifth-pick/technical-design.html)
+- Evidence and ranking code · [Snapshots](src/fifth_pick/snapshots.py) · [Methodology](src/fifth_pick/methodology.py) · [Ranking](src/fifth_pick/ranking.py)
 - User guide · [PDF](docs/fifth-pick/user-guide.pdf) · [HTML](docs/fifth-pick/user-guide.html)
 - [Tuesday presentation walkthrough](docs/fifth-pick/presentation.md)
 - [Beginner learning notes](docs/fifth-pick/learning-notes.md)
@@ -17,8 +18,8 @@ final decision. The application has no entry submission or wagering path.
 From the repository root with Python 3.11 or later and uv, install the locked
 environment once. Initial setup may need package downloads. All subsequent
 demo execution uses local synthetic fixtures and requires no provider credentials.
-The PDFs can be read from the GitHub repository once published. Live NBA
-integration is only partially verified.
+If an underlined link does not open in GitHub's PDF preview, use the links
+above or download the PDF. Live NBA integration is only partially verified.
 
 Start the interactive CLI in Demo Mode:
 
