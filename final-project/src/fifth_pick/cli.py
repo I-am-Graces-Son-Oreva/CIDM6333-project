@@ -482,10 +482,9 @@ def _live_board_menu(read: Callable[[str], str]) -> int:
         )
         if series:
             arguments.append("--series")
-        else:
-            timing = read("Independent tipoff JSON path (Enter if none): ").strip()
-            if timing:
-                arguments.extend(("--timing-file", timing))
+        timing = read("Independent tipoff JSON path (Enter to use official slate): ").strip()
+        if timing:
+            arguments.extend(("--timing-file", timing))
         roster = read("Independent roster JSON path (Enter to use scope aliases): ").strip()
         if roster:
             identities = read("Board identity crosswalk JSON path: ").strip()

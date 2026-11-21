@@ -36,7 +36,7 @@ class LiveBoardCliTests(unittest.TestCase):
 
         from fifth_pick.cli import _live_board_menu
 
-        collect = iter(("4", "board-run", "2", "scope file.json", "", ""))
+        collect = iter(("4", "board-run", "2", "scope file.json", "", "", ""))
         decide = iter(("9", "board-run"))
         with (
             redirect_stdout(StringIO()),
@@ -72,11 +72,11 @@ class LiveBoardCliTests(unittest.TestCase):
             self.assertEqual(_live_board_menu(lambda _: next(answers)), 1)
         dispatch.assert_not_called()
 
-    def test_live_series_uses_crosswalk_without_prompting_for_one_slot_override(self):
+    def test_live_series_uses_crosswalk_with_verified_timing_prompt(self):
         from fifth_pick.cli import _live_board_menu
 
         answers = iter(
-            ("4", "board-run", "1", "scope.json", "", "SERIES", "roster.json", "crosswalk.json")
+            ("4", "board-run", "1", "scope.json", "", "SERIES", "", "roster.json", "crosswalk.json")
         )
         with patch("fifth_pick.cli.main", return_value=0) as dispatch:
             self.assertEqual(_live_board_menu(lambda _: next(answers)), 0)
@@ -404,6 +404,36 @@ class LiveBoardCliTests(unittest.TestCase):
             )
             collector.reset_mock()
             confirmation = f"APPROVE {EVENT} SNAPSHOTS 1-3 15"
+            preflight["checked_at"] = "2026-11-18T12:00:00-06:00"
+            (root / "preflight.json").write_text(json.dumps(preflight))
+            timing = {
+                "event": event,
+                "provider": {
+                    "source": str(root / "preflight.json"),
+                    "checked_at": preflight["checked_at"],
+                    "chicago_tipoff": TIPOFF,
+                },
+                "official": {
+                    "source": "https://www.nba.com/schedule",
+                    "venue_tipoff": "2026-11-19T03:00:00+00:00",
+                    "chicago_tipoff": "2026-11-19T03:00:00+00:00",
+                },
+                "conservative_snapshot_1_cutoff": "2026-11-19T01:40:00+00:00",
+            }
+            timing_path = root / "timing.json"
+            timing_path.write_text(json.dumps(timing))
+            args.extend(("--timing-file", str(timing_path)))
+            self.assertEqual(
+                main(
+                    [*args, "--series", "--snapshot", "1"],
+                    prompt=lambda _: self.fail("timing conflict reached approval"),
+                ),
+                1,
+            )
+            collector.assert_not_called()
+            timing["official"].update(venue_tipoff=TIPOFF, chicago_tipoff=TIPOFF)
+            timing["conservative_snapshot_1_cutoff"] = "2026-11-19T01:50:00+00:00"
+            timing_path.write_text(json.dumps(timing))
             self.assertEqual(
                 main([*args, "--series", "--snapshot", "1"], prompt=lambda _: confirmation), 0
             )

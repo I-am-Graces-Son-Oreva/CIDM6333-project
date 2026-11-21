@@ -201,17 +201,32 @@ class BoardCollector:
                 live_grant.slate_event_ids
             ) or not self._scope.keys() <= set(live_grant.slate_event_ids):
                 raise SourceError("LIVE event scope must belong to the approved complete slate")
+            if live_grant.slots not in ((1,), (1, 2, 3)):
+                raise LiveAuthorizationError("unsupported LIVE snapshot grant")
+            if live_grant.slots == (1, 2, 3) and live_grant.official_tipoff is None:
+                raise LiveAuthorizationError("LIVE series requires independent official timing")
             if live_grant.official_tipoff is not None:
                 official = live_grant.official_tipoff
                 if (
-                    live_grant.slots != (1,)
-                    or len(live_grant.events) != 1
-                    or policy.credit_limit != _EVENT_COST
+                    len(live_grant.events) != 1
                     or official.utcoffset() is None
                     or not live_grant.timing_reference
                     or not live_grant.timing_reference.startswith("https://")
+                ):
+                    raise LiveAuthorizationError("invalid independently corroborated timing")
+                provider = live_grant.events[0].tipoff
+                if live_grant.slots == (1, 2, 3):
+                    if (
+                        official != provider
+                        or live_grant.expires_at != provider
+                        or policy.credit_limit != 3 * _EVENT_COST
+                    ):
+                        raise LiveAuthorizationError("LIVE series requires matching tipoff clocks")
+                elif (
+                    live_grant.slots != (1,)
+                    or policy.credit_limit != _EVENT_COST
                     or live_grant.expires_at
-                    != min(official, live_grant.events[0].tipoff) - T20_OFFSET - SNAPSHOT_2_T20_GAP
+                    != min(official, provider) - T20_OFFSET - SNAPSHOT_2_T20_GAP
                 ):
                     raise LiveAuthorizationError(
                         "invalid separately corroborated Snapshot 1 deadline"
@@ -220,6 +235,7 @@ class BoardCollector:
             self._mode is not EvidenceMode.LIVE
             or live_grant is None
             or live_grant.official_tipoff is None
+            or live_grant.slots != (1,)
             or policy.aliases
         ):
             raise LiveAuthorizationError(
@@ -241,7 +257,9 @@ class BoardCollector:
         return {
             "official_tipoff": grant.official_tipoff.isoformat(),
             "provider_tipoff": grant.events[0].tipoff.isoformat(),
-            "snapshot_1_cutoff": grant.expires_at.isoformat(),
+            "snapshot_1_cutoff": (
+                min(grant.official_tipoff, grant.events[0].tipoff) - T20_OFFSET - SNAPSHOT_2_T20_GAP
+            ).isoformat(),
             "timing_reference": grant.timing_reference,
         }
 
@@ -679,10 +697,14 @@ class BoardCollector:
                 board,
                 event_scope=event_id if self._mode is EvidenceMode.LIVE else None,
                 record_before=(
-                    self._grant.expires_at if self._grant and self._grant.official_tipoff else None
+                    aware_timestamp(self._timing_binding()["snapshot_1_cutoff"])
+                    if snapshot == 1 and self._timing_binding()
+                    else None
                 ),
             )
             completed_at = self._now()
+            # The schedule sees only the operational ledger. Newly written rows
+            # remain hidden until the collection completion receipt is appended.
             if self._timing_binding():
                 self._check_live_window(run_id, snapshot, event_id, completed_at)
         except (
@@ -757,7 +779,8 @@ class BoardCollector:
         if at >= tipoff or at.astimezone(chicago).date() != tipoff.astimezone(chicago).date():
             raise SourceError("live collection is outside its approved slate or after tipoff")
         if snapshot == 1:
-            if self._grant and self._grant.official_tipoff and at >= self._grant.expires_at:
+            timing = self._timing_binding()
+            if timing and at >= aware_timestamp(timing["snapshot_1_cutoff"]):
                 raise SourceError("the conservative Snapshot 1 cutoff has passed")
             if snapshot_2_target(at, tipoff) is None:
                 raise SourceError("no time remains for three legitimate observations")
@@ -879,13 +902,17 @@ def _verify_completed_slot(
         provider = aware_timestamp(metadata.get("provider_tipoff"))
         if (
             mode is not EvidenceMode.LIVE
-            or snapshot != 1
             or cutoff != min(official, provider) - T20_OFFSET - SNAPSHOT_2_T20_GAP
-            or aware_timestamp(completion["timestamp"]) >= cutoff
-            or aware_timestamp(metadata.get("retrieved_at")) >= cutoff
-            or any(
-                row.event_start != provider or row.snapshot.recorded_at >= cutoff for row in entries
+            or any(row.event_start != provider for row in entries)
+            or (
+                snapshot == 1
+                and (
+                    aware_timestamp(completion["timestamp"]) >= cutoff
+                    or aware_timestamp(metadata.get("retrieved_at")) >= cutoff
+                    or any(row.snapshot.recorded_at >= cutoff for row in entries)
+                )
             )
+            or (snapshot != 1 and official != provider)
         ):
             raise SourceError("stored board completion violates the conservative cutoff")
     if mode is EvidenceMode.LIVE and snapshot == 1:

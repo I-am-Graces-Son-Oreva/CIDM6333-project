@@ -235,11 +235,13 @@ class BoardCollectorTests(unittest.TestCase):
                 collector.collect(RUN, 1, EVENT, request_authorized=True)
         self.assertEqual(self.calls, [])
 
-    def live_collector(self, *, slate_ids=(EVENT, OTHER), series=False):
+    def live_collector(self, *, slate_ids=(EVENT, OTHER), series=False, official_offset=None):
         from fifth_pick.board_collection import LiveBoardGrant
         from fifth_pick.personal_readiness import LiveEventScope
 
         policy = replace(self.policy, event_ids=(EVENT,), credit_limit=15 if series else 5)
+        if series and official_offset is None:
+            official_offset = timedelta()
         scope = LiveEventScope(
             EVENT,
             "Los Angeles Lakers",
@@ -256,6 +258,8 @@ class BoardCollectorTests(unittest.TestCase):
             (scope,),
             slate_ids,
             (1, 2, 3) if series else (1,),
+            None if official_offset is None else scope.tipoff + official_offset,
+            None if official_offset is None else "https://www.nba.com/schedule",
         )
         self.update_response(
             events_url(),
@@ -611,7 +615,28 @@ class BoardCollectorTests(unittest.TestCase):
             patch("fifth_pick.board_collection._application_clock", return_value=NOW) as clock,
             patch.object(UrllibTransport, "get", side_effect=self.respond),
         ):
-            collector = self.live_collector(series=True)
+            with self.assertRaisesRegex(SourceError, "matching tipoff clocks"):
+                self.live_collector(series=True, official_offset=-timedelta(minutes=10))
+            self.assertEqual(self.calls, [])
+            collector = self.live_collector(series=True, official_offset=timedelta())
+            assert collector._grant is not None
+            with self.assertRaisesRegex(SourceError, "requires independent official timing"):
+                BoardCollector(
+                    self.store,
+                    collector._policy,
+                    transport=UrllibTransport(),
+                    live_grant=replace(collector._grant, official_tipoff=None),
+                    environ={API_KEY_ENV_VAR: SECRET},
+                )
+            with self.assertRaisesRegex(SourceError, "unsupported LIVE snapshot grant"):
+                BoardCollector(
+                    self.store,
+                    collector._policy,
+                    transport=UrllibTransport(),
+                    live_grant=replace(collector._grant, slots=(1, 3), official_tipoff=None),
+                    environ={API_KEY_ENV_VAR: SECRET},
+                )
+            self.assertEqual(self.calls, [])
             self.assertTrue(collector.collect(RUN, 1, EVENT, request_authorized=True))
             with self.assertRaisesRegex(SourceError, "no authorized observations are due"):
                 collector.collect(RUN, 3, EVENT, request_authorized=True)

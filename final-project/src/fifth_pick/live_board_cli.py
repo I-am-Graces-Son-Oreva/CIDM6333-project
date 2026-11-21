@@ -153,7 +153,7 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
         store.run_directory(options.run_id)
         quarantine = options.quarantine_labels
         if (
-            ((quarantine or options.timing_file is not None) and (slot != 1 or options.series))
+            (quarantine and (slot != 1 or options.series))
             or (
                 quarantine
                 and (
@@ -231,6 +231,29 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             cutoff = min(tipoff, official_tipoff) - T20_OFFSET - SNAPSHOT_2_T20_GAP
             if datetime.fromisoformat(timing["conservative_snapshot_1_cutoff"]) != cutoff:
                 raise ValueError("recorded conservative cutoff differs")
+        official = load_official_slate(today)
+        if options.series:
+            if official is not None:
+                game = official.game_for(scope.away_team, scope.home_team)
+                if game is None or (
+                    official_tipoff is not None and official_tipoff != game.scheduled_tipoff
+                ):
+                    raise ValueError("the independent timing records disagree on this matchup")
+                official_tipoff, timing_reference = game.scheduled_tipoff, official.source
+            if official_tipoff is None:
+                print(
+                    "LIVE series stopped. Independent official tipoff is required.", file=sys.stderr
+                )
+                return 1
+            if official_tipoff != tipoff:
+                print(
+                    "LIVE series stopped before approval. Official and provider tipoffs differ "
+                    f"({official_tipoff.astimezone(chicago).isoformat()} vs "
+                    f"{tipoff.astimezone(chicago).isoformat()}). "
+                    "Find an event with matching, independently verified timing.",
+                    file=sys.stderr,
+                )
+                return 1
         deadline = t20 if slot == 3 else cutoff
         if (
             now > deadline
@@ -242,7 +265,6 @@ def collect_live_board(arguments: Sequence[str], read: Callable[[str], str]) -> 
             )
             return 1
         events = report["events"]
-        official = load_official_slate(today)
         slate_ids = tuple(row["event_id"] for row in events)
         for provider_id in slate_ids:
             validate_event_id(provider_id)

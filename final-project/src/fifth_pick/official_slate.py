@@ -41,6 +41,10 @@ class OfficialSlate:
     source: str
     games: tuple[OfficialGame, ...]
 
+    def game_for(self, away: str, home: str) -> OfficialGame | None:
+        key = _matchup(away, home)
+        return next((game for game in self.games if game.matchup == key), None)
+
 
 def load_official_slate(day: date) -> OfficialSlate | None:
     path = DEFAULT_CONFIG_DIR / "official-slates" / f"{day.isoformat()}.json"

@@ -226,6 +226,11 @@ quota counters. Collected coverage and accepted observation counts are separate.
 
 An explicitly approved one-event validation can add `--series --snapshot 1`
 and use the same run, scope, saved manifest and `--series` flag for slots 2 and 3.
+Series collection requires an independently verified official tipoff that
+matches the provider tipoff. Use the saved official slate for the date or
+pass the same `--timing-file FILE` at all three slots. The series check rejects
+missing or disagreeing timing before the paid confirmation. Both tipoffs and
+the official source reference are bound to the collection receipts.
 The terminal asks for the displayed, exact 15-credit series approval at each
 invocation. Each invocation can dispatch at most one five-credit odds request.
 Use `schedule --run-id RUN_ID` to see event-local due status. Early or missed
