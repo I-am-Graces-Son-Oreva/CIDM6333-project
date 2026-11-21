@@ -105,9 +105,16 @@ sh final-project/scripts/course-demo.sh</code></pre>
       <p>Use ↑ and ↓ to move, Enter to select, Esc to go back or cancel, and Q
         to exit from a menu or result screen. Confirmation screens start on
         <strong>Cancel</strong>. Choose <strong>Continue</strong> to proceed.</p>
+      <p>The main menu summarizes verified snapshot, decision, and results progress.
+        The pointer marks the selected option. The separate Next Action section offers
+        guidance based on the saved run. A proposal with selections still requires
+        Joseph’s decision.</p>
       <ol>
         <li>Choose <strong>Analyze NBA Slate</strong> twice to record synthetic Snapshots 1 and 2.</li>
-        <li>Open <strong>View Candidates and Rankings</strong> to see the provisional watchlist.</li>
+        <li>Open <strong>View Candidates and Rankings</strong> to compare candidates in one table.
+          Before T-20, the table shows a numbered provisional watchlist. After T-20,
+          it shows saved ranks and recorded review conclusions when available.
+          Pending confidence means no assessment is available.</li>
         <li>Choose <strong>Run T-20 Review</strong>. This records Snapshot 3 and rechecks candidates
           at the fixture’s simulated twenty-minute checkpoint.</li>
         <li>Choose <strong>View Final Recommendations</strong> and confirm creation of the proposal.
@@ -116,25 +123,28 @@ sh final-project/scripts/course-demo.sh</code></pre>
         <li>Choose <strong>Record Results</strong> before approval to see the settlement guard.</li>
         <li>Open <strong>Approve / Reject / Modify</strong> to see the exact proposal and the
           decision form. Joseph enters <code>APPROVE</code>, <code>REJECT</code>, or
-          <code>MODIFY</code>. Enter a reason for <code>REJECT</code> or a comma-separated
-          list of displayed candidate keys to keep for <code>MODIFY</code>.
-          Esc closes the menu form.</li>
-        <li>Open <strong>View Audit and Receipts</strong> to inspect the decision,
-          evidence gaps, receipts and recorded outcomes.</li>
+          <code>MODIFY</code> in any capitalization. The menu also accepts
+          <code>A</code>, <code>R</code>, and <code>M</code>. Enter a reason for rejection
+          or a comma-separated list of the proposal’s selection numbers to keep.
+          The provisional watchlist has separate candidate numbers. Standalone
+          technical commands use full candidate keys. Esc closes the form before submission.</li>
+        <li>Open <strong>View Audit and Receipts</strong> for decisions, evidence, and results.
+          Use Full Audit JSON to see complete identifiers.</li>
       </ol>
-      <p>The menu header displays the generated run ID. Reopen the same run using
+      <p>After recording Snapshot 1, find the run ID in <strong>View Audit and Receipts</strong>.
+        Reopen the same run using
         <code>uv run --offline --no-sync fifth-pick menu --run-id RUN_ID</code> with
         that ID substituted.</p>
       <h3>Record the synthetic settlement after approval</h3>
       <p>In <strong>Record Results</strong>, select the approved pick and enter the
-        following values. Replace <code>CANDIDATE_KEY</code> with the exact key
-        shown in the approved selection.</p>
+        following values. Type <code>FIXTURE</code> at the settlement reference
+        prompt to use the selected pick’s synthetic reference.</p>
       <dl>
         <dt>Outcome and source</dt>
         <dd><code>HIT</code> and <code>synthetic-fixture</code></dd>
         <dt>Source timestamp and reference</dt>
         <dd><code>2026-11-15T20:00:00+00:00</code> and
-          <code>fixture:results/CANDIDATE_KEY</code></dd>
+          <code>FIXTURE</code></dd>
         <dt>Source excerpt</dt>
         <dd><code>Synthetic PrizePicks Luka Doncic Assists Higher 9.5 settled HIT.</code>
           Enter <code>YES</code> after checking the excerpt against the approved pick.</dd>
@@ -159,7 +169,8 @@ fp evaluate --run-id "$run_id"</code></pre>
       <p>Use <code>fp decide --run-id "$run_id"</code> to open the explicit decision
         form. For an approved fixture pick, replace <code>CANDIDATE_KEY</code> in
         <code>fp result record --run-id "$run_id" --selection 'CANDIDATE_KEY'</code>
-        with its exact key and use the synthetic settlement values above.
+        with its exact key. Use the values above and enter
+        <code>fixture:results/CANDIDATE_KEY</code> as the shell command’s settlement reference.
         Rerun <code>audit</code> and <code>evaluate</code> to see the new records.</p>
     </section>
 

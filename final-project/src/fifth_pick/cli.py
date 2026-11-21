@@ -78,6 +78,7 @@ def main(
     argv: Sequence[str] | None = None,
     *,
     prompt: Callable[[str], str] | None = None,
+    _menu_form: bool = False,
     smoke_authorization: SmokeAuthorization | None = None,
     verified_aliases: Mapping[str, tuple[str, ...]] | None = None,
 ) -> int:
@@ -154,7 +155,7 @@ def main(
 
         return run_menu(
             application_run_store(),
-            lambda args, read: main(args, prompt=read),
+            lambda args, read: main(args, prompt=read, _menu_form=True),
             arguments[2] if len(arguments) == 3 else None,
             live_action=(
                 _live_board_menu
@@ -186,7 +187,7 @@ def main(
             print(USAGE, file=sys.stderr)
             return 2
         try:
-            final = _interactive_decision(run_id, prompt or input)
+            final = _interactive_decision(run_id, prompt or input, menu_form=_menu_form)
         except (FifthPickError, OSError, ValueError) as exc:
             print(f"decision not recorded: {exc}", file=sys.stderr)
             return 1
@@ -204,7 +205,9 @@ def main(
             print(USAGE, file=sys.stderr)
             return 2
         try:
-            path = _interactive_result_record(run_id, selection_id, prompt or input)
+            path = _interactive_result_record(
+                run_id, selection_id, prompt or input, menu_form=_menu_form
+            )
         except (FifthPickError, OSError, ValueError) as exc:
             print(f"result not recorded: {exc}", file=sys.stderr)
             return 1
@@ -555,13 +558,18 @@ def _fixture_command(command: str, arguments: list[str]) -> int:
     return int(blocked)
 
 
-def _interactive_decision(run_id: str, read: Callable[[str], str]) -> dict[str, object]:
+def _interactive_decision(
+    run_id: str, read: Callable[[str], str], *, menu_form: bool = False
+) -> dict[str, object]:
+    from fifth_pick.approval import JOSEPH_ACTOR
+    from fifth_pick.menu_presentation import fields, picks, review_assessments, selection_keys
     from fifth_pick.product_review import expired_live_selections, review_status
     from fifth_pick.review import ReviewError
 
     store = application_run_store()
-    if is_fixture_workflow(store, run_id):
-        require_complete_fixture(store, run_id)
+    fixture_run = (
+        require_complete_fixture(store, run_id) if is_fixture_workflow(store, run_id) else None
+    )
     proposal = load_pending_proposal(store, run_id)
     expired = (
         ()
@@ -571,20 +579,27 @@ def _interactive_decision(run_id: str, read: Callable[[str], str]) -> dict[str, 
     print("Proposed final set")
     proposed = proposal["proposed"]
     assert isinstance(proposed, list)
-    if not proposed:
-        print("  (no selections)")
-    for item in proposed:
-        assert isinstance(item, dict)
-        print(
-            f"  {item['player']} | {item['platform']} | {item['category']} "
-            f"{item['direction']} {item['projection']} | key={item['candidate_key']}"
-        )
-        print(f"    T-20 {item['t20_status']} | confidence {item['confidence']}")
-        if item["candidate_key"] in expired:
-            print("    Decision window closed. This selection cannot be approved.")
-        print(f"    {item['t20_rationale']}")
-        for risk in item["material_risks"]:
-            print(f"    Material risk: {risk}")
+    if menu_form:
+        assessments = review_assessments(fixture_run.reviews) if fixture_run else None
+        picks(proposed, supporting=True, assessments=assessments)
+        for index, item in enumerate(proposed, 1):
+            if item["candidate_key"] in expired:
+                print(f"Selection #{index}: decision window closed. Approval unavailable.")
+    else:
+        if not proposed:
+            print("  (no selections)")
+        for item in proposed:
+            assert isinstance(item, dict)
+            print(
+                f"  {item['player']} | {item['platform']} | {item['category']} "
+                f"{item['direction']} {item['projection']} | key={item['candidate_key']}"
+            )
+            print(f"    T-20 {item['t20_status']} | confidence {item['confidence']}")
+            if item["candidate_key"] in expired:
+                print("    Decision window closed. This selection cannot be approved.")
+            print(f"    {item['t20_rationale']}")
+            for risk in item["material_risks"]:
+                print(f"    Material risk: {risk}")
     try:
         reviewed = review_status(store, run_id)
     except (FifthPickError, ReviewError, OSError):
@@ -593,18 +608,31 @@ def _interactive_decision(run_id: str, read: Callable[[str], str]) -> dict[str, 
     if isinstance(verdict, dict):
         print("Escalated Reviewer findings")
         print(json.dumps(verdict, ensure_ascii=True, sort_keys=True))
-    action_text = read("Joseph's decision (APPROVE / REJECT / MODIFY): ")
+    prompt = "Joseph's decision (APPROVE / REJECT / MODIFY)"
+    action_text = read(prompt + (" [A / R / M]: " if menu_form else ": "))
+    if menu_form:
+        action_text = action_text.strip().upper()
+        action_text = {"A": "APPROVE", "R": "REJECT", "M": "MODIFY"}.get(action_text, action_text)
     try:
         action = DecisionAction(action_text)
     except ValueError as exc:
+        if menu_form:
+            raise ApprovalError(
+                "Invalid decision. Enter APPROVE, REJECT, or MODIFY. Shortcuts: A, R, M."
+            ) from exc
         raise ApprovalError("decision must be APPROVE, REJECT, or MODIFY") from exc
 
     selected: tuple[str, ...] = ()
     reason = ""
     exception_digest = None
     if action is DecisionAction.MODIFY:
-        response = read("Candidate keys to retain, comma-separated (blank for none): ")
-        selected = tuple(item.strip() for item in response.split(",") if item.strip())
+        if menu_form:
+            print("Selection numbers apply only to the proposal shown above.")
+            response = read("Selection numbers to retain, comma-separated (blank for none): ")
+            selected = selection_keys(response, proposed)
+        else:
+            response = read("Candidate keys to retain, comma-separated (blank for none): ")
+            selected = tuple(item.strip() for item in response.split(",") if item.strip())
     elif action is DecisionAction.REJECT:
         reason = read("Reason for rejection: ").strip()
         if not reason:
@@ -619,7 +647,7 @@ def _interactive_decision(run_id: str, read: Callable[[str], str]) -> dict[str, 
             exception_digest = digest
             reason = read("Joseph's reason for approving with concerns: ").strip()
 
-    return _apply_joseph_decision(
+    recorded = _apply_joseph_decision(
         run_id=run_id,
         store=store,
         action=action,
@@ -629,8 +657,26 @@ def _interactive_decision(run_id: str, read: Callable[[str], str]) -> dict[str, 
         review_exception_sha256=exception_digest,
     )
 
+    if menu_form:
+        print()
+        fields(
+            "Decision submitted",
+            (
+                ("Decision", action.value),
+                ("Authority", JOSEPH_ACTOR),
+                (
+                    "Selections retained",
+                    len(proposed) if action is DecisionAction.APPROVE else len(selected),
+                ),
+            ),
+        )
 
-def _interactive_result_record(run_id: str, selection_id: str, read: Callable[[str], str]) -> Path:
+    return recorded
+
+
+def _interactive_result_record(
+    run_id: str, selection_id: str, read: Callable[[str], str], *, menu_form: bool = False
+) -> Path:
     store = application_run_store()
     final = load_approved_final(store, run_id)
     fixture = is_fixture_workflow(store, run_id)
@@ -654,7 +700,8 @@ def _interactive_result_record(run_id: str, selection_id: str, read: Callable[[s
     print("Approved selection")
     print(
         f"  {selected['player']} | {selected['platform']} | {selected['category']} "
-        f"{selected['direction']} {selected['projection']} | key={selection_id}"
+        f"{selected['direction']} {selected['projection']}"
+        + ("" if menu_form else f" | key={selection_id}")
     )
     print(f"  event={selected['event']}")
     outcome_text = read("Settled result (HIT / MISS / PUSH / VOID / DNP / RESULT UNAVAILABLE): ")
@@ -689,7 +736,14 @@ def _interactive_result_record(run_id: str, selection_id: str, read: Callable[[s
             raise ResultError("source timestamp must be ISO-8601") from exc
         if source_timestamp.tzinfo is None or source_timestamp.utcoffset() is None:
             raise ResultError("source timestamp must be timezone-aware")
-        reference = read("Player-specific settlement reference: ").strip()
+        reference_prompt = "Player-specific settlement reference: "
+        if menu_form and fixture:
+            reference_prompt = (
+                "Settlement reference (type FIXTURE to use this selection's demo reference): "
+            )
+        reference = read(reference_prompt).strip()
+        if menu_form and fixture and reference == "FIXTURE":
+            reference = f"fixture:results/{selection_id}"
         excerpt_text = read("Minimal settlement source excerpt: ").strip()
         if excerpt_text:
             print(f"Evidence excerpt: {excerpt_text}")
