@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from fifth_pick.board_collection import BoardCollector, BoardPolicy
+from fifth_pick.errors import FifthPickError
 from fifth_pick.slate_manifest import read_slate_run_context
 from fifth_pick.sources.base import (
     BudgetExceededError,
@@ -268,6 +269,20 @@ class BoardCollectorTests(unittest.TestCase):
             environ={API_KEY_ENV_VAR: SECRET},
         )
 
+    def test_wrong_live_event_is_not_archived(self):
+        self.change_odds(lambda data: data.update(id=OTHER))
+        with (
+            patch("fifth_pick.board_collection.application_run_store", return_value=self.store),
+            patch("fifth_pick.board_collection._application_clock", return_value=NOW),
+            patch.object(UrllibTransport, "get", side_effect=self.respond),
+            self.assertRaises(SourceError),
+        ):
+            self.live_collector().collect(RUN, 1, EVENT, request_authorized=True)
+        self.assertFalse(list(self.store.run_directory(RUN).glob("*.body")))
+        self.assertTrue(
+            any(row["event"] == "DFS_BOARD_STOPPED" for row in self.store.read_receipts(RUN))
+        )
+
     def test_quarantine_uses_one_response_and_never_admits_unmatched_labels(self):
         from fifth_pick.board_collection import live_slot_has_bound_aliases
 
@@ -420,6 +435,39 @@ class BoardCollectorTests(unittest.TestCase):
             )
             with self.assertRaisesRegex(SourceError, "unfinished collection"):
                 collector.collect(RUN, 1, EVENT, request_authorized=True)
+        archive = self.store.run_directory(RUN) / f"dfs-board-1-{EVENT}-odds.body"
+        expected = self.responses[odds_url(EVENT, OddsApiSourceConfig())].body
+        self.assertEqual(archive.read_bytes(), expected)
+        from fifth_pick.board_inspect_cli import inspect_board
+        from fifth_pick.sources.alias_crosswalk import BoardIdentity, RosterIdentity
+
+        before = self.store.receipts_path(RUN).read_bytes()
+        held = inspect_board(self.store, RUN, EVENT, 1)
+        self.assertEqual(held["lines"], [])
+        self.assertIn("Luka Doncic", str(held["quarantined_labels"]))
+        roster = (
+            RosterIdentity(
+                "nba-id", "luka-doncic", "Los Angeles Lakers", "https://example.test/roster"
+            ),
+        )
+        identities = (
+            BoardIdentity(
+                "nba-id",
+                "Luka Doncic",
+                EVENT,
+                "Los Angeles Lakers",
+                "https://example.test/identity",
+            ),
+        )
+        result = inspect_board(self.store, RUN, EVENT, 1, roster=roster, identities=identities)
+        self.assertFalse(result["live_admission"])
+        self.assertTrue(result["lines"])
+        self.assertEqual(self.store.receipts_path(RUN).read_bytes(), before)
+        self.assertFalse((self.store.run_directory(RUN) / "run.json").exists())
+        archive.write_bytes(expected + b" ")
+        with self.assertRaisesRegex(FifthPickError, "differs from the capture receipt"):
+            inspect_board(self.store, RUN, EVENT, 1)
+
         self.assertEqual(self.calls, [events_url(), odds_url(EVENT, OddsApiSourceConfig())])
 
     def test_uncommitted_snapshot_rows_are_excluded_from_operational_ledger(self):

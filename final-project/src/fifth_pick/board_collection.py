@@ -42,6 +42,7 @@ from fifth_pick.sources.odds_api import (
     SOURCE_ID,
     OddsApiClient,
     OddsApiSourceConfig,
+    decode_archived_odds,
     events_url,
     odds_url,
     validate_event_id,
@@ -49,7 +50,7 @@ from fifth_pick.sources.odds_api import (
 from fifth_pick.sources.quota import QuotaBudget
 from fifth_pick.sources.supporting_fixture import aware_timestamp
 from fifth_pick.sources.transport import HttpResponse, Transport, UrllibTransport
-from fifth_pick.storage import RunStore, application_run_store, collection_lock
+from fifth_pick.storage import RunStore, _atomic_write, application_run_store, collection_lock
 
 _EVENT_COST = len(APPROVED_MARKETS)
 _POLICY = "dfs-board-policy"
@@ -588,6 +589,11 @@ class BoardCollector:
                             "payload_sha256": hashlib.sha256(response.body).hexdigest(),
                             "quota": quota,
                             **coverage,
+                            **(
+                                {"event_scope": self._scope[event_id].to_dict()}
+                                if self._mode is EvidenceMode.LIVE and request == "odds"
+                                else {}
+                            ),
                         }
                     ),
                     retrieved,
@@ -620,6 +626,27 @@ class BoardCollector:
                     used - event_quota[0] != last or event_quota[1] - remaining != last
                 ):
                     raise SourceError("LIVE quota counters disagree with the odds charge")
+
+                if request == "odds":
+                    path = self._store.run_directory(run_id) / f"{stage_key}-odds.body"
+                    body = response.body
+                    if len(body) > 8_388_608 or self._credential.encode() in body:
+                        raise SourceError("provider body is too large or unsafe to archive")
+                    parsed_body = json.loads(body)
+                    if self._credential in json.dumps(parsed_body, ensure_ascii=False):
+                        raise SourceError("provider body contains disallowed credential material")
+                    scope = self._scope[event_id]
+                    decode_archived_odds(
+                        body,
+                        event_id=event_id,
+                        home_team=scope.home_team,
+                        away_team=scope.away_team,
+                        tipoff=scope.tipoff,
+                        projection_allowed=lambda *_: False,
+                    )
+                    if path.exists():
+                        raise SourceError("provider archive already exists")
+                    _atomic_write(path, body)
 
         try:
             board = self._client.fetch_board(
@@ -658,7 +685,14 @@ class BoardCollector:
             completed_at = self._now()
             if self._timing_binding():
                 self._check_live_window(run_id, snapshot, event_id, completed_at)
-        except (FifthPickError, ValueError, OSError, EOFError, KeyboardInterrupt) as exc:
+        except (
+            FifthPickError,
+            ValueError,
+            OSError,
+            EOFError,
+            RecursionError,
+            KeyboardInterrupt,
+        ) as exc:
             self._store.append_receipt(
                 self._receipt(
                     run_id,

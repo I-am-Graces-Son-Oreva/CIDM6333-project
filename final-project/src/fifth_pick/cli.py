@@ -47,6 +47,7 @@ USAGE = (
     "  board-smoke --run-id RUN_ID\n"
     "  board-preflight [--date YYYY-MM-DD] [--expected-games COUNT]\n"
     "  board-status [--date YYYY-MM-DD]\n"
+    "  board-inspect --run-id RUN_ID --event-id EVENT_ID [--snapshot {1,2,3}]\n"
     "  game-lines-grant --run-id RUN_ID --event-id EVENT_ID --bookmaker KEY"
     " --phase {analysis,t20} [--phase {analysis,t20}] --max-credits COUNT\n"
     "  game-lines-collect --run-id RUN_ID --phase {analysis,t20}\n"
@@ -122,6 +123,11 @@ def main(
             return 1
         print(json.dumps(result, sort_keys=True))
         return 0
+
+    if arguments and arguments[0] == "board-inspect":
+        from fifth_pick.board_inspect_cli import board_inspect
+
+        return board_inspect(arguments[1:])
 
     if arguments and arguments[0] == "board-collect":
         from fifth_pick.live_board_cli import collect_live_board

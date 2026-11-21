@@ -11,10 +11,11 @@ from fifth_pick.authorization import AuthorizationGate
 from fifth_pick.config import load_configs
 from fifth_pick.errors import FifthPickError, ValidationError
 from fifth_pick.evidence import history_line_outcome
+from fifth_pick.models import Observation
 from fifth_pick.registry import Registry
 from fifth_pick.slate_manifest import read_slate_run_context
 from fifth_pick.snapshots import SnapshotEvidence, read_receipted_snapshot_ledger
-from fifth_pick.sources.base import EvidenceMode
+from fifth_pick.sources.base import EvidenceMode, SourceProjection
 from fifth_pick.sources.dunkapi_evidence_package import (
     EvidencePackageReplay,
     replay_evidence_package,
@@ -90,10 +91,35 @@ def compare_archives(
     if len(events) != 1 or events[0].commence_time != stage.event_start:
         raise ValidationError("the snapshot event does not match the receipt-bound slate")
     (event,) = events
+    return {
+        **compare_line_history(
+            line,
+            stage.candidate_id,
+            stage.event_id,
+            (event.home_team, event.away_team),
+            archives,
+            provenance=(
+                "synthetic"
+                if stage.evidence_mode is EvidenceMode.FIXTURE
+                else "external-unverified"
+            ),
+        ),
+        "candidate_key": stage.candidate_key,
+        "snapshot": snapshot,
+    }
+
+
+def compare_line_history(
+    line: Observation | SourceProjection,
+    player_id: str,
+    event_id: str,
+    event_teams: tuple[str, str],
+    archives: list[list[str]],
+    *,
+    provenance: str,
+) -> dict[str, object]:
+    """Return descriptive archive counts for an already authorized exact line."""
     registry = Registry.from_universe(load_configs().approved_universe)
-    provenance = (
-        "synthetic" if stage.evidence_mode is EvidenceMode.FIXTURE else "external-unverified"
-    )
     replays: dict[str, EvidencePackageReplay] = {}
     provider_ids: set[str] = set()
     for directory_name, digest in archives:
@@ -133,9 +159,9 @@ def compare_archives(
             ),
             scope=scope,
             registry=registry,
-            canonical_player_id=stage.candidate_id,
-            event_id=stage.event_id,
-            event_teams=(event.home_team, event.away_team),
+            canonical_player_id=player_id,
+            event_id=event_id,
+            event_teams=event_teams,
             game_id=subject["game_id"],
             as_of=line.retrieved_at,
             coverage_max_age=_OFFLINE_MAX_AGE,
@@ -173,10 +199,8 @@ def compare_archives(
     return {
         "status": "ANALYSIS_ONLY",
         "archive_provenance": provenance,
-        "event_id": stage.event_id,
-        "candidate_key": stage.candidate_key,
-        "snapshot": snapshot,
-        "player_id": stage.candidate_id,
+        "event_id": event_id,
+        "player_id": player_id,
         "platform": line.platform.value,
         "market": line.category.value,
         "direction": line.direction.value,

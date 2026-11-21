@@ -495,3 +495,42 @@ A first collection can also stop after writing some M4 or M5 artifacts.
 Without the matching collection completion receipt, the audit remains
 diagnostic and M5 rows for the reserved slot are excluded from the operational
 ledger. Preserve the files for inspection.
+
+### Inspect retained provider captures without spending credits
+
+For future authorized LIVE board collections, the successful, quota-validated
+event-odds response is saved before the identity prompt as
+`var/fifth-pick/runs/<run-id>/dfs-board-<slot>-<event-id>-odds.body`.
+The file uses private permissions and stays in the ignored run store.
+The Odds API permits internal storage and restricts redistribution of raw
+data. Keep these archives local.
+[The Odds API terms](https://the-odds-api.com/terms-and-conditions.html)
+
+Start with the saved slate and capture report. Both commands are offline.
+
+```sh
+.venv/bin/fifth-pick board-status --date 2026-11-21
+.venv/bin/fifth-pick board-inspect \
+  --run-id nba-2026-11-21-bos-sac-s1 \
+  --event-id b754a1bf84af81d45d4a3a16398daa44
+```
+
+That capture predates raw retention. Its report contains quota, provider
+market coverage and quarantined labels, with `ORIGINAL_RESPONSE_NOT_RETAINED`
+and no lines. The original payload cannot be recovered from the digest.
+
+For a future retained capture, use its actual run, event and slot. Add
+`--roster FILE --board-identities FILE` using the same independent identity
+crosswalk described above. The command checks the receipt digest and exact
+event identity before showing each verified authorized line with its platform,
+direction, source time and identity references. Add
+`--line-number N --archive DIRECTORY SHA256` to compare one displayed line
+with supplied history packages. Repeat `--archive` for additional games.
+
+Every report is `PRELIMINARY_ONLY`. Archive replay checks internal consistency
+and reports descriptive counts from the supplied games. It does not authenticate
+external history or establish complete last-eight coverage. Inspection is
+read-only and can happen after cutoff. It cannot write snapshots, turn a stopped
+capture into a completed run, or release a recommendation. For an official
+three-snapshot attempt, use the existing independently verified scope and
+separately approved series budget from the start.

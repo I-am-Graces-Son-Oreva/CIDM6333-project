@@ -467,8 +467,9 @@ class OddsApiClient:
             )
         return tuple(headers)
 
+    @classmethod
     def _parse_odds(
-        self,
+        cls,
         response: HttpResponse,
         event_id: str,
         *,
@@ -507,11 +508,11 @@ class OddsApiClient:
                     f"bookmaker {bookmaker.get('key')!r} in {event_id} must contain a markets array"
                 )
             for market in markets:
-                outcomes.extend(self._parse_market(market, platform, event_id, projection_allowed))
+                outcomes.extend(cls._parse_market(market, platform, event_id, projection_allowed))
         return tuple(outcomes)
 
+    @staticmethod
     def _parse_market(
-        self,
         market: object,
         platform: Platform,
         event_id: str,
@@ -575,6 +576,24 @@ class OddsApiClient:
             hasher.update(body)
             hasher.update(b"\n")
         return hasher.hexdigest()
+
+
+def decode_archived_odds(
+    body: bytes,
+    *,
+    event_id: str,
+    home_team: str,
+    away_team: str,
+    tipoff: datetime,
+    projection_allowed: ProjectionFilter,
+) -> tuple[_RawOutcome, ...]:
+    """Decode supplied bytes using the same exact-event rules as the collector."""
+    return OddsApiClient._parse_odds(
+        HttpResponse(200, {}, body),
+        event_id,
+        event_header=_EventHeader(event_id, home_team, away_team, tipoff),
+        projection_allowed=projection_allowed,
+    )
 
 
 def _platform_for_bookmaker(key: object) -> Platform | None:
