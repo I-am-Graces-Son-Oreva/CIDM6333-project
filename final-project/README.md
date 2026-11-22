@@ -10,7 +10,8 @@ final decision. The application has no entry submission or wagering path.
 
 - Technical design · [PDF](docs/fifth-pick/technical-design.pdf) · [HTML](docs/fifth-pick/technical-design.html)
 - Evidence and ranking code · [Snapshots](src/fifth_pick/snapshots.py) · [Methodology](src/fifth_pick/methodology.py) · [Ranking](src/fifth_pick/ranking.py)
-- User guide · [PDF](docs/fifth-pick/user-guide.pdf) · [HTML](docs/fifth-pick/user-guide.html)
+- User guide · [PDF](docs/fifth-pick/user-guide.pdf) · [HTML](docs/fifth-pick/user-guide.html) · [Public website](https://the-fifth-pick-docs.reedyolive6.chatgpt.site/user-guide)
+- Get the code from the [class repository](https://github.com/WTAMU-CIDM6333/CIDM6333-Fall2026-Joseph-Edafiadhe).
 - [Run the offline demo](docs/fifth-pick/demo.md)
 
 From the repository root with Python 3.11 or later and uv, install the locked
