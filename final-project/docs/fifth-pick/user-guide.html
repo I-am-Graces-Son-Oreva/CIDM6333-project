@@ -101,6 +101,7 @@
         <ul>
           <li><a href="#setup">Setup</a></li>
           <li><a href="#menu">Demo menu</a></li>
+          <li><a href="#live">LIVE Mode</a></li>
           <li><a href="#commands">Shell commands</a></li>
           <li><a href="#records">Inputs and outputs</a></li>
           <li><a href="#review">Agent-assisted review</a></li>
@@ -274,20 +275,58 @@ fp evaluate --run-id "$run_id"</code></pre>
         Use Route A only. Correlated request-to-denial evidence remains blocked
         for both write routes. LIVE second-FAIL or CONCERNS escalation remains unverified. See the
         <a href="harness.md">harness</a> and <a href="gates.md">gate record</a>.</p>
-      <h3>LIVE board operation</h3>
-      <p>Live Mode is separate from the classroom fixture. The approved fantasy
-        board route is The Odds API <code>us_dfs</code>. LIVE collection requires
-        verified scope and Joseph’s explicit paid-request budget. Real observation
-        windows, required evidence, and an owner decision before the first official
-        game govern a new LIVE series. All games share the first official NBA
-        tipoff as their timing reference. Snapshot 3 opens 25 minutes before
-        that tipoff and closes 20 minutes before it. T−20 review then runs
-        for five minutes. Provider timestamps remain in the audit records.
-        A slate with incomplete provider coverage stays blocked. The classroom
-        replay uses synthetic data and runs without provider credentials. Consult the <a href="runbook.md">operations runbook</a> and the
-        <a href="live-operational-amendment.md">LIVE operational amendment</a>
-        for prerequisites and review rules. See the
-        <a href="live-delivery-ledger.md">LIVE delivery ledger</a> for current validation status.</p>
+    </section>
+
+    <section id="live">
+      <h2>Use LIVE Mode</h2>
+      <p>From the repository root, open the menu and press <kbd>L</kbd>. Type a LIVE
+        action number and press Enter. Press Enter at the action prompt to go back.
+        At a <strong>Run ID</strong> prompt, pressing Enter without an ID cancels the action.</p>
+      <pre><code>uv run --offline --no-sync fifth-pick menu</code></pre>
+
+      <h3>Find a slate and inspect saved data</h3>
+      <ul>
+        <li><strong>1 — View saved slate.</strong> Enter a Chicago slate date in
+          <code>YYYY-MM-DD</code> format, or press Enter for today. This reads the saved
+          preflight offline.</li>
+        <li><strong>2 — Discover NBA events.</strong> Enter the date and type
+          <code>PREFLIGHT</code> to authorize one zero-credit schedule request. The Odds API
+          key must already be available in the terminal environment. Discovery can show
+          event IDs and scheduled times. It does not return player lines or create a run.
+          Incomplete or conflicting coverage can block the collection manifest.</li>
+        <li><strong>3 — Inspect retained board.</strong> Enter the saved LIVE run ID,
+          provider event ID, and capture slot. This offline report needs retained response
+          bytes. Preliminary comparisons stay separate from the decision ledger.</li>
+        <li><strong>8 — View audit and receipts.</strong> Enter the saved LIVE run ID.
+          You can inspect receipts for interrupted attempts even when no snapshot was
+          accepted. A run ID identifies the local operation. An event ID identifies a
+          game in the provider’s schedule.</li>
+      </ul>
+
+      <h3>Collect and review a real slate</h3>
+      <ol>
+        <li>Use <strong>4 — Collect a scoped snapshot</strong> or
+          <strong>11 — Capture Snapshot 1 with identity quarantine</strong> when the
+          prerequisites apply. The approved board route is The Odds API <code>us_dfs</code>.
+          Collection requires verified scope, a valid time window, and Joseph’s explicit
+          budget. Quarantined labels need independent identity corroboration before admission.</li>
+        <li>Record each genuine observation in its permitted window. A new LIVE series
+          uses the first official NBA tipoff on the slate as the shared clock. Snapshot 3
+          runs from T−25 through T−20, followed by the five-minute T−20 review window.
+          Missed observations stay missed.</li>
+        <li>Use <strong>5</strong> for Snapshot 2 analysis, <strong>6</strong> for T−20,
+          and <strong>12</strong> to preview or record a Controller assessment for the
+          exact event, candidate, and slot. Use <strong>7</strong> for the final proposal
+          and <strong>10</strong> for the independent Reviewer handoff when the required
+          records exist. Use <strong>9</strong> for Joseph’s explicit decision after the
+          applicable release checks.</li>
+      </ol>
+      <p>LIVE supports real event discovery and scoped collection. A complete real-data
+        decision still depends on timely snapshots, authorized evidence, and the required
+        review. Use Demo Mode to rehearse the complete workflow without credentials.</p>
+      <p><a href="runbook.md">Operations runbook</a> ·
+        <a href="live-operational-amendment.md">LIVE timing and decision rules</a> ·
+        <a href="live-delivery-ledger.md">LIVE verification and limitations</a></p>
     </section>
 
     <section id="troubleshooting">
