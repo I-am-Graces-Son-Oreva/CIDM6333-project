@@ -1,0 +1,6 @@
+{
+  "status": "FAIL",
+  "status": "FAIL",
+  "summary": "Synthetic duplicate-field check.",
+  "findings": ["Synthetic review finding."]
+}
