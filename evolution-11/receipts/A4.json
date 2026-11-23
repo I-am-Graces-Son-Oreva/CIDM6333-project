@@ -1,0 +1,7 @@
+{
+  "commit": "8cf3ca1e301aaca3b081c2cfacbdd755fe3df92a",
+  "span_id": "33c73b9a5d054bc9886599dc4d4221ae",
+  "exit_status": 1,
+  "duration_seconds": 5.3882598876953125e-05,
+  "stdout_tail": "duplicate reviewer field: status"
+}

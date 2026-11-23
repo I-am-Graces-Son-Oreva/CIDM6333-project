@@ -1,0 +1,7 @@
+{"event": "go", "commit": "8cf3ca1e301aaca3b081c2cfacbdd755fe3df92a"}
+{"event": "probe", "point": "A1", "payload_sha256": "d1c9e9400d369f8e9ee9b2abc050aeefff79ecb74b3e26cee7bb9c08c1327ea3", "outcome": "blocked by guardrail", "receipt": "receipts/A1.json"}
+{"event": "probe", "point": "A2", "payload_sha256": "32919785e93683c17d93c362f1703d07663f1e0d56cd7d1b44a6e724bbad53f0", "outcome": "blocked by guardrail", "receipt": "receipts/A2.json"}
+{"event": "probe", "point": "A3", "payload_sha256": "6c3c9c134b817f21ae65d911a24ef4bf7643d8ea34f37e3d9801cbf4b4cee274", "outcome": "blocked by guardrail", "receipt": "receipts/A3.json"}
+{"event": "probe", "point": "A4", "payload_sha256": "b72f4f61d65ad968d9d5ddecd2039c0f228cebde3b0072461467eee2caa5885c", "outcome": "blocked by guardrail", "receipt": "receipts/A4.json"}
+{"event": "probe", "point": "A5", "payload_sha256": "bf7a037baccd55288fd8bd922003edfaacb416bb91966ba46d1e56bc14a6018a", "outcome": "blocked by guardrail", "receipt": "receipts/A5.json"}
+{"event": "state_check", "clean_scratch_storage": true, "clean_checkout": true}

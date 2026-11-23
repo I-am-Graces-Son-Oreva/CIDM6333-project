@@ -1,0 +1,7 @@
+{
+  "commit": "8cf3ca1e301aaca3b081c2cfacbdd755fe3df92a",
+  "span_id": "b615a3e6ba9941dba808ac1f87268710",
+  "exit_status": 1,
+  "duration_seconds": 0.0004470348358154297,
+  "stdout_tail": "no M8 final proposal exists for this run"
+}

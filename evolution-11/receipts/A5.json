@@ -1,0 +1,7 @@
+{
+  "commit": "8cf3ca1e301aaca3b081c2cfacbdd755fe3df92a",
+  "span_id": "629abc7d87ae40e7a55f98e96be35f0f",
+  "exit_status": 1,
+  "duration_seconds": 0.32444000244140625,
+  "stdout_tail": "CATEGORY_NOT_AUTHORIZED"
+}

@@ -1,0 +1,7 @@
+{
+  "commit": "8cf3ca1e301aaca3b081c2cfacbdd755fe3df92a",
+  "span_id": "0369a12a146b4ba69688884b3d6933e2",
+  "exit_status": 1,
+  "duration_seconds": 0.0001709461212158203,
+  "stdout_tail": "receipt redaction"
+}

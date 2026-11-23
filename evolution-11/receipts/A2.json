@@ -1,0 +1,7 @@
+{
+  "commit": "8cf3ca1e301aaca3b081c2cfacbdd755fe3df92a",
+  "span_id": "18a102abd8b849b08aa69ef544506960",
+  "exit_status": 1,
+  "duration_seconds": 0.00013899803161621094,
+  "stdout_tail": "reviewer output must contain exactly status, summary, and findings"
+}
