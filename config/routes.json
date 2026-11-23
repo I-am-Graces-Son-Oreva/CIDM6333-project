@@ -1,18 +1,19 @@
 {
   "sortie": 9,
+  "mode": "degraded_same_family",
   "budget_usd": "0.00",
   "routes": {
     "worker": {
-      "model": "opencode/mimo-v2.6-flash-free",
-      "family": "Xiaomi MiMo",
-      "tier": "free",
-      "reason": "Emit a small structured handoff for a bounded synthetic task."
+      "model": "qwen3:1.7b",
+      "family": "Qwen",
+      "tier": 2,
+      "reason": "Local worker emits a bounded E8-format handoff."
     },
     "adversary": {
-      "model": "opencode/nemotron-3.5-lightning-free",
-      "family": "NVIDIA Nemotron",
-      "tier": "free",
-      "reason": "Use a separate family to challenge one claim against its receipt."
+      "model": "qwen3:4b",
+      "family": "Qwen",
+      "tier": 2,
+      "reason": "Local same-family adversary receives one claim and its receipt in a fresh context."
     }
   }
 }

@@ -21,3 +21,14 @@ claim alone cannot support this log.
 ## CHASE
 
 Pending. Only the assigned Chase records the verdict.
+
+
+## Attempt 1 — 2026-11-23
+
+The independent agent Chase gave GO, committed at `5ba85c4`. OpenCode
+reported a free usage limit on the MiMo worker, and the call timed out before
+a validated handoff. The sortie aborted before TP1. No receipt, adversary
+verdict, or verified token and cost totals were produced. No paid fallback
+was configured. The [abort record](evidence/attempt-1/abort.md) preserves the
+original ledger. Local re-flight preparation uses declared tier-2 degraded
+mode with separate Qwen model IDs and fresh contexts.

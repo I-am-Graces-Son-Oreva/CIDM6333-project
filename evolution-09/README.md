@@ -1,15 +1,16 @@
 # Evolution 09 — Claim, receipt, verdict
 
-**Preflight prepared. The graded sortie has not started.** The E8 re-flight
-has a Chase PASS. E9 is awaiting its own Chase GO. See the [flight log](flight-log.md)
-for the reported December 30, 2026 deadline and current status.
+**The hosted attempt aborted before TP1.** The E8 re-flight has a Chase
+PASS. E9’s local tier-2 re-flight requires a fresh Chase GO. See the
+[flight log](flight-log.md) for the reported December 30, 2026 deadline and
+the evidence for each attempt.
 
 | Artifact | Location |
 | --- | --- |
 | Preregistered controls | [Flight card](flight-card.md) |
 | Harness and fixture | [Python source](src/) |
 | Independent reviewer | [OpenCode adversary](../.opencode/agents/adversary.md) |
-| Free-only model routing | [Route table](../config/routes.json) |
+| Local model routing | [Route table](../config/routes.json) |
 | Accounting | [Cost table](cost-table.md) |
 | Analysis | [Anthropic research system design analysis](../design-analyses/E9-Research-Coordination.md) |
 

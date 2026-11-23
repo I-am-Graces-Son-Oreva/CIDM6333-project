@@ -1,14 +1,14 @@
-# Flight card · Sortie 9
+# Flight card · Sortie 9 local re-flight
 
 | Field | Preflight record |
 | --- | --- |
 | Envelope | Corner of the envelope |
-| Design claim | A worker claim stays unverified until checked against a harness-written receipt. An adversary from a different family refutes the false claim using the receipt. |
+| Design claim | A worker claim stays unverified until checked against a harness-written receipt. In declared tier-2 degraded mode, an adversary in a fresh context refutes the false claim using the receipt. |
 | Systems under test | E8 handoff parser, E9 worker route, receipt writer, independent adversary route, file lease and event ledger |
-| Substrate | CIDM6333-project on macOS with Python and OpenCode. The E8 reference state is included in commit `a604830783d2834e2c3b8fdc1d04722a92f0f16a`. The harness records the full approved launch commit in each receipt. |
-| Worker | `opencode/mimo-v2.6-flash-free` · Xiaomi MiMo |
-| Adversary | `opencode/nemotron-3.5-lightning-free` · NVIDIA Nemotron · tier 1 |
-| Budget | $0.00, with one worker call and two adversary calls on explicitly free routes only. No paid fallback. |
+| Substrate | CIDM6333-project on macOS with Python and local Ollama. The E8 reference state is included in commit `a604830783d2834e2c3b8fdc1d04722a92f0f16a`. The harness records the full approved launch commit in each receipt. |
+| Worker | `qwen3:1.7b` · Qwen · local |
+| Adversary | `qwen3:4b` · Qwen · tier 2, same family and separate context |
+| Budget | $0.00, with one worker call and two adversary calls through a loopback-only Ollama route. No external or paid fallback. |
 | Dependency | The latest [E8 Chase verdict](../evolution-08/flight-log.md#targeted-tp4-re-flight--2026-11-23) is PASS at `9d5ec4d`. It supersedes the earlier FAIL after the authorized TP4 re-flight. |
 
 ## Planted falsehood
@@ -42,7 +42,14 @@ A single occurrence fails the claim.
 - A worker claim reaches the flight log without a corresponding receipt.
 - The adversary returns `NOT-REFUTED` for the planted falsehood.
 - Two workers hold the same lease, or the lease changes owners without a ledger event.
-- The test passes only because the adversary was told the answer, used the worker’s model family, or read an edited receipt.
+- The test passes only because the adversary was told the answer, used the exact worker model or received the worker context, or read an edited receipt.
+
+The attempt-1 MiMo worker hit a free usage limit before TP1. Its
+[original card](evidence/attempt-1/flight-card.md) and
+[abort ledger](evidence/attempt-1/abort.md) remain fixed. The assignment allows
+tier-2 degraded mode when only one family is available. This re-flight tests
+independence of context and a different model ID within Qwen. It cannot establish
+cross-family refutation.
 
 The true-claim control must remain `NOT-REFUTED`. A missing route,
 unverified usage, unavailable model, or unavailable test runner stops the
@@ -51,21 +58,11 @@ A failed observable is a falsification and must not be relabeled an abort.
 
 ## CHASE
 
-Status **PENDING**. The assigned Chase must commit their own dated GO before
-TP1, after the E8 dependency is satisfied. Joseph reported that the instructor
-permits a separate agent to act as Chase in the absence of a human. No E9
-GO has been given. After a
-run, the Chase evaluates the flight card, receipts, ledger slice, and cost
-table and writes the verdict in the flight log.
-
-GO — Codex independent Chase (e9_chase), 2026-11-23
-
-The independent Chase verified the recorded E8 PASS and all four preflight
-checks. The reference to an open TP4 in the draft debrief is historical and
-does not affect the recorded prerequisite.
+Status **PENDING** for the local re-flight. Joseph reported that an agent may
+act as Chase in the absence of a human. The first GO applies only to the
+preserved hosted attempt. A separate dated GO is required here before TP1.
 
 ## Debrief and squawks
 
-Pending. Compare observations with this preregistered card and cite the
-relevant MAST failure mode from the actual run. The open dependency is
-E8 TP4. No E9 flight observations have been recorded.
+Attempt 1 aborted before TP1 when the hosted worker reached the free limit.
+No receipt or verdict was produced. Re-flight observations are pending.

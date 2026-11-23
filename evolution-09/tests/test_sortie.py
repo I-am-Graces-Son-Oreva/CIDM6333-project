@@ -1,5 +1,6 @@
 """Offline development tests. These are separate from the graded sortie."""
 
+import io
 import json
 import os
 import sys
@@ -84,35 +85,35 @@ class SortieDevelopmentTests(unittest.TestCase):
             preflight()
 
     def test_router_accounts_for_both_token_counts_and_zero_cost(self):
-        from subprocess import CompletedProcess
-
-        events = [
-            {"type": "text", "part": {"text": "result"}},
-            {
-                "type": "step_finish",
-                "part": {"tokens": {"input": 12, "output": 4}, "cost": 0},
-            },
-        ]
-        completed = CompletedProcess([], 0, "\n".join(map(json.dumps, events)), "")
-        with patch("sortie.subprocess.run", return_value=completed) as invoke:
+        reply = {
+            "model": "qwen3:4b",
+            "message": {"content": "result"},
+            "prompt_eval_count": 12,
+            "eval_count": 4,
+            "done_reason": "stop",
+        }
+        with patch("sortie.build_opener") as opener:
+            opener.return_value.open.return_value = io.StringIO(json.dumps(reply))
             body = FreeRouter(self.ledger).call("adversary", "synthetic test packet")
         self.assertEqual(body, "result")
-        self.assertIn("opencode/nemotron-3.5-lightning-free", invoke.call_args.args[0])
+        request = opener.return_value.open.call_args.args[0]
+        self.assertEqual(request.full_url, "http://127.0.0.1:11434/api/chat")
+        self.assertEqual(json.loads(request.data)["model"], "qwen3:4b")
         summary = json.loads(self.ledger.path.read_text().splitlines()[-1])
         self.assertEqual(summary["tokens"], {"input": 12, "output": 4})
-        self.assertEqual(summary["cost"], "0")
+        self.assertEqual(summary["cost"], "0.00")
 
     def test_router_records_missing_usage_and_stops(self):
-        from subprocess import CompletedProcess
-
         with (
-            patch("sortie.subprocess.run", return_value=CompletedProcess([], 1, "", "")),
-            self.assertRaisesRegex(ValueError, "Model call stopped"),
+            patch("sortie.build_opener") as opener,
+            self.assertRaisesRegex(ValueError, "Local model call stopped"),
         ):
+            opener.return_value.open.return_value = io.StringIO("{}")
             FreeRouter(self.ledger).call("worker", "synthetic fixture")
         event = json.loads(self.ledger.path.read_text().splitlines()[-1])
         self.assertEqual(event["status"], "unverified_or_failed")
-        self.assertIsNone(event["cost"])
+        self.assertIsNone(event["tokens"])
+        self.assertEqual(event["cost"], "0.00")
 
     def test_preflight_rejects_go_superseded_by_no_go(self):
         card = "## CHASE\nGO — Reviewer — 2026-01-01\nNO-GO — Reviewer — 2026-01-02: pending"

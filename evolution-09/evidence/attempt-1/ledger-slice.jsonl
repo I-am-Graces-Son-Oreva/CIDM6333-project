@@ -1,0 +1,2 @@
+{"event": "model_call_started", "at": "2026-11-23T20:42:13.257429+00:00", "task_class": "worker", "model": "opencode/mimo-v2.6-flash-free", "family": "Xiaomi MiMo"}
+{"event": "model_call", "at": "2026-11-23T20:45:13.887866+00:00", "task_class": "worker", "model": "opencode/mimo-v2.6-flash-free", "family": "Xiaomi MiMo", "tokens": null, "cost": null, "status": "unverified_or_failed"}

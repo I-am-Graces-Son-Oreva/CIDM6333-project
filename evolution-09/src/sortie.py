@@ -8,22 +8,38 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 import time
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
+from urllib.request import ProxyHandler, Request, build_opener
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 E9 = ROOT / "evolution-09"
-FREE_MODELS = {
-    "opencode/mimo-v2.6-flash-free": "Xiaomi MiMo",
-    "opencode/nemotron-3.5-lightning-free": "NVIDIA Nemotron",
+LOCAL_MODELS = {"qwen3:1.7b": "Qwen", "qwen3:4b": "Qwen"}
+HANDOFF_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "status": {"type": "string", "enum": ["DONE", "BLOCKED"]},
+        "summary": {"type": "string"},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["status", "summary", "evidence"],
+    "additionalProperties": False,
+}
+VERDICT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "verdict": {"type": "string", "enum": ["REFUTED", "NOT-REFUTED"]},
+        "cites": {"type": "string"},
+        "missing": {"type": "string"},
+    },
+    "required": ["verdict", "cites", "missing"],
+    "additionalProperties": False,
 }
 
 
@@ -135,95 +151,73 @@ class FreeRouter:
         self.routes = config["routes"]
         if (
             config["sortie"] != 9
+            or config["mode"] != "degraded_same_family"
             or Decimal(config["budget_usd"]) != 0
             or set(self.routes) != {"worker", "adversary"}
+            or set(row["model"] for row in self.routes.values()) != set(LOCAL_MODELS)
             or any(
-                FREE_MODELS.get(row["model"]) != row["family"] or row["tier"] != "free"
+                LOCAL_MODELS.get(row["model"]) != row["family"] or row["tier"] != 2
                 for row in self.routes.values()
             )
-            or len({row["family"] for row in self.routes.values()}) != 2
         ):
-            raise ValueError("Routes do not satisfy the preregistered free cross-family budget.")
+            raise ValueError("Routes do not satisfy the preregistered local tier-2 budget.")
 
     def call(self, task_class: str, prompt: str) -> str:
         route = self.routes[task_class]
-        details = {"task_class": task_class, "model": route["model"], "family": route["family"]}
+        details = {
+            "task_class": task_class,
+            "model": route["model"],
+            "family": route["family"],
+            "tier": route["tier"],
+        }
         self.ledger.append("model_call_started", **details)
         tokens = None
-        cost = None
         try:
-            with tempfile.TemporaryDirectory(prefix="e9-model-") as name:
-                work = Path(name)
-                agents = work / ".opencode" / "agents"
-                agents.mkdir(parents=True)
-                shutil.copyfile(ROOT / ".opencode/agents/adversary.md", agents / "adversary.md")
-                (agents / "worker.md").write_text(
-                    "---\ndescription: Sortie 9 bounded worker\nmode: primary\n"
-                    'permission:\n  "*": deny\n---\nReturn only the requested handoff JSON.\n'
-                )
-                # Keep the model conversation outside the project and its flight card.
-                env = {
-                    "PATH": os.environ["PATH"],
-                    "HOME": os.environ["HOME"],
-                    "OPENCODE_CONFIG_CONTENT": json.dumps(
-                        {"permission": {"*": "deny"}, "instructions": []}
-                    ),
-                    "OPENCODE_DISABLE_AUTOUPDATE": "true",
-                }
-                result = subprocess.run(
-                    [
-                        "opencode",
-                        "run",
-                        "--pure",
-                        "--format",
-                        "json",
-                        "--agent",
-                        task_class,
-                        "--model",
-                        route["model"],
-                        "--dir",
-                        name,
-                        prompt,
-                    ],
-                    cwd=work,
-                    env=env,
-                    capture_output=True,
-                    text=True,
-                    timeout=180,
-                    check=False,
-                )
-            events = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
-            finish = [event["part"] for event in events if event["type"] == "step_finish"]
-            if finish:
-                tokens = {
-                    direction: sum(row["tokens"][direction] for row in finish)
-                    for direction in ("input", "output")
-                }
-                if any(count < 0 for count in tokens.values()):
-                    raise ValueError("Negative model token accounting.")
-                cost = sum((Decimal(str(row["cost"])) for row in finish), Decimal(0))
+            schema = HANDOFF_SCHEMA if task_class == "worker" else VERDICT_SCHEMA
+            instructions = (
+                "Return only the requested handoff JSON."
+                if task_class == "worker"
+                else (ROOT / ".opencode/agents/adversary.md").read_text().split("---", 2)[2]
+            )
+            payload = {
+                "model": route["model"],
+                "stream": False,
+                "think": False,
+                "format": schema,
+                "options": {"temperature": 0, "num_predict": 110},
+                "messages": [
+                    {"role": "system", "content": instructions + " /no_think"},
+                    {"role": "user", "content": prompt},
+                ],
+            }
+            request = Request(
+                "http://127.0.0.1:11434/api/chat",
+                data=json.dumps(payload).encode(),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with build_opener(ProxyHandler({})).open(request, timeout=180) as response:
+                result = json.load(response)
+            tokens = {"input": result["prompt_eval_count"], "output": result["eval_count"]}
             if (
-                result.returncode
-                or cost != 0
-                or not finish
-                or any(event["type"] in {"tool_use", "error"} for event in events)
+                result.get("model") != route["model"]
+                or result.get("done_reason") != "stop"
+                or any(type(count) is not int or count < 0 for count in tokens.values())
             ):
-                raise ValueError("Model unavailable or free usage could not be verified.")
-            text = "".join(event["part"]["text"] for event in events if event["type"] == "text")
-            if not text.strip():
-                raise ValueError("Model returned no verdict or handoff.")
-        except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:
+                raise ValueError("Local response or accounting was incomplete.")
+            text = result["message"]["content"]
+            if not isinstance(text, str) or not text.strip():
+                raise ValueError("Local model returned no verdict or handoff.")
+        except (OSError, ValueError, KeyError, TypeError) as exc:
             self.ledger.append(
                 "model_call",
                 **details,
                 tokens=tokens,
-                cost=None if cost is None else str(cost),
+                cost="0.00",
                 status="unverified_or_failed",
             )
-            raise ValueError("Model call stopped. Inspect the route ledger.") from exc
-        self.ledger.append(
-            "model_call", **details, tokens=tokens, cost=str(cost), status="recorded"
-        )
+            raise ValueError("Local model call stopped. Inspect the route ledger.") from exc
+        self.ledger.append("model_call", **details, tokens=tokens, cost="0.00", status="recorded")
         return text
 
 
@@ -299,6 +293,7 @@ def fly(out: Path) -> None:
             claim_id=label,
             model=model["model"],
             family=model["family"],
+            tier=model["tier"],
             **result,
         )
         return result

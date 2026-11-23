@@ -1,13 +1,10 @@
 # Sortie 9 cost table
 
-| Task class | Model | Input tokens | Output tokens | USD |
-| --- | --- | ---: | ---: | ---: |
-| No sortie calls executed | — | 0 | 0 | 0.00 |
+Attempt 1 has one started free worker invocation. It returned no verified
+token counts or cost. See the [abort record](evidence/attempt-1/abort.md).
+No paid fallback was configured.
 
-Sortie spend is **$0.00** against a preregistered **$0.00** budget.
-The entries above describe preflight. An authorized run writes its measured
-per-call values and total alongside the ledger slice. Model catalog availability
-does not establish that the local OpenCode session can access the free routes.
-
-Planned model IDs come from the [OpenCode model catalog](https://opencode.ai/docs/console/models/).
-The harness uses OpenCode's reported input/output token counts and charges.
+The re-flight has a maximum external provider cost of **$0.00**. Both models
+are installed locally. The router records the Ollama input and output token
+counts for every completed call, and the harness writes the measured cost
+table alongside the re-flight ledger.
