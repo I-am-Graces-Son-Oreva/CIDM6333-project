@@ -72,7 +72,7 @@ overreaches. A future comparison should use fresh cases and score both missed
 issues and false alarms. A small pilot with one completed model configuration
 cannot establish how other models or review designs would perform.
 
-### Presentation takeaway
+### Pilot takeaway
 
 > I gave the agent a job Python doesn’t currently do: challenge the reasoning.
 > Then I tested whether it did that job well. In this pilot, it didn’t catch the
