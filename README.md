@@ -55,6 +55,7 @@ or inspect the [original walkthrough evidence](multi-tool-exercise/docs/closeout
 | [Evolution 06](evolution-06/) | Persistent context and evidence |
 | [Evolution 07](evolution-07/) | Memory and isolation |
 | [Evolution 08](evolution-08/) | Multi-agent control and review |
+| [Evolution 09](evolution-09/) | Claim, receipt, and verdict · preflight |
 
 See the [design-analysis ledger](design-analyses/LEDGER.md) and [AI interaction log](AI_LOG.md).
 

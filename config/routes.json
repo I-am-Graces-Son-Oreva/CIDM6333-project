@@ -1,0 +1,18 @@
+{
+  "sortie": 9,
+  "budget_usd": "0.00",
+  "routes": {
+    "worker": {
+      "model": "opencode/mimo-v2.6-flash-free",
+      "family": "Xiaomi MiMo",
+      "tier": "free",
+      "reason": "Emit a small structured handoff for a bounded synthetic task."
+    },
+    "adversary": {
+      "model": "opencode/nemotron-3.5-lightning-free",
+      "family": "NVIDIA Nemotron",
+      "tier": "free",
+      "reason": "Use a separate family to challenge one claim against its receipt."
+    }
+  }
+}

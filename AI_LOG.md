@@ -504,3 +504,11 @@ the three with planted reasoning flaws. The result gives me a concrete
 improvement to test before relying more heavily on the Reviewer.
 
 Read the [collaboration log and pilot results](final-project/docs/fifth-pick/reviewer-pilot.md).
+
+## Evolution 9 — Preflight preparation, November 23, 2026
+
+- **Models and roles.** Codex helped interpret the assignment and build and test the harness. Xiaomi MiMo and NVIDIA Nemotron are configured for the future worker and adversary roles. Neither ran in this sprint preparation.
+- **Model claim checked.** The earlier Fifth Pick pilot exposed a model PASS on a claim that Luka exceeded a line in eight of eight games. Calculation from the records yielded six of eight. This motivated the E9 design. It is separate from Sortie 9 evidence.
+- **Deterministic work.** Unit tests used the operating system and known subprocess outputs to check lock exclusivity, receipt hashing, and verdict parsing. Mocked model calls tested token accounting without spending credits.
+- **Cost.** $0.00 in sortie provider charges. No model call was made by the E9 harness.
+- **Decision.** Keep the E8 FAIL on record and hold E9 at preflight pending a superseding E8 PASS and independent Chase GO.
