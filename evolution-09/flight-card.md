@@ -58,6 +58,12 @@ GO has been given. After a
 run, the Chase evaluates the flight card, receipts, ledger slice, and cost
 table and writes the verdict in the flight log.
 
+GO — Codex independent Chase (e9_chase), 2026-11-23
+
+The independent Chase verified the recorded E8 PASS and all four preflight
+checks. The reference to an open TP4 in the draft debrief is historical and
+does not affect the recorded prerequisite.
+
 ## Debrief and squawks
 
 Pending. Compare observations with this preregistered card and cite the
