@@ -56,7 +56,9 @@ A failed observable is a falsification and must not be relabeled an abort.
 
 ## CHASE
 
-Status **PENDING**. A fresh dated GO is required for this cross-family attempt.
+GO — Codex independent Chase (e9_chase), 2026-11-23
+
+Scope: cross-family local re-flight at `ba3e13c`.
 
 ## Debrief and squawks
 
