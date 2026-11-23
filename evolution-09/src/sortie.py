@@ -237,7 +237,7 @@ def preflight() -> str:
     latest = re.findall(r"^CHASE VERDICT — (PASS|FAIL)\b", e8, re.MULTILINE)
     chase = card.partition("## CHASE\n")[2].split("\n## ", 1)[0]
     decisions = re.findall(
-        r"^(GO|NO-GO) — [^\n]+ — (\d{4}-\d{2}-\d{2})(?:[:][^\n]*)?$",
+        r"^(GO|NO-GO) — [^\n]+?(?:, | — )(\d{4}-\d{2}-\d{2})(?:[:][^\n]*)?$",
         chase,
         re.MULTILINE,
     )

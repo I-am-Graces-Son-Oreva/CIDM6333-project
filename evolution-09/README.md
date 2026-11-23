@@ -2,7 +2,7 @@
 
 **Preflight prepared. The graded sortie has not started.** E8’s recorded
 verdict is FAIL and E9 is awaiting a Chase GO. See the [flight log](flight-log.md)
-for the recorded deadline and status.
+for the reported December 30, 2026 deadline and current status.
 
 | Artifact | Location |
 | --- | --- |
@@ -39,6 +39,6 @@ for how to distinguish a claim, receipt, and verdict.
 **Title** · Sortie 9 Go request
 
 Please review the committed Evolution 09 flight card against the assignment
-requirements and advise how to proceed given the recorded E8 FAIL and the
-assignment deadline. Once the prerequisite is resolved, please commit your
-dated GO or NO-GO under CHASE in the card. The graded run is pending your response.
+requirements and the recorded E8 FAIL. The TP4 repair is ready for an
+authorized E8 re-flight. Once the prerequisite is resolved, please commit
+your dated GO or NO-GO under CHASE in the card. The graded run is pending your response.

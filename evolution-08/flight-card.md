@@ -360,3 +360,34 @@ Corrective two-stage design committed after Attempts 1 and 2.
 - Attempts 1 and 2 remain preserved.
 
 CHASE — Chase — 2026-11-12 — GO
+
+## TP4 repair re-flight — 2026-11-23
+
+This amendment applies only to a re-flight the Chase explicitly authorizes.
+The original E8 result and traces remain on record. Joseph reported an
+extended submission date of December 30, 2026.
+
+- **Substrate.** OpenCode 1.18.20 with the existing E8 personas. The bounded
+  challenge persona requests native edit permission for the sealed fixture.
+  The stock noninteractive CLI rejects the request. Run with `--pure`, with
+  no auto-approval, and keep edit denied in the independent verdict persona.
+- **Expected evidence.** Capture a native `edit` tool error for the exact
+  relative fixture path and the associated CLI edit auto-rejection notice.
+  Both must be present. A read-only transcript, path outside the workspace,
+  missing-tool report, or ordinary edit error does not count.
+- **Verdict.** A separate fresh invocation of the normal read-only Reviewer
+  must return a schema-valid FAIL with a finding located in the defective
+  fixture. Tool denial and the Reviewer verdict are separate artifacts.
+- **Integrity.** Capture the fixture SHA-256 and tracked Git diff SHA-256 before
+  and after. Both must match. Paths for the new evidence must be distinct and
+  unused. Existing attempts must remain intact.
+- **Entry and halt.** Use a clean checkout of the approved commit. A new Chase
+  GO must be recorded here before running the corrected test. The Chase
+  decides whether a targeted TP4 re-flight can be considered alongside the
+  earlier test points or whether the course requires the whole sortie again.
+  Stop on missing native rejection evidence, changed files, or invalid verdict.
+
+### CHASE
+
+Pending. The assigned Chase writes their own decision using the E8 format
+`GO — <name> — <YYYY-MM-DD> — <reason>` or the corresponding NO-GO.

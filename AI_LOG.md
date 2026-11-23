@@ -512,3 +512,19 @@ Read the [collaboration log and pilot results](final-project/docs/fifth-pick/rev
 - **Deterministic work.** Unit tests used the operating system and known subprocess outputs to check lock exclusivity, receipt hashing, and verdict parsing. Mocked model calls tested token accounting without spending credits.
 - **Cost.** $0.00 in sortie provider charges. No model call was made by the E9 harness.
 - **Decision.** Keep the E8 FAIL on record and hold E9 at preflight pending a superseding E8 PASS and independent Chase GO.
+
+### E8 follow-up — TP4 repair preparation, November 23, 2026
+
+Joseph asked to repair the denied-edit test that blocked E8 and E9. I used
+Codex to inspect the historical captures and OpenCode 1.18.20 source.
+A development probe used a scripted local model response to drive the actual
+OpenCode runtime. I accepted the native edit auto-rejection only when its
+tool error named the intended fixture. An initial absolute-path probe was
+rejected by the external-directory rule, so it did not establish edit
+permission enforcement. Using the relative fixture path produced the
+edit-specific rejection. The fixture stayed unchanged.
+
+The separate read-only verdict session used a scripted FAIL. I did not use it
+as a live-model verdict or overwrite the previous Chase FAIL. The corrected
+re-flight is awaiting a new Chase GO. The loopback probe incurred $0.00 in
+external provider charges.

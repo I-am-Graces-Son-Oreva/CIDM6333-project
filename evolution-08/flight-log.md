@@ -288,3 +288,42 @@ CHASE VERDICT — FAIL: TP1, TP2, TP3, and TP5 passed, but TP4 did not produce
 the required live denied edit/write event. The harness failed closed and the
 sealed fixture remained unchanged, so no false PASS is claimed.
 
+
+## TP4 repair preparation — 2026-11-23
+
+**Development verification only.** OpenCode 1.18.20’s noninteractive CLI
+rejects permission requests when automatic approval is off. A disposable
+fixture run with a scripted loopback model exercised the real CLI. It produced
+a native edit permission rejection and the fixture hash remained identical.
+The separate read-only verdict invocation returned the expected scripted
+FAIL. This establishes the runtime mechanism. It does not establish that a
+live model will make the requested edit attempt or return the correct verdict.
+
+The repaired driver captures both native streams and verifies the exact
+fixture target, requires an edit-specific rejection, and checks fixture and
+tracked Git diff hashes. The previous E8 Chase verdict remains FAIL. The
+Chase must authorize and evaluate a new re-flight.
+
+Development evidence and replay are in
+[tp4-repair-development.json](evidence/tp4-repair-development.json) and
+[native_tp4_probe.py](tests/native_tp4_probe.py). Use a fresh temporary output
+path when running the probe. It never writes graded sortie evidence.
+
+```sh
+uv run --offline --no-sync python -B evolution-08/tests/native_tp4_probe.py /tmp/e8-tp4-dev-new
+```
+
+The re-flight CLI is gated on the new committed Chase GO. Use a clean checkout
+and fresh output paths only after the Chase authorizes the scope:
+
+```sh
+e8_output="$(mktemp -d)"
+uv run --offline --no-sync python -B evolution-08/src/e8_driver.py tp4 \
+  --stage-a-capture "$e8_output/stage-a.jsonl" \
+  --stage-b-capture "$e8_output/stage-b.jsonl" \
+  --hash-evidence "$e8_output/hashes.txt"
+```
+
+The command also captures native permission messages in
+`stage-a.stderr`. Preserve all prior evidence and ask the Chase to assess the
+new evidence before recording any replacement verdict.

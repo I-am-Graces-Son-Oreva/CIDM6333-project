@@ -121,3 +121,8 @@ class SortieDevelopmentTests(unittest.TestCase):
             self.assertRaisesRegex(ValueError, "dated E9 Chase GO is absent"),
         ):
             preflight()
+
+    def test_preflight_accepts_assignment_go_format_after_e8_pass(self):
+        card = "## CHASE\nGO — Reviewer, 2026-01-01"
+        with patch("sortie.git", side_effect=["CHASE VERDICT — PASS", card, "", "approved-rev"]):
+            self.assertEqual(preflight(), "approved-rev")

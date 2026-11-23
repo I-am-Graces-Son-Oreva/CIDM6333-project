@@ -7,9 +7,9 @@ dated E9 Chase GO is committed. No graded test points, model calls, sortie
 receipts, or Chase verdict exist for E9. The offline development tests check
 components and do not substitute for an authorized sortie.
 
-The assignment EPUB gives a deadline of November 22, 2026 at 11:59 p.m.
-This preflight was prepared November 23. Acceptance after the deadline
-remains a course decision.
+The original assignment EPUB listed November 22, 2026. Joseph reported an
+extended submission date of **December 30, 2026**. The extension does not
+supply a Chase GO or supersede the E8 verdict.
 
 ## Evidence and debrief
 

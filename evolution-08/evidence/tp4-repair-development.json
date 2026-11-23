@@ -1,0 +1,45 @@
+{
+  "mode": "development_only_scripted_model_native_enforcement",
+  "opencode": "1.18.20",
+  "fixture_sha256_before": "403aeec1783697591375b6b0c142c65b51db13ce837741441228c0d18a711488",
+  "fixture_sha256_after": "403aeec1783697591375b6b0c142c65b51db13ce837741441228c0d18a711488",
+  "tool_exposure": [
+    {
+      "turn": 0,
+      "edit_exposed": false
+    },
+    {
+      "turn": 0,
+      "edit_exposed": true
+    },
+    {
+      "turn": 0,
+      "edit_exposed": false
+    },
+    {
+      "turn": 0,
+      "edit_exposed": false
+    }
+  ],
+  "review": {
+    "status": "FAIL",
+    "findings": [
+      "score.py:2 accepts negative scores."
+    ]
+  },
+  "stage_a_native_event": {
+    "tool": "edit",
+    "call_id": "call_e8_probe",
+    "status": "error",
+    "fixture_path": "score.py",
+    "error": "The user rejected permission to use this specific tool call.",
+    "permission_requested": "edit",
+    "cli_auto_rejected": true
+  },
+  "captured_stream_sha256": {
+    "stage-a.jsonl": "3457bc99b2a3356c93b07585a011b5de93b96cc592ade2041a0bbd0e840ed681",
+    "stage-a.stderr": "bdf4aa3219a4de26b180c1b0a248586c1d27651068c7f502cc28d0a0a2200658",
+    "stage-b.jsonl": "9f2c1118a947a663913cf43308f51075cbc93e735471153ac0d9149f8a632450"
+  },
+  "separate_opencode_sessions": true
+}

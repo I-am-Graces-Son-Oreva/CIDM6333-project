@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import subprocess
+from datetime import date
 from dataclasses import asdict
 from pathlib import Path
 
@@ -122,6 +125,27 @@ def start_tp2(
     )
 
 
+def require_tp4_reflight_go() -> None:
+    card = subprocess.check_output(
+        ["git", "show", "HEAD:evolution-08/flight-card.md"], cwd=REPO_ROOT, text=True
+    )
+    section = card.partition("## TP4 repair re-flight")[2].split("\n## ", 1)[0]
+    chase = section.partition("### CHASE")[2]
+    decisions = re.findall(
+        r"^(GO|NO-GO) — [^\n]+ — (\d{4}-\d{2}-\d{2}) — [^\n]+$",
+        chase,
+        re.MULTILINE,
+    )
+    if (
+        not decisions
+        or decisions[-1][0] != "GO"
+        or date.fromisoformat(decisions[-1][1]) > date.today()
+    ):
+        raise OpenCodeRunnerError("TP4 repair re-flight needs a new committed Chase GO.")
+    if subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO_ROOT).strip():
+        raise OpenCodeRunnerError("TP4 requires a clean checkout of the approved commit.")
+
+
 def start_tp4(
     *,
     stage_a_capture_path: Path,
@@ -132,10 +156,20 @@ def start_tp4(
     """Run the two-stage live TP4 reviewer permission-boundary flight."""
     import hashlib
 
-    runner = persona_runner or OpenCodePersonaRunner(
-        repo_root=REPO_ROOT,
-        timeout_seconds=120,
+    if persona_runner is None:
+        require_tp4_reflight_go()
+    runner = persona_runner or OpenCodePersonaRunner(repo_root=REPO_ROOT, timeout_seconds=120)
+
+    evidence_paths = (
+        stage_a_capture_path,
+        stage_a_capture_path.with_suffix(".stderr"),
+        stage_b_capture_path,
+        hash_evidence_path,
     )
+    if len({path.resolve() for path in evidence_paths}) != len(evidence_paths):
+        raise OpenCodeRunnerError("TP4 evidence paths must be distinct.")
+    if any(path.exists() for path in evidence_paths):
+        raise OpenCodeRunnerError("TP4 evidence paths must be new.")
 
     fixture_dir = (
         REPO_ROOT
@@ -153,7 +187,8 @@ def start_tp4(
 
     before_bytes = implementation_path.read_bytes()
     before_hash = hashlib.sha256(before_bytes).hexdigest()
-
+    diff_cmd = ["git", "diff", "--no-ext-diff", "--binary", "HEAD", "--"]
+    before_diff = subprocess.check_output(diff_cmd, cwd=REPO_ROOT)
     fixture_relative = str(implementation_path.relative_to(REPO_ROOT))
 
     try:
@@ -165,32 +200,30 @@ def start_tp4(
             stage_b_capture_path=stage_b_capture_path,
         )
     finally:
-        after_bytes = implementation_path.read_bytes()
-        after_hash = hashlib.sha256(after_bytes).hexdigest()
-
-        hash_evidence_path.parent.mkdir(parents=True, exist_ok=True)
-        hash_evidence_path.write_text(
-            "fixture="
-            + fixture_relative
-            + "\n"
-            + "before_sha256="
-            + before_hash
-            + "\n"
-            + "after_sha256="
-            + after_hash
-            + "\n"
-            + "unchanged="
-            + str(before_hash == after_hash).lower()
-            + "\n",
-            encoding="utf-8",
+        after_hash = (
+            hashlib.sha256(implementation_path.read_bytes()).hexdigest()
+            if implementation_path.is_file()
+            else "missing"
         )
-
+        after_diff = subprocess.check_output(diff_cmd, cwd=REPO_ROOT)
+        hash_evidence_path.parent.mkdir(parents=True, exist_ok=True)
+        with hash_evidence_path.open("x", encoding="utf-8") as evidence:
+            evidence.write(
+                f"fixture={fixture_relative}\n"
+                f"before_sha256={before_hash}\n"
+                f"after_sha256={after_hash}\n"
+                f"unchanged={str(before_hash == after_hash).lower()}\n"
+                f"git_diff_before_sha256={hashlib.sha256(before_diff).hexdigest()}\n"
+                f"git_diff_after_sha256={hashlib.sha256(after_diff).hexdigest()}\n"
+                f"git_diff_unchanged={str(before_diff == after_diff).lower()}\n"
+            )
         if before_hash != after_hash:
             implementation_path.write_bytes(before_bytes)
             raise OpenCodeRunnerError(
-                "TP4 fixture changed during the permission-boundary test. "
-                "Original bytes were restored; TP4 must fail closed."
+                "TP4 fixture changed. Original bytes were restored; TP4 failed closed."
             )
+        if before_diff != after_diff:
+            raise OpenCodeRunnerError("TP4 changed the tracked Git diff.")
 
     return result
 
@@ -245,36 +278,9 @@ def main() -> int:
     )
 
     tp4_parser = subparsers.add_parser("tp4")
-    tp4_parser.add_argument(
-        "--stage-a-capture",
-        type=Path,
-        default=(
-            REPO_ROOT
-            / "evolution-08"
-            / "evidence"
-            / "tp4-attempt4-stageA.jsonl"
-        ),
-    )
-    tp4_parser.add_argument(
-        "--stage-b-capture",
-        type=Path,
-        default=(
-            REPO_ROOT
-            / "evolution-08"
-            / "evidence"
-            / "tp4-attempt4-stageB.jsonl"
-        ),
-    )
-    tp4_parser.add_argument(
-        "--hash-evidence",
-        type=Path,
-        default=(
-            REPO_ROOT
-            / "evolution-08"
-            / "evidence"
-            / "tp4-attempt4.sha256.txt"
-        ),
-    )
+    tp4_parser.add_argument("--stage-a-capture", type=Path, required=True)
+    tp4_parser.add_argument("--stage-b-capture", type=Path, required=True)
+    tp4_parser.add_argument("--hash-evidence", type=Path, required=True)
 
     resume_parser = subparsers.add_parser("resume")
     resume_parser.add_argument("checkpoint", type=Path)
@@ -301,11 +307,14 @@ def main() -> int:
         return 0
 
     if args.command == "tp4":
-        result = start_tp4(
-            stage_a_capture_path=args.stage_a_capture,
-            stage_b_capture_path=args.stage_b_capture,
-            hash_evidence_path=args.hash_evidence,
-        )
+        try:
+            result = start_tp4(
+                stage_a_capture_path=args.stage_a_capture,
+                stage_b_capture_path=args.stage_b_capture,
+                hash_evidence_path=args.hash_evidence,
+            )
+        except (OpenCodeRunnerError, OSError, ValueError, subprocess.SubprocessError) as exc:
+            parser.exit(1, f"TP4 stopped: {exc}\n")
         print(json.dumps(asdict(result), indent=2, sort_keys=True))
         return 0
 

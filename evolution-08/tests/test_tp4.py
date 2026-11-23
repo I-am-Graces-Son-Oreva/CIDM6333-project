@@ -47,7 +47,8 @@ def test_tp4_two_stage_denial_then_fresh_verdict(
                 tool="edit",
                 state={
                     "status": "error",
-                    "output": "permission denied by reviewer policy",
+                    "input": {"filePath": "evolution-08/evidence/tp4-fixture/score_validation.py"},
+                    "error": "The user rejected permission to use this specific tool call.",
                 },
             ),
         ]
@@ -81,9 +82,9 @@ def test_tp4_two_stage_denial_then_fresh_verdict(
         calls.append((command, env_overrides))
 
         if len(calls) == 1:
-            return stage_a, False
+            return stage_a, "permission requested: edit (evolution-08/evidence/tp4-fixture/score_validation.py); auto-rejecting", False
 
-        return stage_b, False
+        return stage_b, "", False
 
     monkeypatch.setattr(runner, "_run_tp4_process", fake_run)
 
@@ -120,10 +121,12 @@ def test_tp4_two_stage_denial_then_fresh_verdict(
         "--format",
         "json",
         "--agent",
-        "e8-reviewer-tp4",
+        "e8-reviewer",
     ]
 
-    assert calls[0][1] == {"E8_TP4_GATE": "1"}
+    assert "--pure" in calls[0][0]
+    assert "--auto" not in calls[0][0]
+    assert calls[0][1] is None
     assert calls[1][1] is None
 
     assert "--session" not in calls[1][0]
@@ -138,7 +141,8 @@ def test_tp4_two_stage_denial_then_fresh_verdict(
     captured_b = stage_b_capture.read_text()
 
     assert '"tool":"edit"' in captured_a.replace(" ", "")
-    assert "permission denied" in captured_a
+    assert "rejected permission" in captured_a
+    assert "auto-rejecting" in stage_a_capture.with_suffix(".stderr").read_text()
 
     stage_b_events = [
         json.loads(line)
@@ -178,7 +182,7 @@ def test_tp4_stage_a_without_denial_fails_closed(
 
     def fake_run(command, env_overrides=None):
         calls.append(command)
-        return stage_a_without_denial, False
+        return stage_a_without_denial, "", False
 
     monkeypatch.setattr(runner, "_run_tp4_process", fake_run)
 
@@ -215,7 +219,8 @@ def test_tp4_invalid_stage_b_fails_closed(
         tool="edit",
         state={
             "status": "error",
-            "output": "permission denied",
+            "input": {"filePath": "fixture.py"},
+            "error": "The user rejected permission to use this specific tool call.",
         },
     )
 
@@ -227,8 +232,8 @@ def test_tp4_invalid_stage_b_fails_closed(
     )
 
     outputs = [
-        (stage_a, False),
-        (stage_b, False),
+        (stage_a, "permission requested: edit (fixture.py); auto-rejecting", False),
+        (stage_b, "", False),
     ]
 
     monkeypatch.setattr(
@@ -261,22 +266,80 @@ def test_tp4_denial_detector_rejects_mock_success_event():
         },
     )
 
-    assert not OpenCodePersonaRunner._tp4_has_denied_edit(raw)
-
-
-def test_tp4_permission_gate_uses_real_hook_type():
-    from pathlib import Path
-
-    plugin_path = (
-        Path(__file__).resolve().parents[2]
-        / ".opencode"
-        / "plugin"
-        / "tp4-readonly-gate.ts"
+    assert not OpenCodePersonaRunner(repo_root=".")._tp4_has_denied_edit(
+        raw, "permission requested: edit (fixture.py); auto-rejecting", "fixture.py"
     )
-    source = plugin_path.read_text(encoding="utf-8")
 
-    assert '"permission.ask"' in source
-    assert 'process.env.E8_TP4_GATE !== "1"' in source
-    assert "input.type" in source
-    assert "input.permission" not in source
-    assert 'output.status = "deny"' in source
+
+def test_tp4_native_edit_rejection_must_match_the_requested_fixture(tmp_path):
+    runner = OpenCodePersonaRunner(repo_root=tmp_path)
+    reason = "The user rejected permission to use this specific tool call."
+    exact = event(
+        "tool_use",
+        tool="edit",
+        state={"status": "error", "input": {"filePath": "fixture.py"}, "error": reason},
+    )
+    edit_notice = "permission requested: edit (fixture.py); auto-rejecting"
+    outside_notice = "permission requested: external_directory (fixture.py); auto-rejecting"
+    assert runner._tp4_has_denied_edit(exact, edit_notice, "fixture.py")
+    assert not runner._tp4_has_denied_edit(exact, outside_notice, "fixture.py")
+    assert not runner._tp4_has_denied_edit(exact, edit_notice, "different.py")
+
+
+def test_tp4_tool_output_cannot_supply_denial_evidence(tmp_path):
+    runner = OpenCodePersonaRunner(repo_root=tmp_path)
+    raw = event(
+        "tool_use",
+        tool="edit",
+        state={
+            "status": "error",
+            "input": {"filePath": "fixture.py"},
+            "output": "permission denied",
+            "error": "oldString did not match",
+        },
+    )
+    assert not runner._tp4_has_denied_edit(
+        raw, "permission requested: edit (fixture.py); auto-rejecting", "fixture.py"
+    )
+
+
+def test_tp4_reflight_requires_new_go_before_opening_any_model_call(monkeypatch):
+    from e8_driver import require_tp4_reflight_go
+
+    historical = "## TP4 Attempt 3 — Chase Preflight\nGO — Chase — 2026-11-12 — Old"
+    monkeypatch.setattr("e8_driver.subprocess.check_output", lambda *a, **kw: historical)
+    with pytest.raises(OpenCodeRunnerError, match="new committed Chase GO"):
+        require_tp4_reflight_go()
+
+
+def test_tp4_reflight_refuses_superseded_go(monkeypatch):
+    from e8_driver import require_tp4_reflight_go
+
+    card = (
+        "## TP4 repair re-flight\n### CHASE\n"
+        "GO — Reviewer — 2026-01-01 — Initial review\n"
+        "NO-GO — Reviewer — 2026-01-02 — Evidence mismatch\n"
+    )
+    monkeypatch.setattr("e8_driver.subprocess.check_output", lambda *a, **kw: card)
+    with pytest.raises(OpenCodeRunnerError, match="new committed Chase GO"):
+        require_tp4_reflight_go()
+
+
+def test_tp4_runner_preserves_existing_evidence(tmp_path, monkeypatch):
+    runner = OpenCodePersonaRunner(repo_root=tmp_path)
+    stage_a = tmp_path / "stage-a.jsonl"
+    stage_a.write_text("existing evidence\n")
+
+    def unexpected_call(*args):
+        pytest.fail("OpenCode must not run if the evidence path already exists")
+
+    monkeypatch.setattr(runner, "_run_tp4_process", unexpected_call)
+    with pytest.raises(OpenCodeRunnerError, match="evidence already exists"):
+        runner.review_tp4(
+            requirement="Reject negative scores.",
+            fixture_path="fixture.py",
+            implementation_evidence="return True",
+            stage_a_capture_path=stage_a,
+            stage_b_capture_path=tmp_path / "stage-b.jsonl",
+        )
+    assert stage_a.read_text() == "existing evidence\n"
