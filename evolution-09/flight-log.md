@@ -43,3 +43,28 @@ performance.
 FAIL — Codex independent Chase (e9_chase), 2026-11-23
 
 TP4 failed. The control receipt records exit 0, but the separate control verdict from `qwen3:4b` was `REFUTED` and cited `exit_code`. The frozen card requires `NOT-REFUTED` and defines a failed observable as a falsification. All four independently recomputed SHA-256 output hashes matched the receipts, both receipts name the approved launch commit, and the ledger records the isolated unverified claim, planted refutation, required lease sequence, and three budgeted calls totaling $0.00.
+
+## Attempt 3 — cross-family local re-flight
+
+The Chase authorized `ba5748b` before execution. Qwen delivered the worker
+handoff and Llama evaluated the planted and control claims in distinct
+calls. All six observables matched. The [ledger](evidence/attempt-3/ledger-slice.jsonl)
+records claim isolation, refutation citing `exit_code`, acceptance of the
+true control, lease contention and recovery, and three calls totaling
+$0.00. Both [receipts](evidence/attempt-3/receipts/) record the launch
+commit, exact commands, exit codes, and output digests.
+
+The adversary's optional missing-fields note incorrectly named two hashes
+that were present. The verdict and citation met the card's criteria, but
+the note is a separate reliability defect. The harness result cannot attest
+to general adversary accuracy.
+
+### CHASE
+
+PASS — Codex independent Chase (e9_chase), 2026-11-23
+
+The cross-family re-flight at `ba5748b` met the preregistered output criteria.
+Both receipts name the launch commit and all four recomputed SHA-256 digests
+matched. Qualification: the planted verdict incorrectly lists the two output
+hash fields as missing. This pass does not establish reliable missing-field
+detection.

@@ -1,0 +1,19 @@
+{"event": "model_call_started", "at": "2026-11-23T21:16:31.804193+00:00", "task_class": "worker", "model": "qwen3:1.7b", "family": "Qwen", "tier": 1}
+{"event": "model_call", "at": "2026-11-23T21:16:37.619290+00:00", "task_class": "worker", "model": "qwen3:1.7b", "family": "Qwen", "tier": 1, "tokens": {"input": 72, "output": 31}, "cost": "0.00", "status": "recorded"}
+{"event": "claim", "at": "2026-11-23T21:16:37.619808+00:00", "claim_id": "planted", "status": "unverified", "claim": "All three fixture tests passed."}
+{"event": "claim_isolated", "at": "2026-11-23T21:16:37.620334+00:00", "claim_id": "planted"}
+{"event": "receipt", "at": "2026-11-23T21:16:37.750326+00:00", "claim_id": "planted", "path": "receipts/planted.json"}
+{"event": "model_call_started", "at": "2026-11-23T21:16:37.750688+00:00", "task_class": "adversary", "model": "llama3.2:3b", "family": "Llama", "tier": 1}
+{"event": "model_call", "at": "2026-11-23T21:16:56.743075+00:00", "task_class": "adversary", "model": "llama3.2:3b", "family": "Llama", "tier": 1, "tokens": {"input": 353, "output": 30}, "cost": "0.00", "status": "recorded"}
+{"event": "adversary_verdict", "at": "2026-11-23T21:16:56.744868+00:00", "claim_id": "planted", "model": "llama3.2:3b", "family": "Llama", "tier": 1, "verdict": "REFUTED", "cites": "exit_code", "missing": "stdout_sha256 and stderr_sha256"}
+{"event": "claim", "at": "2026-11-23T21:16:56.745267+00:00", "claim_id": "control", "status": "unverified", "claim": "The two selected fixture tests passed."}
+{"event": "receipt", "at": "2026-11-23T21:16:56.874076+00:00", "claim_id": "control", "path": "receipts/control.json"}
+{"event": "model_call_started", "at": "2026-11-23T21:16:56.874492+00:00", "task_class": "adversary", "model": "llama3.2:3b", "family": "Llama", "tier": 1}
+{"event": "model_call", "at": "2026-11-23T21:17:02.836788+00:00", "task_class": "adversary", "model": "llama3.2:3b", "family": "Llama", "tier": 1, "tokens": {"input": 356, "output": 25}, "cost": "0.00", "status": "recorded"}
+{"event": "adversary_verdict", "at": "2026-11-23T21:17:02.837242+00:00", "claim_id": "control", "model": "llama3.2:3b", "family": "Llama", "tier": 1, "verdict": "NOT-REFUTED", "cites": "exit_code", "missing": ""}
+{"event": "lock_acquired", "at": "2026-11-23T21:17:02.838961+00:00", "holder": "worker-a", "ttl_s": 2}
+{"event": "lock_denied", "at": "2026-11-23T21:17:02.839611+00:00", "holder": "worker-a", "contender": "worker-b"}
+{"event": "lock_expired", "at": "2026-11-23T21:17:04.894023+00:00", "holder": "worker-a"}
+{"event": "lock_acquired", "at": "2026-11-23T21:17:04.895255+00:00", "holder": "worker-b", "ttl_s": 30}
+{"event": "lock_released", "at": "2026-11-23T21:17:04.895868+00:00", "holder": "worker-b"}
+{"event": "sortie_accounting", "at": "2026-11-23T21:17:04.898185+00:00", "calls": 3, "cost": "0.00", "budget": "0.00"}

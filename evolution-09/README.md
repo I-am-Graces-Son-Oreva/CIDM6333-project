@@ -1,8 +1,8 @@
 # Evolution 09 — Claim, receipt, verdict
 
-**The local tier-2 re-flight failed its true-claim control.** The initial
-hosted attempt stopped before TP1 at the worker's free usage limit. See the
-[flight log](flight-log.md) for the observed evidence and independent verdict.
+**The cross-family Qwen/Llama re-flight passed with a qualification.** The
+initial hosted attempt and failed same-family control remain documented in the
+[flight log](flight-log.md).
 
 | Artifact | Location |
 | --- | --- |
