@@ -62,6 +62,10 @@ Status **PENDING** for the local re-flight. Joseph reported that an agent may
 act as Chase in the absence of a human. The first GO applies only to the
 preserved hosted attempt. A separate dated GO is required here before TP1.
 
+GO — Codex independent Chase (e9_chase), 2026-11-23
+
+Scope: local tier-2 re-flight at `610dd8a`.
+
 ## Debrief and squawks
 
 Attempt 1 aborted before TP1 when the hosted worker reached the free limit.
