@@ -9,7 +9,7 @@
 | Worker | `opencode/mimo-v2.6-flash-free` · Xiaomi MiMo |
 | Adversary | `opencode/nemotron-3.5-lightning-free` · NVIDIA Nemotron · tier 1 |
 | Budget | $0.00, with one worker call and two adversary calls on explicitly free routes only. No paid fallback. |
-| Dependency | The latest [E8 Chase verdict](../evolution-08/flight-log.md) is FAIL. TP4 did not produce the required denial event. A superseding E8 PASS is required before launch. |
+| Dependency | The latest [E8 Chase verdict](../evolution-08/flight-log.md#targeted-tp4-re-flight--2026-11-23) is PASS at `9d5ec4d`. It supersedes the earlier FAIL after the authorized TP4 re-flight. |
 
 ## Planted falsehood
 
@@ -52,7 +52,9 @@ A failed observable is a falsification and must not be relabeled an abort.
 ## CHASE
 
 Status **PENDING**. The assigned Chase must commit their own dated GO before
-TP1, after the E8 dependency is satisfied. No GO has been given. After a
+TP1, after the E8 dependency is satisfied. Joseph reported that the instructor
+permits a separate agent to act as Chase in the absence of a human. No E9
+GO has been given. After a
 run, the Chase evaluates the flight card, receipts, ledger slice, and cost
 table and writes the verdict in the flight log.
 

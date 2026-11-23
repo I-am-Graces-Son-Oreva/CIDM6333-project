@@ -2,14 +2,14 @@
 
 ## Status
 
-**PREFLIGHT ONLY.** The latest recorded E8 Chase verdict is FAIL, and no
-dated E9 Chase GO is committed. No graded test points, model calls, sortie
+**PREFLIGHT ONLY.** The authorized E8 re-flight now has a recorded Chase
+PASS. No dated E9 Chase GO was committed at this checkpoint. No graded test points, model calls, sortie
 receipts, or Chase verdict exist for E9. The offline development tests check
 components and do not substitute for an authorized sortie.
 
 The original assignment EPUB listed November 22, 2026. Joseph reported an
 extended submission date of **December 30, 2026**. The extension does not
-supply a Chase GO or supersede the E8 verdict.
+supply a Chase GO.
 
 ## Evidence and debrief
 
