@@ -10,7 +10,7 @@ requires a fresh dated Chase GO.
 | Systems under test | Fifth Pick authorization, `evals/golden.jsonl`, code grader, baseline, delta and CI gate |
 | Substrate | Python, frozen universe v1, no model route, judge none (code graders only) |
 | Depends on | Sortie 9 PASS with an adversary from a different model family |
-| Pre-registered | Golden SHA-256 `df83d560b81d7070f691b694180535c5cdf11b7ea39453471abf4620ed83b434`. See [prediction](prediction.md) for threshold, cases, predicted RED IDs and exact removal. |
+| Pre-registered | Preregistered suite commit `dc7f30b`. Golden SHA-256 `df83d560b81d7070f691b694180535c5cdf11b7ea39453471abf4620ed83b434`. See [prediction](prediction.md) for threshold, cases, predicted RED IDs and exact removal. |
 
 | Test point | Observable |
 | --- | --- |
