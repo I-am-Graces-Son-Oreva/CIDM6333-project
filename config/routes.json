@@ -1,19 +1,19 @@
 {
   "sortie": 9,
-  "mode": "degraded_same_family",
+  "mode": "cross_family",
   "budget_usd": "0.00",
   "routes": {
     "worker": {
       "model": "qwen3:1.7b",
       "family": "Qwen",
-      "tier": 2,
+      "tier": 1,
       "reason": "Local worker emits a bounded E8-format handoff."
     },
     "adversary": {
-      "model": "qwen3:4b",
-      "family": "Qwen",
-      "tier": 2,
-      "reason": "Local same-family adversary receives one claim and its receipt in a fresh context."
+      "model": "llama3.2:3b",
+      "family": "Llama",
+      "tier": 1,
+      "reason": "Fresh cross-family adversary receives one claim and its receipt."
     }
   }
 }

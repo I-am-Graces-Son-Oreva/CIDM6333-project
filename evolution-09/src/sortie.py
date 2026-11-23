@@ -20,7 +20,7 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 E9 = ROOT / "evolution-09"
-LOCAL_MODELS = {"qwen3:1.7b": "Qwen", "qwen3:4b": "Qwen"}
+LOCAL_MODELS = {"qwen3:1.7b": "Qwen", "llama3.2:3b": "Llama"}
 HANDOFF_SCHEMA = {
     "type": "object",
     "properties": {
@@ -151,16 +151,16 @@ class FreeRouter:
         self.routes = config["routes"]
         if (
             config["sortie"] != 9
-            or config["mode"] != "degraded_same_family"
+            or config["mode"] != "cross_family"
             or Decimal(config["budget_usd"]) != 0
             or set(self.routes) != {"worker", "adversary"}
             or set(row["model"] for row in self.routes.values()) != set(LOCAL_MODELS)
             or any(
-                LOCAL_MODELS.get(row["model"]) != row["family"] or row["tier"] != 2
+                LOCAL_MODELS.get(row["model"]) != row["family"] or row["tier"] != 1
                 for row in self.routes.values()
             )
         ):
-            raise ValueError("Routes do not satisfy the preregistered local tier-2 budget.")
+            raise ValueError("Routes do not satisfy the preregistered local cross-family budget.")
 
     def call(self, task_class: str, prompt: str) -> str:
         route = self.routes[task_class]

@@ -86,7 +86,7 @@ class SortieDevelopmentTests(unittest.TestCase):
 
     def test_router_accounts_for_both_token_counts_and_zero_cost(self):
         reply = {
-            "model": "qwen3:4b",
+            "model": "llama3.2:3b",
             "message": {"content": "result"},
             "prompt_eval_count": 12,
             "eval_count": 4,
@@ -98,7 +98,7 @@ class SortieDevelopmentTests(unittest.TestCase):
         self.assertEqual(body, "result")
         request = opener.return_value.open.call_args.args[0]
         self.assertEqual(request.full_url, "http://127.0.0.1:11434/api/chat")
-        self.assertEqual(json.loads(request.data)["model"], "qwen3:4b")
+        self.assertEqual(json.loads(request.data)["model"], "llama3.2:3b")
         summary = json.loads(self.ledger.path.read_text().splitlines()[-1])
         self.assertEqual(summary["tokens"], {"input": 12, "output": 4})
         self.assertEqual(summary["cost"], "0.00")
