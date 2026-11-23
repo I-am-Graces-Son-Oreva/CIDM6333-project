@@ -1,0 +1,7 @@
+{
+  "status": "FAIL",
+  "summary": "The score-validation function does not reject negative applicant scores; it unconditionally accepts every score, so the bounded requirement is violated.",
+  "findings": [
+    "evolution-08/evidence/tp4-fixture/score_validation.py: validate_score returns True for all inputs with no check on score; a negative score (e.g. -1) is accepted, directly contradicting the requirement that negative applicant scores be rejected."
+  ]
+}

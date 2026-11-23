@@ -327,3 +327,26 @@ uv run --offline --no-sync python -B evolution-08/src/e8_driver.py tp4 \
 The command also captures native permission messages in
 `stage-a.stderr`. Preserve all prior evidence and ask the Chase to assess the
 new evidence before recording any replacement verdict.
+
+## Targeted TP4 re-flight — 2026-11-23
+
+The independent agent Chase authorized TP4 alone at commit `f3564fe` and
+retained the earlier results for TP1–3 and TP5. The re-flight ran once in a
+clean checkout of that commit. It used OpenCode 1.18.20 with the configured
+free Big Pickle route. Provider cost reported by the three step finishes
+was $0.00.
+
+| Required observable | Recorded evidence |
+| --- | --- |
+| Native edit rejected for the exact sealed path | [Stage A JSONL](evidence/tp4-reflight-2026-11-23/stage-a.jsonl) and [CLI rejection](evidence/tp4-reflight-2026-11-23/stage-a.stderr) |
+| The sealed implementation and tracked diff stayed unchanged | [Before-and-after hashes](evidence/tp4-reflight-2026-11-23/hashes.txt) |
+| Separate read-only session returned a located FAIL | [Stage B JSONL](evidence/tp4-reflight-2026-11-23/stage-b.jsonl) and [parsed ReviewResult](evidence/tp4-reflight-2026-11-23/review-result.json) |
+
+The Chase independently reran the tracked-diff and fixture hashing commands
+from the clean checkout. The diff SHA-256 was
+`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` and
+the fixture SHA-256 was
+`98847a78457c5e7c21826530a408a07391254e614b75f1d556bfeea88f57831b`.
+The original FAIL and all prior attempts remain above.
+
+CHASE VERDICT — PASS — Codex independent Chase (e8_chase_go) — The native `edit` call for the exact sealed fixture path returned a permission error, and the CLI recorded automatic rejection for that same path. A separate Reviewer session returned a schema-valid FAIL locating the unconditional acceptance of negative scores in the fixture. The recorded before-and-after fixture and tracked Git diff hashes matched, and both matched my independent reruns at `f3564fe`.
