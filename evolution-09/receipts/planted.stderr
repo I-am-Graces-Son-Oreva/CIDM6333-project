@@ -1,0 +1,14 @@
+.F.
+======================================================================
+FAIL: test_three (__main__.ReceiptFixture.test_three)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/e9-local-chase.21SBS9/repo/evolution-09/src/sprint_fixture.py", line 14, in test_three
+    self.assertEqual(2 + 3, 4)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: 5 != 4
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+FAILED (failures=1)

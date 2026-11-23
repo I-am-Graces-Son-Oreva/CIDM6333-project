@@ -1,0 +1,19 @@
+{"event": "model_call_started", "at": "2026-11-23T20:52:07.827707+00:00", "task_class": "worker", "model": "qwen3:1.7b", "family": "Qwen", "tier": 2}
+{"event": "model_call", "at": "2026-11-23T20:52:16.635781+00:00", "task_class": "worker", "model": "qwen3:1.7b", "family": "Qwen", "tier": 2, "tokens": {"input": 72, "output": 31}, "cost": "0.00", "status": "recorded"}
+{"event": "claim", "at": "2026-11-23T20:52:16.637595+00:00", "claim_id": "planted", "status": "unverified", "claim": "All three fixture tests passed."}
+{"event": "claim_isolated", "at": "2026-11-23T20:52:16.637942+00:00", "claim_id": "planted"}
+{"event": "receipt", "at": "2026-11-23T20:52:16.763782+00:00", "claim_id": "planted", "path": "receipts/planted.json"}
+{"event": "model_call_started", "at": "2026-11-23T20:52:16.764179+00:00", "task_class": "adversary", "model": "qwen3:4b", "family": "Qwen", "tier": 2}
+{"event": "model_call", "at": "2026-11-23T20:52:39.171474+00:00", "task_class": "adversary", "model": "qwen3:4b", "family": "Qwen", "tier": 2, "tokens": {"input": 419, "output": 27}, "cost": "0.00", "status": "recorded"}
+{"event": "adversary_verdict", "at": "2026-11-23T20:52:39.174836+00:00", "claim_id": "planted", "model": "qwen3:4b", "family": "Qwen", "tier": 2, "verdict": "REFUTED", "cites": "exit_code", "missing": ""}
+{"event": "claim", "at": "2026-11-23T20:52:39.175140+00:00", "claim_id": "control", "status": "unverified", "claim": "The two selected fixture tests passed."}
+{"event": "receipt", "at": "2026-11-23T20:52:39.274418+00:00", "claim_id": "control", "path": "receipts/control.json"}
+{"event": "model_call_started", "at": "2026-11-23T20:52:39.274784+00:00", "task_class": "adversary", "model": "qwen3:4b", "family": "Qwen", "tier": 2}
+{"event": "model_call", "at": "2026-11-23T20:52:50.318055+00:00", "task_class": "adversary", "model": "qwen3:4b", "family": "Qwen", "tier": 2, "tokens": {"input": 420, "output": 27}, "cost": "0.00", "status": "recorded"}
+{"event": "adversary_verdict", "at": "2026-11-23T20:52:50.318873+00:00", "claim_id": "control", "model": "qwen3:4b", "family": "Qwen", "tier": 2, "verdict": "REFUTED", "cites": "exit_code", "missing": ""}
+{"event": "lock_acquired", "at": "2026-11-23T20:52:50.321925+00:00", "holder": "worker-a", "ttl_s": 2}
+{"event": "lock_denied", "at": "2026-11-23T20:52:50.322534+00:00", "holder": "worker-a", "contender": "worker-b"}
+{"event": "lock_expired", "at": "2026-11-23T20:52:52.374289+00:00", "holder": "worker-a"}
+{"event": "lock_acquired", "at": "2026-11-23T20:52:52.375477+00:00", "holder": "worker-b", "ttl_s": 30}
+{"event": "lock_released", "at": "2026-11-23T20:52:52.377052+00:00", "holder": "worker-b"}
+{"event": "sortie_accounting", "at": "2026-11-23T20:52:52.380778+00:00", "calls": 3, "cost": "0.00", "budget": "0.00"}

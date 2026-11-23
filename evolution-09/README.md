@@ -1,9 +1,8 @@
 # Evolution 09 — Claim, receipt, verdict
 
-**The hosted attempt aborted before TP1.** The E8 re-flight has a Chase
-PASS. E9’s local tier-2 re-flight requires a fresh Chase GO. See the
-[flight log](flight-log.md) for the reported December 30, 2026 deadline and
-the evidence for each attempt.
+**The local tier-2 re-flight failed its true-claim control.** The initial
+hosted attempt stopped before TP1 at the worker's free usage limit. See the
+[flight log](flight-log.md) for the observed evidence and independent verdict.
 
 | Artifact | Location |
 | --- | --- |
@@ -34,11 +33,3 @@ copying the generated receipt files, ledger slice, and cost table into this
 assignment. Obtain the Chase’s verdict from the evidence, then document the
 debrief. See the [course figure](https://ahuimanu.github.io/CIDM6333/figures/claim-receipt-verdict.html)
 for how to distinguish a claim, receipt, and verdict.
-
-### Go request draft
-
-**Title** · Sortie 9 Go request
-
-Please review the committed Evolution 09 flight card against the assignment
-requirements and verify the recorded E8 PASS. Please record your dated
-GO or NO-GO under CHASE in the card. The graded run is pending your response.

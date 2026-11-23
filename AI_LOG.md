@@ -528,3 +528,17 @@ The separate read-only verdict session used a scripted FAIL. I did not use it
 as a live-model verdict or overwrite the previous Chase FAIL. The corrected
 re-flight is awaiting a new Chase GO. The loopback probe incurred $0.00 in
 external provider charges.
+
+### E8 and E9 — independent agent Chase, November 23, 2026
+
+Joseph confirmed that the professor permits an agent to act as Chase in the
+absence of a human. Separate Codex agent sessions reviewed the E8 and E9
+cards and evidence. The native E8 re-flight used the free Big Pickle route
+and produced an edit permission rejection plus a separate reviewer finding.
+See the [E8 flight log](evolution-08/flight-log.md).
+
+The first E9 sortie stopped at the hosted worker's free usage limit. With
+a separately approved card, a local Qwen worker and a different Qwen
+adversary ran in isolated contexts. The adversary caught the planted false
+claim and incorrectly refuted the true control. I preserved both outcomes
+and the generated receipts. See the [E9 flight log](evolution-09/flight-log.md).
