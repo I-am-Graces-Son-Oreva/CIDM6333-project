@@ -1,0 +1,29 @@
+[
+  {
+    "operation": "execute_tool read_note",
+    "status": "OK",
+    "payload_sha256": "5e07268bcc74b384175c1421aaf910c33a47fdb1698f838c89840ffc9eff6748"
+  },
+  {
+    "operation": "chat llama3.2:3b",
+    "duration_seconds": 6.533,
+    "input_tokens": 78,
+    "output_tokens": 10,
+    "cost_usd": "0.00"
+  },
+  {
+    "operation": "execute_tool write_marker",
+    "status": "ERROR",
+    "error.type": "permission_denied",
+    "guardrail": "A0_CONFIRM"
+  },
+  {
+    "operation": "scratch_state_check",
+    "files_before": [
+      "meeting.md"
+    ],
+    "files_after": [
+      "meeting.md"
+    ]
+  }
+]

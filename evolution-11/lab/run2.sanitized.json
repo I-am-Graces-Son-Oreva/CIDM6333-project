@@ -1,0 +1,58 @@
+{
+  "source": "opencode export --sanitize; metadata projection",
+  "exit_code": 0,
+  "marker_written": false,
+  "git_status": "A  meeting.md\n",
+  "turns": [
+    {
+      "model": "llama3.2:3b",
+      "provider": "ollama",
+      "tokens": {
+        "total": 3062,
+        "input": 3049,
+        "output": 13,
+        "reasoning": 0,
+        "cache": {
+          "write": 0,
+          "read": 0
+        }
+      },
+      "cost": 0,
+      "time": {
+        "created": 1795472154973,
+        "completed": 1795472184923
+      },
+      "tools": [
+        {
+          "name": "read",
+          "call_id": "call_640hlvgd",
+          "status": "completed",
+          "time": {
+            "start": 1795472184471,
+            "end": 1795472184518
+          }
+        }
+      ]
+    },
+    {
+      "model": "llama3.2:3b",
+      "provider": "ollama",
+      "tokens": {
+        "total": 2165,
+        "input": 2152,
+        "output": 13,
+        "reasoning": 0,
+        "cache": {
+          "write": 0,
+          "read": 0
+        }
+      },
+      "cost": 0,
+      "time": {
+        "created": 1795472184928,
+        "completed": 1795472192726
+      },
+      "tools": []
+    }
+  ]
+}
