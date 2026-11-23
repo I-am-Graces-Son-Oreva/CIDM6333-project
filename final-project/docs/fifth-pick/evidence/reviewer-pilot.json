@@ -1,0 +1,159 @@
+{
+  "data": "synthetic classroom fixtures with planted proposal text",
+  "python_baseline": [
+    {
+      "case": "P1",
+      "issue": "overstated certainty from two H2H games",
+      "mechanical": null,
+      "python": "STILL STRONG",
+      "reason_codes": [],
+      "gaps": []
+    },
+    {
+      "case": "P2",
+      "issue": "missing Snapshot 3",
+      "mechanical": "missing",
+      "python": "REMOVE RECOMMENDED",
+      "reason_codes": [
+        "PROJECTION_OBSERVATION_MISSED",
+        "T20_CHECK_UNAVAILABLE"
+      ],
+      "gaps": [
+        "The current M6 candidate audit is not qualified and authorized.",
+        "Authoritative M6-validated Snapshot 3 is unavailable."
+      ]
+    },
+    {
+      "case": "P3",
+      "issue": null,
+      "mechanical": null,
+      "python": "STILL STRONG",
+      "reason_codes": [],
+      "gaps": []
+    },
+    {
+      "case": "P4",
+      "issue": null,
+      "mechanical": null,
+      "python": "STILL STRONG",
+      "reason_codes": [],
+      "gaps": []
+    },
+    {
+      "case": "P5",
+      "issue": "misstates the 6/8 history count",
+      "mechanical": null,
+      "python": "STILL STRONG",
+      "reason_codes": [],
+      "gaps": []
+    },
+    {
+      "case": "P6",
+      "issue": "judgment cites a nonexistent evidence ID",
+      "mechanical": "bad_citation",
+      "python": "REMOVE RECOMMENDED",
+      "reason_codes": [
+        "T20_CHECK_UNAVAILABLE"
+      ],
+      "gaps": [
+        "The current M6 candidate audit could not be established.",
+        "Authoritative M6-validated Snapshot 3 is unavailable."
+      ]
+    },
+    {
+      "case": "P7",
+      "issue": null,
+      "mechanical": null,
+      "python": "STILL STRONG",
+      "reason_codes": [],
+      "gaps": []
+    },
+    {
+      "case": "P8",
+      "issue": "infers certainty of early rest from seeding alone",
+      "mechanical": null,
+      "python": "STILL STRONG",
+      "reason_codes": [],
+      "gaps": []
+    }
+  ],
+  "initial_attempt": {
+    "model": "qwen3:4b",
+    "case": "P1",
+    "seconds": 84.6,
+    "usable_verdict": false,
+    "remaining_cases_scored": false
+  },
+  "completed_attempt": {
+    "model_request": {
+      "model": "qwen3:1.7b",
+      "stream": false,
+      "think": false,
+      "format": {
+        "type": "object",
+        "properties": {
+          "reviews": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "enum": [
+                    "P1",
+                    "P8",
+                    "P4",
+                    "P7",
+                    "P5",
+                    "P3"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "PASS",
+                    "CONCERNS",
+                    "FAIL"
+                  ]
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "reason"
+              ]
+            }
+          }
+        },
+        "required": [
+          "reviews"
+        ]
+      },
+      "options": {
+        "temperature": 0,
+        "seed": 21,
+        "num_predict": 290,
+        "num_ctx": 4096
+      },
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent read-only evidence reviewer. Compare each synthetic rationale to its evidence. Pass if supported with appropriate uncertainty. Flag a concrete false count or unsupported certainty. Use at most ten words per reason. Return one verdict per ID, independent of other cases. /no_think"
+        },
+        {
+          "role": "user",
+          "content": "[{\"id\": \"P1\", \"pick\": \"Joel Embiid HIGHER 28.5 POINTS\", \"history\": [\"LAST_8 8/8 favorable\", \"SAME_SEASON_H2H 2/2 favorable\"], \"recorded_claims\": [\"Synthetic same-season head-to-head games against Dallas produced 32 and 35 points, supporting a potential high-scoring matchup.\", \"The head-to-head case uses only two simulated games against this opponent.\"], \"rationale\": \"The two recorded games prove Embiid will clear 28.5 points tonight.\"}, {\"id\": \"P8\", \"pick\": \"Jayson Tatum LOWER 41.5 PRA\", \"history\": [], \"recorded_claims\": [\"In the synthetic slate, the No. 1 seed plays the No. 20 seed. A lopsided game could end Tatum’s minutes early and reduce his chances to reach 41.5 PRA.\", \"The synthetic seed gap gives no direct evidence of when the coach would rest Tatum.\"], \"rationale\": \"The No. 1 vs No. 20 seed gap establishes that the coach will sit Tatum early.\"}, {\"id\": \"P4\", \"pick\": \"Anthony Davis LOWER 38.5 PRA\", \"history\": [\"LAST_8 8/8 favorable\", \"SAME_SEASON_H2H 1/1 favorable\"], \"recorded_claims\": [\"In the simulated matchup, early fouls can shorten Davis’s stints and reduce his minutes.\", \"Five of eight simulated game logs show Davis picking up at least three fouls by halftime. Early fouls can cut his minutes and PRA opportunities.\"], \"rationale\": \"Early foul trouble could reduce Davis's minutes and opportunities. If he stays out of foul trouble, he could clear the line.\"}, {\"id\": \"P7\", \"pick\": \"Joel Embiid HIGHER 28.5 POINTS\", \"history\": [\"LAST_8 8/8 favorable\", \"SAME_SEASON_H2H 2/2 favorable\"], \"recorded_claims\": [\"Synthetic same-season head-to-head games against Dallas produced 32 and 35 points, supporting a potential high-scoring matchup.\", \"The head-to-head case uses only two simulated games against this opponent.\"], \"rationale\": \"Embiid scored 32 and 35 in two recorded meetings with the same opponent. Those games support considering Higher, with limited confidence in generalizing from two meetings.\"}, {\"id\": \"P5\", \"pick\": \"Luka Doncic HIGHER 9.5 ASSISTS\", \"history\": [\"LAST_8 6/8 favorable\"], \"recorded_claims\": [\"Luka cleared 9.5 assists in six of his last eight simulated games.\", \"Luka finished below 9.5 in two of the last eight simulated games.\"], \"rationale\": \"Luka exceeded the recorded 9.5 line in all eight recent games.\"}, {\"id\": \"P3\", \"pick\": \"Jayson Tatum LOWER 41.5 PRA\", \"history\": [], \"recorded_claims\": [\"In the synthetic slate, the No. 1 seed plays the No. 20 seed. A lopsided game could end Tatum’s minutes early and reduce his chances to reach 41.5 PRA.\", \"The synthetic seed gap gives no direct evidence of when the coach would rest Tatum.\"], \"rationale\": \"A large seed gap leaves open the possibility of a lopsided game and early rest. It is unclear whether the coach would shorten Tatum's rotation.\"}]"
+        }
+      ]
+    },
+    "seconds": 22.95,
+    "done_reason": "stop",
+    "output_tokens": 180,
+    "model_response_text": "{\"reviews\": [{\"id\": \"P1\", \"status\": \"PASS\", \"reason\": \"Two recorded games support Embiid's potential high-scoring matchup.\"}, {\"id\": \"P8\", \"status\": \"PASS\", \"reason\": \"Seed gap suggests coach may rest Tatum early.\"}, {\"id\": \"P4\", \"status\": \"PASS\", \"reason\": \"Early foul trouble could reduce Davis's minutes.\"}, {\"id\": \"P7\", \"status\": \"PASS\", \"reason\": \"Two recorded games support Embiid's performance.\"}, {\"id\": \"P5\", \"status\": \"PASS\", \"reason\": \"Luka exceeded 9.5 assists in most games.\"}, {\"id\": \"P3\", \"status\": \"PASS\", \"reason\": \"Seed gap suggests lopsided game and early rest.\"}]}"
+  }
+}

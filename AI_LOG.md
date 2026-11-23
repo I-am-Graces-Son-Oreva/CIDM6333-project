@@ -490,3 +490,17 @@ review with `human_approved: false` and `merge_count: 0`. After explicit human
 approval, the workflow resumed from the saved checkpoint and completed with
 `human_approved: true` and exactly one merge.
 
+
+## Final project — Testing whether the Reviewer adds value
+
+I asked for an honest critique of which parts of The Fifth Pick need an agent
+and which Python can handle directly. I clarified that my goal is to teach
+a disciplined, auditable process that beginners can use at their discretion.
+The tool does not guarantee that a trusted player will hit a line.
+
+We ran an offline pilot using eight synthetic cases. Python blocked both
+mechanical failures. The local model passed all six remaining cases, including
+the three with planted reasoning flaws. The result gives me a concrete
+improvement to test before relying more heavily on the Reviewer.
+
+Read the [collaboration log and pilot results](final-project/docs/fifth-pick/reviewer-pilot.md).

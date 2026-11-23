@@ -82,7 +82,8 @@ OpenCode discovery and fixture-driven skill calls were exercised separately.
 See the
 [architecture](docs/fifth-pick/architecture.md),
 [OpenCode harness record](docs/fifth-pick/harness.md), and
-[development plans](docs/superpowers/plans).
+[development plans](docs/superpowers/plans). The [Reviewer collaboration log and pilot](docs/fifth-pick/reviewer-pilot.md)
+records the comparison against the Python rules.
 
 ## Sources and LIVE limits
 
