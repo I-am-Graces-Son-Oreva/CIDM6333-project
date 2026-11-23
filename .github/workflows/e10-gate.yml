@@ -1,0 +1,20 @@
+name: Fifth Pick authorization regression gate
+
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  authorization:
+    env:
+      PYTHONPATH: final-project/src
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install PyYAML
+      - run: python -m unittest evals.test_gate
+      - run: python evals/gate.py --output "$RUNNER_TEMP/e10"

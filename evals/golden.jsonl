@@ -1,0 +1,12 @@
+{"id": "tat-p-hi", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Jayson Tatum", "category": "POINTS", "direction": "HIGHER", "expect": true}
+{"id": "tat-p-lo", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Jayson Tatum", "category": "POINTS", "direction": "LOWER", "expect": true}
+{"id": "tat-pra-hi", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Jayson Tatum", "category": "PRA", "direction": "HIGHER", "expect": true}
+{"id": "tat-pra-lo", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Jayson Tatum", "category": "PRA", "direction": "LOWER", "expect": true}
+{"id": "mit-p-lo", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Mitchell Robinson", "category": "POINTS", "direction": "LOWER", "expect": true}
+{"id": "mit-p-hi", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Mitchell Robinson", "category": "POINTS", "direction": "HIGHER", "expect": false}
+{"id": "mit-pra-lo", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Mitchell Robinson", "category": "PRA", "direction": "LOWER", "expect": false}
+{"id": "tat-ast-hi", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Jayson Tatum", "category": "ASSISTS", "direction": "HIGHER", "expect": false}
+{"id": "white-pra-lo", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Derrick White", "category": "PRA", "direction": "LOWER", "expect": false}
+{"id": "monk-p-hi", "covers": "Frozen grants v1 §9.1: exact player/category/direction", "player": "Malik Monk", "category": "POINTS", "direction": "HIGHER", "expect": false}
+{"id": "out-of-mvp", "covers": "AGENTS.md: live MVP markets only", "player": "Naz Reid", "category": "THREE_POINT_ATTEMPTS", "direction": "HIGHER", "expect": false}
+{"id": "unknown-player", "covers": "AGENTS.md: canonical identity required", "player": "Synthetic Unknown", "category": "POINTS", "direction": "HIGHER", "expect": false}
