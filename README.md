@@ -6,6 +6,7 @@ The Fifth Pick is a Python CLI for disciplined NBA fantasy-prop selection.
 It validates evidence, applies the frozen selection rules, and leaves the
 final decision to Joseph. The classroom rehearsal uses a synthetic four-game slate with 12 players.
 
+- [Does the AI Reviewer earn its place?](final-project/docs/fifth-pick/reviewer-pilot.md) · Conversation log and results against the Python baseline
 - [Final project README](final-project/README.md)
 - Technical design · [PDF](final-project/docs/fifth-pick/technical-design.pdf) · [HTML](final-project/docs/fifth-pick/technical-design.html)
 - Evidence and ranking code · [Snapshots](final-project/src/fifth_pick/snapshots.py) · [Methodology](final-project/src/fifth_pick/methodology.py) · [Ranking](final-project/src/fifth_pick/ranking.py)

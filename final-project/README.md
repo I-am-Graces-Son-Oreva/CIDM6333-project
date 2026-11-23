@@ -8,6 +8,7 @@ final decision. The application has no entry submission or wagering path.
 
 ## Start here
 
+- [Does the AI Reviewer earn its place?](docs/fifth-pick/reviewer-pilot.md) · Conversation log and results against the Python baseline
 - Technical design · [PDF](docs/fifth-pick/technical-design.pdf) · [HTML](docs/fifth-pick/technical-design.html)
 - Evidence and ranking code · [Snapshots](src/fifth_pick/snapshots.py) · [Methodology](src/fifth_pick/methodology.py) · [Ranking](src/fifth_pick/ranking.py)
 - User guide · [PDF](docs/fifth-pick/user-guide.pdf) · [HTML](docs/fifth-pick/user-guide.html) · [Public website](https://the-fifth-pick-docs.reedyolive6.chatgpt.site/user-guide)
