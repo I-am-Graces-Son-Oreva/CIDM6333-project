@@ -551,3 +551,12 @@ and the generated receipts. See the [E9 flight log](evolution-09/flight-log.md).
 - **Rejected** · Copying expected values from a gate run or using a model to score Boolean authorization decisions.
 - **Why** · The frozen universe and live authorization requirements supply an independent source for every expected result.
 - **Verification** · Matched the drafted cases to universe v1 and the canonical identity and LIVE market requirements before graded execution. The sortie evidence and Chase verdict are recorded in the E10 flight log.
+
+### E11 · Trace and guardrail evidence · November 23, 2026
+
+- **Asked** · Complete the A0 comparison and conduct the five-probe Sortie 11.
+- **Models and routes** · Codex prepared the metadata tracer and three synthetic fixtures. A separate Codex Chase authored A4/A5, issued GO and reviewed the evidence. OpenCode used local Llama for the A0 retry, and Ollama used local Llama for one clean sortie turn.
+- **Kept** · Sealed input digests, metadata-only spans, refusal receipts, the clean E10 gate output, and the A0 timeout and non-dispatch evidence.
+- **Rejected** · Treating a model reply or an absent marker as proof that OpenCode refused an edit.
+- **Why** · The native A0 exports show two successful reads and no write tool calls. The direct-control refusal belongs to its own runner.
+- **Verification** · Reconciled five delivery digests and six receipt/span links. The graded run was automated with no human monitoring time, and preparation and review time were untimed. See the [cost table](evolution-11/cost-table.md) and [flight log](evolution-11/flight-log.md).

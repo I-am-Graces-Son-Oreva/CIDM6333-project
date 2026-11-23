@@ -5,3 +5,4 @@
 {"event": "probe", "point": "A4", "payload_sha256": "b72f4f61d65ad968d9d5ddecd2039c0f228cebde3b0072461467eee2caa5885c", "outcome": "blocked by guardrail", "receipt": "receipts/A4.json"}
 {"event": "probe", "point": "A5", "payload_sha256": "bf7a037baccd55288fd8bd922003edfaacb416bb91966ba46d1e56bc14a6018a", "outcome": "blocked by guardrail", "receipt": "receipts/A5.json"}
 {"event": "state_check", "clean_scratch_storage": true, "clean_checkout": true}
+{"event": "verdict", "outcome": "PASS", "source": "chase-review.md", "reviewer": "Codex independent Chase"}
