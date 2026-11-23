@@ -391,3 +391,10 @@ extended submission date of December 30, 2026.
 
 Pending. The assigned Chase writes their own decision using the E8 format
 `GO — <name> — <YYYY-MM-DD> — <reason>` or the corresponding NO-GO.
+
+Joseph confirmed that the instructor permits an agent Chase in the absence of
+a human. A fresh, read-only Codex Chase reviewed the card independently of the
+implementation. The earlier local-model advisory discussion did not authorize
+a sortie. The formal decision is recorded verbatim below.
+
+GO — Codex independent Chase (e8_chase_go) — 2026-11-23 — Targeted TP4 repair re-flight only, with earlier TP1–3 and TP5 results retained. The committed card requires a native edit error for the sealed fixture and the associated CLI auto-rejection, matching before-and-after fixture and tracked Git diff hashes, and a separate schema-valid Reviewer FAIL with a finding located in the fixture.
