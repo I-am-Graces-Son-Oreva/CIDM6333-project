@@ -1,0 +1,5 @@
+{"test_point": "tp1", "exit_code": 0, "expected_exit": 0, "red": [], "predicted_red": [], "matched": true}
+{"test_point": "tp2", "exit_code": 1, "expected_exit": 1, "red": ["mit-p-hi", "mit-pra-lo", "monk-p-hi", "tat-ast-hi", "white-pra-lo"], "predicted_red": ["mit-p-hi", "mit-pra-lo", "monk-p-hi", "tat-ast-hi", "white-pra-lo"], "matched": true}
+{"test_point": "tp3", "exit_code": 0, "expected_exit": 0, "red": [], "predicted_red": [], "matched": true}
+{"test_point": "tp4", "exit_code": 1, "expected_exit": 1, "red": ["mit-p-hi"], "predicted_red": ["mit-p-hi"], "matched": true}
+{"test_point": "tp5", "exit_code": 0, "expected_exit": 0, "red": [], "predicted_red": [], "matched": true}

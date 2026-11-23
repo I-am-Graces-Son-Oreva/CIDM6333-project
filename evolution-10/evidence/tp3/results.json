@@ -1,0 +1,74 @@
+[
+  {
+    "id": "tat-p-hi",
+    "expected": true,
+    "actual": true,
+    "passed": true
+  },
+  {
+    "id": "tat-p-lo",
+    "expected": true,
+    "actual": true,
+    "passed": true
+  },
+  {
+    "id": "tat-pra-hi",
+    "expected": true,
+    "actual": true,
+    "passed": true
+  },
+  {
+    "id": "tat-pra-lo",
+    "expected": true,
+    "actual": true,
+    "passed": true
+  },
+  {
+    "id": "mit-p-lo",
+    "expected": true,
+    "actual": true,
+    "passed": true
+  },
+  {
+    "id": "mit-p-hi",
+    "expected": false,
+    "actual": false,
+    "passed": true
+  },
+  {
+    "id": "mit-pra-lo",
+    "expected": false,
+    "actual": false,
+    "passed": true
+  },
+  {
+    "id": "tat-ast-hi",
+    "expected": false,
+    "actual": false,
+    "passed": true
+  },
+  {
+    "id": "white-pra-lo",
+    "expected": false,
+    "actual": false,
+    "passed": true
+  },
+  {
+    "id": "monk-p-hi",
+    "expected": false,
+    "actual": false,
+    "passed": true
+  },
+  {
+    "id": "out-of-mvp",
+    "expected": false,
+    "actual": false,
+    "passed": true
+  },
+  {
+    "id": "unknown-player",
+    "expected": false,
+    "actual": false,
+    "passed": true
+  }
+]

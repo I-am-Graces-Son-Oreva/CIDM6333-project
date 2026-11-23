@@ -542,3 +542,12 @@ a separately approved card, a local Qwen worker and a different Qwen
 adversary ran in isolated contexts. The adversary caught the planted false
 claim and incorrectly refuted the true control. I preserved both outcomes
 and the generated receipts. See the [E9 flight log](evolution-09/flight-log.md).
+
+### E10 · Authorization regression gate
+
+- **Asked** · Build a code-graded test of exact player, category, and direction grants.
+- **Model and route** · Codex in the repository workspace drafted the cases and harness. The gate uses Python without a model judge.
+- **Kept** · Twelve cases with requirement references, including seven denials, and a prediction naming the five expected regressions.
+- **Rejected** · Copying expected values from a gate run or using a model to score Boolean authorization decisions.
+- **Why** · The frozen universe and live authorization requirements supply an independent source for every expected result.
+- **Verification** · Matched the drafted cases to universe v1 and the canonical identity and LIVE market requirements before graded execution. The sortie evidence and Chase verdict are recorded in the E10 flight log.

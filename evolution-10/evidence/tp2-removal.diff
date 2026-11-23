@@ -1,0 +1,15 @@
+diff --git a/final-project/src/fifth_pick/authorization.py b/final-project/src/fifth_pick/authorization.py
+index a66e9be..0460278 100644
+--- a/final-project/src/fifth_pick/authorization.py
++++ b/final-project/src/fifth_pick/authorization.py
+@@ -130,10 +129,0 @@ class AuthorizationGate:
+-        grant = AuthorizationGrant(category=safe_category, direction=safe_direction)
+-        if grant not in player.grants:
+-            return self._denied(
+-                player_id=player.player_id,
+-                category=safe_category,
+-                direction=safe_direction,
+-                reason=ReasonCode.CATEGORY_NOT_AUTHORIZED,
+-                detail="player is not authorized for this category and direction",
+-            )
+-

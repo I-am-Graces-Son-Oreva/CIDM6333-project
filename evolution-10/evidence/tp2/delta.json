@@ -1,0 +1,12 @@
+{
+  "regressed_ids": [
+    "mit-p-hi",
+    "mit-pra-lo",
+    "tat-ast-hi",
+    "white-pra-lo",
+    "monk-p-hi"
+  ],
+  "new_passes": [],
+  "pass_rate": 0.5833333333333334,
+  "trial_count": 12
+}
