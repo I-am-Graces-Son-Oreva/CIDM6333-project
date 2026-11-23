@@ -38,4 +38,4 @@ Observer: independent Codex Chase. Review only cards, hashes, spans, receipts,
 cost table and mechanism inventory. Joseph's authenticated account is the
 publication transport because the agent has no GitHub identity.
 
-Decision pending.
+GO — Codex independent Chase — 2026-11-23 — All five payload digests match the registered values, the runner reaches the named production safeguards, and the card specifies the delivery, enforcement and outcome falsifiers. The independent cards match the merged class PR, E10 has a qualifying PASS, and the A0 worksheet records the limits of the native and supplemental comparisons.
