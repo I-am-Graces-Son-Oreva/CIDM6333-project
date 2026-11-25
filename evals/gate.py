@@ -12,19 +12,29 @@ from fifth_pick.registry import Registry
 EVALS = Path(__file__).resolve().parent
 
 
-def grade(expected: bool, actual: object) -> bool:
-    return type(actual) is bool and expected is actual
+def grade(expected: bool, actual: object, assertion: str = "equals") -> bool:
+    if assertion not in {"equals", "boolean"}:
+        raise ValueError("unknown assertion")
+    return type(actual) is bool and (assertion == "boolean" or expected is actual)
+
+
+def constant_verdicts(expected: bool, assertion: str) -> tuple[bool, bool]:
+    return grade(expected, False, assertion), grade(expected, True, assertion)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, default=EVALS / "baseline.json")
     parser.add_argument("--output", type=Path, default=EVALS)
+    parser.add_argument("--golden", type=Path, help="alternate corpus for a hollow witness")
     witness = parser.add_mutually_exclusive_group()
     witness.add_argument("--plant-wrong", metavar="CASE_ID")
     witness.add_argument("--hollow", action="store_true")
     args = parser.parse_args()
-    cases = [json.loads(line) for line in (EVALS / "golden.jsonl").read_text().splitlines()]
+    if args.golden is not None and not args.hollow:
+        parser.error("alternate corpus is restricted to the hollow witness")
+    golden = args.golden or EVALS / "golden.jsonl"
+    cases = [json.loads(line) for line in golden.read_text().splitlines()]
     baseline = json.loads(args.baseline.read_text())
     ids = {case["id"] for case in cases}
     if (
@@ -36,6 +46,12 @@ def main() -> int:
         or sum(case["expect"] is False for case in cases) < 4
     ):
         parser.error("invalid golden cases or baseline")
+    if any(
+        case.get("assertion", "equals")
+        not in ({"equals", "boolean"} if args.golden else {"equals"})
+        for case in cases
+    ):
+        parser.error("invalid assertion for this corpus")
     if args.plant_wrong is not None and args.plant_wrong not in ids:
         parser.error("unknown planted case ID")
 
@@ -53,8 +69,9 @@ def main() -> int:
         actual = not expected if args.plant_wrong == case["id"] else decision.allowed
         row = dict(id=case["id"], expected=expected, actual=actual, passed=grade(expected, actual))
         if args.hollow:
-            row["constant_false_passed"] = grade(expected, False)
-            row["constant_true_passed"] = grade(expected, True)
+            first, second = constant_verdicts(expected, case.get("assertion", "equals"))
+            row["constant_false_passed"] = first
+            row["constant_true_passed"] = second
             row["passed"] = not (row["constant_false_passed"] and row["constant_true_passed"])
         results.append(row)
 
