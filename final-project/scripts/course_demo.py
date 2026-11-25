@@ -8,6 +8,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import uuid4
 
+from fifth_pick.menu_presentation import fields, slate_table, table
+
 FIXTURES = Path(__file__).resolve().parents[1] / "src/fifth_pick/demo/classroom"
 
 
@@ -21,25 +23,33 @@ def cli(run_id: str, command: str, *args: str, expected: int = 0) -> dict:
     if result.returncode != expected:
         raise SystemExit(f"{command} exited {result.returncode}: {result.stderr or result.stdout}")
     if expected:
-        print(f"{command} rejected as expected (exit {expected}): {result.stderr.splitlines()[-1]}")
+        fields(
+            "Input guard check",
+            (
+                ("Result", f"Rejected as expected (exit {expected})"),
+                ("Details", result.stderr.splitlines()[-1]),
+            ),
+        )
         return {}
     return json.loads(result.stdout)
 
 
 def rehearse(run_id: str, third_slot: Path) -> tuple[dict, dict]:
+    stages = []
     for slot, fixture in enumerate((FIXTURES / "1", FIXTURES / "2", third_slot), 1):
         stage = (
             cli(run_id, "analyze", "--snapshot", str(slot), "--fixture", str(fixture))
             if slot < 3
             else cli(run_id, "t20", "--fixture", str(fixture))
         )
-        print(f"Snapshot {slot} at {stage['observed_at']}: {stage['observations']} observations")
+        stages.append((slot, stage["observed_at"], stage["observations"]))
+    table(("Snapshot", "Observed at (UTC)", "Observations"), stages)
     return cli(run_id, "final"), cli(run_id, "audit")
 
 
 def show_evidence(audit: dict) -> None:
     run_id = audit["run_id"]
-    print(f"{len(audit['receipts'])} receipts in var/fifth-pick/runs/{run_id}/")
+    fields("Audit", (("Receipts", len(audit["receipts"])), ("Run ID", run_id)))
     print(f"Replay audit: uv run --offline --no-sync fifth-pick audit --run-id {run_id}")
 
 
@@ -52,7 +62,6 @@ def main() -> None:
     rejections = {row["result"] for row in audit["receipts"] if row["event"] == "SNAPSHOT_REJECTED"}
     if not {"IDENTITY_UNRESOLVED", "NOT_AUTHORIZED"} <= rejections:
         raise SystemExit("Expected ambiguous identity and unauthorized market to be excluded.")
-    print(f"Excluded rows: {', '.join(sorted(rejections))}")
     picks = final["proposed"]
     if (
         {pick["player"] for pick in picks}
@@ -67,21 +76,37 @@ def main() -> None:
             raise SystemExit("Unexpected T-20 conclusion.")
         if pick["player"] == "Luka Doncic" and pick["projection_movement"] != [8.5, 9.0, 9.5]:
             raise SystemExit("Unexpected assists projection movement.")
-        print(
-            f"{pick['player']} | {pick['platform']} | {pick['category']} {pick['direction']} "
-            f"| {pick['projection_movement']} | {pick['confidence']} | {pick['t20_status']}"
-        )
-        print(f"  {pick['t20_rationale']}")
-    print(f"{final['state']}: 4 of 4 selections proposed.")
+    print("\nPROPOSED SELECTIONS")
+    slate_table(picks)
+    print("\nSUPPORTING EVIDENCE")
+    table(
+        ("Player", "Snapshot lines", "T-20 rationale"),
+        (
+            (
+                pick["player"],
+                " → ".join(map(str, pick["projection_movement"])),
+                pick["t20_rationale"],
+            )
+            for pick in picks
+        ),
+    )
     review = cli(demo_id, "review-status")
-    print(f"Native review state: {review['state']} (offline replay below uses a test verdict)")
     recovered = cli(demo_id, "review-handoff")
     if (
         recovered["artifact_sha256"] != review["artifact_sha256"]
         or recovered["dispatch_authorized"]
     ):
         raise SystemExit("Fresh-process handoff did not match the review status.")
-    print(f"Fresh-process handoff: {recovered['next_step']}, dispatch not authorized")
+    fields(
+        "Proposal status",
+        (
+            ("Proposal", "4 of 4 selections proposed. Awaiting Joseph."),
+            ("Excluded rows", ", ".join(sorted(rejections))),
+            ("Native review", f"{review['state']} (regression replay uses a test verdict)"),
+            ("Handoff", recovered["next_step"]),
+            ("Dispatch", "Not authorized"),
+        ),
+    )
     show_evidence(audit)
 
     print("\nFixture B: provider has no line at T-20")
@@ -95,7 +120,10 @@ def main() -> None:
         final, audit = rehearse(f"{demo_id}-empty", third_slot)
     if final["proposed"] or final["recommendation"] != "NO ENTRY RECOMMENDED TODAY.":
         raise SystemExit("Expected an empty proposal after the third observation was missed.")
-    print(final["recommendation"])
+    fields(
+        "Slate outcome",
+        (("Decision", final["recommendation"]), ("Reason", "No provider lines at T-20.")),
+    )
     show_evidence(audit)
 
     print("\nRegression replay: review receipt binding, both ceilings, and no refill", flush=True)
