@@ -35,3 +35,13 @@ An agent harness is built around the LLM because the model alone does not have e
 **Failure mode:** The model may reason incorrectly and use a tool or take an action that it should not take.
 
 **Preservation mechanism:** Use clear permissions, logs, evaluation, halt conditions, and human authority over important decisions.
+
+### Reassessment references
+
+OpenCode documents named agent modes and per-agent permissions. Those
+mechanisms support the distinction in the table between conversational
+guidance and a harness capable of controlling tool access. MCP tool
+definitions make name, description, and input shape observable at the
+boundary. They do not themselves establish that an operator approved an
+effect. [OpenCode agents](https://opencode.ai/docs/agents/) ·
+[MCP tools specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)

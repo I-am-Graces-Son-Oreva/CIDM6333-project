@@ -103,3 +103,16 @@ The sandbox and isolation controls were not weakened to obtain a successful resp
 **ABORTED — infrastructure/execution-path blocker remains under the approved isolation configuration.**
 
 This re-flight is recorded without claiming TP1–TP5 PASS. The original Evolution 7 ABORT remains accurate, and this section records the required re-fly attempt.
+
+## Reassessment · Alternate local-memory witness
+
+The original native OpenCode aborts remain in the record. A separately
+approved local Llama run returned UNKNOWN in the OFF, ABSENT and EVICTED
+conditions and the exact synthetic value in ON. The independent Chase
+verified that ON linked to memory `m-0001`. The same query returned no hit
+after eviction. [Condition results](../evolution-06/reassessment/evidence/attempt-1/run.jsonl) ·
+[Recall and eviction ledger](../evolution-06/reassessment/evidence/attempt-1/recall.jsonl)
+
+The Chase's E7 PASS applies to the alternate harness. It does not supply
+missing OpenCode or OS-isolation evidence. The combined trial's separate
+E6 control failed on its first attempt.

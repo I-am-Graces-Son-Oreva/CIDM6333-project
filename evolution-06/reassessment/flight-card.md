@@ -48,3 +48,15 @@ retains attempt 1. The trigger remains a forced compaction for this witness,
 so this does not test automatic threshold crossing.
 
 GO — Codex independent Chase — E6-only — 2026-11-25 — bb4146c
+
+### E6-only result
+
+PASS — Codex independent Chase — 2026-11-25 — E6-only supplemental attempt 2.
+
+The same project ledger session recorded READY, compaction, then the exact
+retained action VERIFY_AMBER. Provider input fell from 934 to 68 tokens.
+The compactor's own estimate is a different measurement. The run exited
+0. [Ordered events](evidence/attempt-2/run.jsonl) · [Exit](evidence/attempt-2/exit.txt)
+
+This verifies forced, project-managed compaction across two stateless
+local calls. It leaves native OpenCode automatic triggering untested.

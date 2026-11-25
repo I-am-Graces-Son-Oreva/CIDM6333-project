@@ -33,3 +33,11 @@ provider data and LIVE admission requires separate evidence.
 
 The repository includes a [manually dispatchable CI job](../.github/workflows/e10-gate.yml)
 that calls the gate. The recorded flight uses local execution.
+
+## Reassessment amendment
+
+The [hollow-case positive control](hollow-amendment.md) detected a
+single scratch assertion that would accept either Boolean decision. The
+original corpus and baseline remained unchanged. The earlier TP5 result
+only established that none of the original equality cases accepted both
+constants. The positive control separately demonstrates detection.

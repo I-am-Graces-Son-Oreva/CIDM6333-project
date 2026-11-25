@@ -1,0 +1,8 @@
+{
+  "regressed_ids": [
+    "mit-p-hi"
+  ],
+  "new_passes": [],
+  "pass_rate": 0.9166666666666666,
+  "trial_count": 24
+}

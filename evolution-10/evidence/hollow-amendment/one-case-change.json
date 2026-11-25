@@ -1,0 +1,19 @@
+{
+  "before": {
+    "id": "mit-p-hi",
+    "covers": "Frozen grants v1 \u00a79.1: exact player/category/direction",
+    "player": "Mitchell Robinson",
+    "category": "POINTS",
+    "direction": "HIGHER",
+    "expect": false
+  },
+  "after": {
+    "id": "mit-p-hi",
+    "covers": "Frozen grants v1 \u00a79.1: exact player/category/direction",
+    "player": "Mitchell Robinson",
+    "category": "POINTS",
+    "direction": "HIGHER",
+    "expect": false,
+    "assertion": "boolean"
+  }
+}

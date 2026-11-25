@@ -1,8 +1,10 @@
 {
   "read_note": {
-    "required_scope": "notes:read"
+    "required_scope": "notes:read",
+    "description_sha256": "27b83b3029376f369620ad896389e609e0435645f85ac1e8d462da4a4076a172"
   },
   "write_note": {
-    "required_scope": "notes:write"
+    "required_scope": "notes:write",
+    "description_sha256": "cef0db3daf54bf60d8f9a9d11000c7855e51b7e0abcdd29481674039d6af3895"
   }
 }

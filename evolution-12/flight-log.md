@@ -30,4 +30,15 @@ provider calls were required.
 
 TP6 is recorded. The independent cold rollback initially returned
 `deployment command failed`. That failed attempt remains in the ledger.
-The independent closeout verdict and final published release are pending.
+The [independent retry receipt](evidence/chase-cold-retry.jsonl) and
+[health output](evidence/chase-cold-health.json) record the cold replay
+from a clean freeze checkout and a scratch deployment with no active
+environment. Its only extra prerequisite was a preseeded writable offline
+uv cache, as expected for the offline installation.
+
+PASS — Codex independent Chase (e12_cold_retry) — The documented rollback
+restored version 0.1.0 in 2.413071 seconds. The returned SHA-256 matched
+the archived wheel, original release, and Joseph's attestation. Initial
+deployment error preserved. Verdict scope is the offline E12 replay.
+
+The classroom evidence is published separately from any product release.

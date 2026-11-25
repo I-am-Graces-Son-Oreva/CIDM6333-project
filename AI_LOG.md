@@ -582,3 +582,17 @@ rollback. The scratch overwrite test showed that a mismatched artifact
 was refused before installation, and the valid rollback restored the
 recorded SHA-256. I would leave the final release attestation to Joseph.
 [Command capture](evolution-12/evidence/commands.json) · [Ledger](evolution-12/evidence/release-ledger.jsonl)
+
+### Evolution feedback follow-up · November 25, 2026
+
+Codex addressed the E5 declaration pin, E6/E7 alternate witness, E8
+scope note from the prior batch, E10 grading analysis and E12 receipt
+closeout. The E6/E7 alternate route used local Ollama `llama3.2:3b`.
+The E10 follow-up and E12 verification used deterministic checks without
+model-generated judgments. Independent Codex Chase sessions issued the
+new GO decisions and verdicts. I rejected claiming an E6 pass from the
+first trial because the initial answer missed READY, despite the correct
+later action and measured input reduction. The four E7 conditions passed.
+[E6/E7 ledger](evolution-06/reassessment/evidence/attempt-1/run.jsonl) ·
+[E10 witness](evolution-10/hollow-amendment.md) ·
+[E12 independent cold retry](evolution-12/evidence/chase-cold-retry.jsonl)

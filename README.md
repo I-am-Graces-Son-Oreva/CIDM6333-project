@@ -44,6 +44,8 @@ or inspect the [original walkthrough evidence](multi-tool-exercise/docs/closeout
 
 ## Evolution assignments
 
+[Instructor feedback and reassessment evidence](docs/course-reassessment.md)
+
 | Assignment | Deliverables |
 | --- | --- |
 | [Evolution 00](evolution-00/) | Pitch, design, and toolkit |
@@ -58,7 +60,7 @@ or inspect the [original walkthrough evidence](multi-tool-exercise/docs/closeout
 | [Evolution 09](evolution-09/flight-log.md) | Cross-family claim, receipt, and verdict |
 | [Evolution 10](evolution-10/flight-log.md) | Evaluation gate and RED witness |
 | [Evolution 11](evolution-11/flight-log.md) | Red-team traces, refusals, and independent verdict |
-| [Evolution 12](evolution-12/flight-log.md) | Wheel release and timed rollback · Chase closeout pending |
+| [Evolution 12](evolution-12/flight-log.md) | Wheel release and timed rollback and independent cold-replay evidence |
 
 See the [design-analysis ledger](design-analyses/LEDGER.md) and [AI interaction log](AI_LOG.md).
 

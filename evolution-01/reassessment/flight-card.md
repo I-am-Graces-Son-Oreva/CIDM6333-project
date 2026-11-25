@@ -35,3 +35,14 @@ route, limit, expected behavior and falsifiers are unchanged. No retry
 until the Chase records a new GO here.
 
 GO — Codex independent Chase — 2026-11-25 — 9c7505e (layout-only amendment).
+
+### Attempt 2 result
+
+FAIL — Codex independent Chase — 2026-11-25 — E1 attempt 2 (GO ab8a995).
+
+The native trace shows three step starts, two completed reads, and no
+further tool call. All eight fixture digests matched. The model did not
+produce the required explicit explanation that the step limit left the
+chain incomplete. Exit 0 does not prove the explanation. This witness
+establishes the lower read count and leaves the older five-step verdict
+unchanged. [Trace projection](attempt-2.json) · [Fixture digests](fixture-digests.json)

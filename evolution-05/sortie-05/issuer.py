@@ -4,9 +4,12 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import time
 
-TOKEN_SECRET = b"e5-sortie-local-signing-key"
+TOKEN_SECRET = os.environ["E5_TEST_SIGNING_KEY"].encode()
+if not TOKEN_SECRET:
+    raise RuntimeError("E5_TEST_SIGNING_KEY must not be empty")
 CANONICAL_AUDIENCE = "http://127.0.0.1:8000/mcp"
 
 

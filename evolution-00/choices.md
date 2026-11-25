@@ -19,3 +19,17 @@ I selected **LangGraph** as my provisional orchestration-framework candidate. I 
 My semester project currently appears to need a controlled process in which a graduate application can move through evidence gathering, assessment, additional verification, normal processing, or human escalation depending on the state of the case. LangGraph's state-and-transition approach appears suitable for representing this type of governed workflow. It also leaves room for tools, memory, conditional routing, human involvement, and eventually multi-agent behavior if those capabilities earn a place in the design.
 
 The trade-off is that LangGraph is new to me, and I do not yet have enough evidence to claim that it is the best framework for my system. I am therefore treating LangGraph as a candidate rather than a final decision. I will compare it more formally with alternatives before making the framework decision in ADR-1 during Evolution 2.
+
+## Reassessment note · November 25, 2026
+
+The original choices above describe the September graduate-application
+idea. The subsequent [pitch](pitch.md) narrows the actual project to NBA
+fantasy discipline and evidence review. OpenCode remains the course build
+and review harness. The delivered application is a Python CLI, with
+authorization and lifecycle rules enforced in code, an offline demo, and
+a human decision. LangGraph remains a historical candidate and was not
+required for that runtime. Adding an orchestration dependency would have
+cost another layer of configuration and testing. Separate local model
+sessions remained useful for coursework where the assignment called for
+an actual agent. [OpenCode agents](https://opencode.ai/docs/agents/) ·
+[Current CLI project overview](../final-project/README.md)

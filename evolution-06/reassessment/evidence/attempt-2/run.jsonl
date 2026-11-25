@@ -1,0 +1,4 @@
+{"action": "nothing", "budget": 8000, "event": "turn_budget", "in": 934, "out": 7, "pct": 12, "session": "7af70399219e4315b68805020859c257", "total": 941, "turn": 1}
+{"after": 46, "before": 941, "event": "compaction", "kept": ["The exact next action is VERIFY_AMBER. Return that exact action when asked."]}
+{"action": "nothing", "budget": 8000, "event": "turn_budget", "in": 68, "out": 11, "pct": 1, "session": "7af70399219e4315b68805020859c257", "total": 79, "turn": 2}
+{"after": {"answer": "VERIFY_AMBER", "input": 68, "output": 11}, "before": {"answer": "READY", "input": 934, "output": 7}, "event": "continuation", "passed": true, "session": "7af70399219e4315b68805020859c257"}

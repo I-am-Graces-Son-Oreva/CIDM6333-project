@@ -1,0 +1,34 @@
+[
+  {
+    "path": "evolution-01/fixtures/step-1.txt",
+    "sha256": "51634a7c69540b71662e4741fe6dc1bc63fa7da8030e391bd3e474b647709c83"
+  },
+  {
+    "path": "evolution-01/fixtures/step-2.txt",
+    "sha256": "68ee0a3e4a537385de044e016420fe32d50291cb2e6cc21d35f9ba122bd62cfb"
+  },
+  {
+    "path": "evolution-01/fixtures/step-3.txt",
+    "sha256": "cbbb6248d7ba52448a041ea3b53c84f0f375d2fd93d5b4cba2244ea1ec8c8ca0"
+  },
+  {
+    "path": "evolution-01/fixtures/step-4.txt",
+    "sha256": "5364749cb59eae789abc733de8d027445dd2d881f7cd0caf816581c81e476c94"
+  },
+  {
+    "path": "evolution-01/fixtures/step-5.txt",
+    "sha256": "86b8b9b0625b5de1e25514b449049fe7a42f24000553e47c63c0c0cd76927f0d"
+  },
+  {
+    "path": "evolution-01/fixtures/step-6.txt",
+    "sha256": "ca69f0e5cbc247bab9e074f6f3d574072f214db8099f9f541aa7293728ec3965"
+  },
+  {
+    "path": "evolution-01/fixtures/step-7.txt",
+    "sha256": "13a4d93018b3be56dfc4f8ba2099f15cd5b9d83feabf874ddd5e0ed1d6813e89"
+  },
+  {
+    "path": "evolution-01/fixtures/step-8.txt",
+    "sha256": "c271b2180f48a9352d141167fcb75d6011868deb47bd0e2c47d7b51b3a1e7a1c"
+  }
+]

@@ -1,0 +1,6 @@
+test_same_scope_different_description_is_denied (tests.test_e5_description_pin.DescriptionPinTests.test_same_scope_different_description_is_denied) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.113s
+
+OK

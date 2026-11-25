@@ -1,0 +1,4 @@
+{"stage": "original", "exit_status": 0, "red_ids": [], "launch_commit": "4afcbdc52d756ddcccfb92b80c1427b7d161a70a"}
+{"stage": "weak", "exit_status": 1, "red_ids": ["mit-p-hi"], "launch_commit": "4afcbdc52d756ddcccfb92b80c1427b7d161a70a"}
+{"stage": "restored", "exit_status": 0, "red_ids": [], "launch_commit": "4afcbdc52d756ddcccfb92b80c1427b7d161a70a"}
+{"event": "frozen-inputs-verified", "golden_sha256": "df83d560b81d7070f691b694180535c5cdf11b7ea39453471abf4620ed83b434", "baseline_sha256": "178fc6c6362fb65758b800946ea40b7fbe62ff217f667bf23827c3ad2f845043"}

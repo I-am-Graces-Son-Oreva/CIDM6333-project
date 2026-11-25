@@ -1,0 +1,2 @@
+[{"parent_session":"ses_e3d15166bffekKIKs1DGprBPme","child_session":"ses_e3d14f520ffe9tzfM0L6pL0ko0","worker":"evidence-reviewer","status":"completed","started_ms":1794271546085,"finished_ms":1794271577686,"call_created_ms":1794271546066},
+{"parent_session":"ses_e3d15166bffekKIKs1DGprBPme","child_session":"ses_e3d14599affe8qMMPGtPqFpfFU","worker":"triage-summarizer","status":"completed","started_ms":1794271585897,"finished_ms":1794271596060,"call_created_ms":1794271585886}]

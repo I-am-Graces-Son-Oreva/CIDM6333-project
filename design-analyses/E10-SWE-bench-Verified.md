@@ -21,3 +21,34 @@ that satisfy an under-specified assertion. [SWE-bench paper](https://arxiv.org/a
 Prioritize reproducibility at the cost of narrow coverage. Counter hollow
 passes with both Boolean stubs and preserve the card, receipts, and Chase
 verdict in Git.
+
+## Reassessment of the four focus components
+
+**Evaluation and feedback.** A passing test can accept an implementation
+that satisfies an assertion without satisfying the issue. A narrow test can
+also reject a valid fix. OpenAI's audit found flawed tests in at least
+59.4% of the audited hard subset. That denominator is the audited subset,
+which covered 27.6% of the benchmark. The E10 authorization-removal witness
+shows sensitivity to one production change. The separate hollow witness
+shows sensitivity to one deliberately weakened assertion. Neither measures
+all possible defects. [Audit](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/)
+
+**Perception.** A coding agent can inspect repository files and run commands
+its harness exposes. A tester needs to know which assertions, expected
+answers and prior patches are visible. A visible answer can explain a pass
+even if the intended reasoning never occurred. E10 freezes the answer set
+before GO. The deterministic gate then produces results from the code
+without an answer-generating model.
+
+**Foundation.** Public issue and patch material can enter training. The audit
+recovered reference patches or issue details from the tested models on some
+items, and linked exposure with improved success on underspecified tests.
+Prior exposure and new reasoning therefore cannot be distinguished by one
+green test result. [Audit](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/#contamination)
+
+**Governance and human interface.** Curators decide the benchmark membership,
+a code runner produces the pass signal, and evaluators decide what the
+signal supports. E10 keeps those responsibilities separate through a frozen
+prediction, an executable gate, receipts, and a Chase verdict bounded to
+those receipts. The automatic workflow reruns the gate on relevant pushes.
+[Class push-triggered run](https://github.com/WTAMU-CIDM6333/CIDM6333-Fall2026-Joseph-Edafiadhe/actions/runs/45552174473)

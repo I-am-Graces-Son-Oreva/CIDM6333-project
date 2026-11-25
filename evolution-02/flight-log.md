@@ -81,3 +81,15 @@ The `permission.task` boundary prevented the primary agent from successfully del
 PASS — pending independent Chase post-flight review of the committed evidence.
 
 CHASE — Chase — 2026-11-09 — PASS
+
+## Reassessment · Recovered worker order
+
+The original sanitized export stays intact. A read-only projection from
+the original OpenCode 1.18.20 local event database identifies each task
+call's selected worker, completion status and timestamps. The first
+worker finished at 1794271577686 ms and the second started at
+1794271585897 ms, 8,211 ms later. Both child session records link back
+to the same parent and identify the matching role. The projection
+excludes prompts, arguments other than the role name, and tool results.
+[Ordered tasks](evidence/reassessment/ordered-workers.json) ·
+[Child linkage](evidence/reassessment/child-sessions.json)

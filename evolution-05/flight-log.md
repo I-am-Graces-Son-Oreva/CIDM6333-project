@@ -272,3 +272,18 @@ The hardened signed-token implementation produced no evidence that contradicted 
 - Final write ledger: 0.
 
 **Final signed-token verdict: PASS / CLAIM SUPPORTED**
+
+## Reassessment · tool description integrity
+
+The original GO chronology and evidence above are preserved. The pin now
+hashes the literal tool descriptions on the server's declarations and
+checks their scopes. In the [regression receipt](evidence/reassessment/pin-regression.txt),
+an unchanged write scope with changed description text is refused with
+exit 1. The [unchanged declarations](evidence/reassessment/pin-clean.txt)
+still pass. This is an offline launch-time declaration check. It exercises
+neither a native agent session nor dynamic server advertisement.
+
+Both exercise components now require a supplied `E5_TEST_SIGNING_KEY`.
+The old historical example key was exercise-only and should not be used.
+The [lab skill](skills/e5-verify-tool-pins/SKILL.md) documents the current
+preflight. This replay does not supply the original missing preflight GO.

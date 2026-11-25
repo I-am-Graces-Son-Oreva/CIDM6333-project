@@ -20,3 +20,16 @@ answers the instructor's question about a hollow case.
 GO — Codex independent Chase — 2026-11-24 — 7cf3f86
 
 Scope: review the one-case mutation and unchanged original corpus.
+
+## Observed result
+
+PASS — Codex independent Chase — 2026-11-24 — 4afcbdc.
+
+The original and restored runs were identical and exited 0. The one-field
+scratch mutation caused only `mit-p-hi` to accept both Boolean constants,
+and the detector exited 1. Both frozen input hashes matched the ledger.
+This verifies detection of the planted weakness.
+
+[Mutation](evidence/hollow-amendment/one-case-change.json) ·
+[Exit and hash ledger](evidence/hollow-amendment/ledger.jsonl) ·
+[RED witness](evidence/hollow-amendment/weak/results.json)
