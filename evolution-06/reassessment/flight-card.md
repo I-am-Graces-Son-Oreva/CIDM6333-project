@@ -26,4 +26,6 @@ preserves the original OpenCode E6 evidence and E7 aborts.
 
 ## CHASE
 
-Pending before the model trial.
+GO — Codex independent Chase — 2026-11-24 — e6147aa
+
+Scope: alternate local E6/E7 controls.
