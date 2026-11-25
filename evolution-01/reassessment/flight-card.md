@@ -19,4 +19,4 @@ historical Big Pickle route. It does not change the historical verdict.
 
 ## CHASE
 
-Pending.
+GO — Codex independent Chase — 2026-11-25 — 2df54f3
