@@ -66,3 +66,16 @@ step-limit explanation still fails. Disable thinking to keep the response
 within the output budget. The only endpoint is the local model service.
 
 GO — Codex independent Chase — 2026-11-25 — Qwen rerun at `458ceac`.
+
+The [Qwen run](attempt-3.json) reached its 192-output-token limit on
+the first step, with no reads and no explanation. The stop reason was
+`length`. This run fails the three-step criteria. It does not supersede
+the earlier native step-count comparison.
+
+### Llama rerun with an explicit final-answer format
+
+Return to the local Llama 3.2 3B model that completed the two reads.
+Keep `steps: 3`, the read-only fixture and the same pass conditions.
+Ask for a plain-text final report naming the last completed read and
+the reason work stopped. The prompt must not supply a read result or
+claim that a stop occurred. Require a fresh Chase GO before dispatch.
