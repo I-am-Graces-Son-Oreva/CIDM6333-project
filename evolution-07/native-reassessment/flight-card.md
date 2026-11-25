@@ -91,3 +91,5 @@ Keep the prior OFF control and rerun ON with local Qwen3 4B in OpenCode
 probes and exact fact, ID and source criteria. Disable thinking to keep
 the answer within the output budget. The fact and source must come from
 the retrieved record. Publish a sanitized projection only.
+
+GO — Codex independent Chase — 2026-11-25 — Qwen rerun at `458ceac`.

@@ -64,3 +64,5 @@ Use local Qwen3 4B in OpenCode 1.18.20 with the same read-only chain,
 configuration limit, and criteria as attempt 2. A missing explicit
 step-limit explanation still fails. Disable thinking to keep the response
 within the output budget. The only endpoint is the local model service.
+
+GO — Codex independent Chase — 2026-11-25 — Qwen rerun at `458ceac`.
