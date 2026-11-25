@@ -33,3 +33,5 @@ The retry places the same fixture bytes at their original relative path
 and updates the single read allowlist and initial path to match. The
 route, limit, expected behavior and falsifiers are unchanged. No retry
 until the Chase records a new GO here.
+
+GO — Codex independent Chase — 2026-11-25 — 9c7505e (layout-only amendment).
