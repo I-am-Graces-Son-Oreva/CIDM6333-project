@@ -21,7 +21,12 @@ CONFIG_FILENAMES: Final[tuple[str, ...]] = (
     "category-map",
     "approved-sources",
 )
-DEFAULT_CONFIG_DIR: Final[Path] = Path(__file__).resolve().parents[2] / "config" / "fifth-pick"
+_PACKAGED_CONFIG = Path(__file__).with_name("data") / "config"
+DEFAULT_CONFIG_DIR: Final[Path] = (
+    _PACKAGED_CONFIG
+    if _PACKAGED_CONFIG.is_dir()
+    else Path(__file__).resolve().parents[2] / "config" / "fifth-pick"
+)
 SCHEMA_VERSION: Final[int] = 1
 UNIVERSE_CONTENT_VERSION: Final[str] = "v1"
 UNIVERSE_EFFECTIVE_DATE: Final[str] = "2026-11-15"

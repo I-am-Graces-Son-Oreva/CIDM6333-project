@@ -31,6 +31,17 @@ default-groups = ["dev", "legacy"]
 [tool.hatch.build.targets.wheel]
 packages = ["final-project/src/fifth_pick"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"final-project/config/fifth-pick/approved-sources.yaml" = "fifth_pick/data/config/approved-sources.yaml"
+"final-project/config/fifth-pick/approved-universe.yaml" = "fifth_pick/data/config/approved-universe.yaml"
+"final-project/config/fifth-pick/category-map.yaml" = "fifth_pick/data/config/category-map.yaml"
+"final-project/config/fifth-pick/governance.yaml" = "fifth_pick/data/config/governance.yaml"
+"final-project/config/fifth-pick/methodology.yaml" = "fifth_pick/data/config/methodology.yaml"
+"final-project/config/fifth-pick/trust-tiers.yaml" = "fifth_pick/data/config/trust-tiers.yaml"
+"final-project/config/fifth-pick/official-slates/2026-11-19.json" = "fifth_pick/data/config/official-slates/2026-11-19.json"
+"final-project/config/fifth-pick/official-slates/2026-11-21.json" = "fifth_pick/data/config/official-slates/2026-11-21.json"
+"final-project/config/fifth-pick/official-slates/2026-11-22.json" = "fifth_pick/data/config/official-slates/2026-11-22.json"
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100
