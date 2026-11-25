@@ -79,3 +79,5 @@ Keep `steps: 3`, the read-only fixture and the same pass conditions.
 Ask for a plain-text final report naming the last completed read and
 the reason work stopped. The prompt must not supply a read result or
 claim that a stop occurred. Require a fresh Chase GO before dispatch.
+
+GO — Codex independent Chase — 2026-11-25 — Llama final-report retry at `ef4fd95`.
