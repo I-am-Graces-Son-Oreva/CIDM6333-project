@@ -89,3 +89,24 @@ witness have the narrower evidence described above.
 | `71723ec` | M3: add Fifth Pick identity registry and authorization |
 | `ff8b6a4` | M2: add Fifth Pick domain models receipts and storage |
 | `8c7d01e` | M1: establish Fifth Pick health-only control plane |
+
+## Codex and OpenCode audit scope
+
+The [AI log](../AI_LOG.md) records Codex participation in course
+development. The local Codex archive contained Fifth Pick work and
+references to the implementation commits. A structured search of
+41 available Codex session files found no paired Git commit tool call
+and completion result matching the source inventory. The
+[search summary](evidence/codex-commit-search.json) reports that narrow
+test. It is not an authorship finding. A commit mention in a transcript,
+an edit to the same path, or a later test does not identify the exact
+bytes that landed.
+
+The strongest retrieved build-provenance link remains the OpenCode M1
+Git receipt. The strongest exact-tree verification link is
+`f39cf82`: the [M11 gate log](../final-project/docs/fifth-pick/gates.md#m11-offline-course-closeout--november-18-2026)
+identifies a clean checkout of that hash, 595 passing unit tests, four
+focused checks, and the 30-receipt offline demo. It also records PASS
+for a review of the staged changes. A sanitized source-edit session
+bound to the resulting commit, a matching per-commit ledger event,
+and a historical eval-gate receipt are still missing from this chain.
