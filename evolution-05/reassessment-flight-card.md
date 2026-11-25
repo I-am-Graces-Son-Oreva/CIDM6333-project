@@ -17,4 +17,4 @@ disclosed key falsifies the witness. A missing compatible runtime aborts.
 
 ## CHASE
 
-Pending.
+GO — Codex independent Chase — 2026-11-25 — 39a3d54
