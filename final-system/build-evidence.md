@@ -22,7 +22,27 @@ result to establish a governed build.
   tested. A later rerun can verify current behavior. Neither establishes
   that an earlier commit passed every required gate before it landed.
 
+## M9 historical trace
+
+Commit `60fd576` contains the result-settlement implementation. The
+[recovered OpenCode projection](evidence/m9-session-projection.json)
+links the original controller and reviewer sessions to selected source
+records with part IDs, timestamps, and hashes. No conversation content
+was exported. The controller's later record names the commit and the
+reviewer record contains the recorded PASS. A completed tool event
+independently records the unittest output for 424 tests.
+
+The tool event and Reviewer record precede the commit. The surviving
+records do not bind both to the exact committed tree. No matching
+per-commit ledger event or separate eval receipt was recovered. This is
+a partial trace. The M9 reference in the [gate log](../final-project/docs/fifth-pick/gates.md#m10-phase-2-bounded-correction-pass)
+also identifies the original records.
+
 ## Source and script commits
+
+Every row below lacks a verified complete per-commit chain. M9 is
+the recovered partial trace above. The offline checkpoint and M10
+witness have the narrower evidence described above.
 
 | Commit | Recorded summary |
 | --- | --- |

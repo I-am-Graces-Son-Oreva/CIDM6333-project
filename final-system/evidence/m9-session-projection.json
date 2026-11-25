@@ -1,0 +1,54 @@
+{
+  "commit": "60fd5764c1588f2730fb824c2da252f016903790",
+  "records": [
+    {
+      "kind": "review_narrative",
+      "session_id": "ses_e14b54779ffebdBI11EtBPvtE2",
+      "part_id": "prt_1eb4bfc630015l2QimZbh07M6O",
+      "utc": "2026-11-17T20:56:28.003000+00:00",
+      "model_id": "gpt-6-luna",
+      "provider_id": "opencode-go",
+      "part_type": "text",
+      "tool_status": null,
+      "matched_signal": "PASS",
+      "part_sha256": "b1910d6f6ef3792632b6440fcea4ca02025219b211c300cf7eda8def7be46e8b"
+    },
+    {
+      "kind": "controller_gate_summary",
+      "session_id": "ses_e1833d963ffeQQqHHZxX0cWhEs",
+      "part_id": "prt_1eb4c607d001oeq7L798eYIrw9",
+      "utc": "2026-11-17T20:56:53.630000+00:00",
+      "model_id": "gpt-6-luna",
+      "provider_id": "opencode-go",
+      "part_type": "text",
+      "tool_status": null,
+      "matched_signal": "424",
+      "part_sha256": "d12911210c3982d9ead4377811dd2aac45983dfe94f6dfdde495a7eb87f4060d"
+    },
+    {
+      "kind": "controller_commit_summary",
+      "session_id": "ses_e1833d963ffeQQqHHZxX0cWhEs",
+      "part_id": "prt_1eb59e04f0010WasVj7q6ehKha",
+      "utc": "2026-11-17T21:11:38.345000+00:00",
+      "model_id": null,
+      "provider_id": null,
+      "part_type": "text",
+      "tool_status": null,
+      "matched_signal": "60fd576",
+      "part_sha256": "9f503fb050329965add82f51787bdf6fc616e9784372c735ff1eaa9e486d4f90"
+    },
+    {
+      "kind": "observed_unittest_tool_output",
+      "session_id": "ses_e1833d963ffeQQqHHZxX0cWhEs",
+      "part_id": "prt_1eb46b481001RMwfPzmNaDc11g",
+      "utc": "2026-11-17T20:50:41.921000+00:00",
+      "model_id": "gpt-6-luna",
+      "provider_id": "opencode-go",
+      "part_type": "tool",
+      "tool_status": "completed",
+      "matched_signal": "Ran 424 tests",
+      "part_sha256": "c199aacd448e6d8bbf8f3d820e75d7558b4ef93719f650eb6a137ff89498132b"
+    }
+  ],
+  "scope": "Selected metadata from read-only OpenCode storage. Raw conversation and tool content omitted. No per-commit ledger event or eval receipt recovered."
+}
