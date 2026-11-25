@@ -1,0 +1,55 @@
+{
+  "frozen_target": "d7c5678",
+  "go_commit": "5f34935",
+  "before_sha256": {
+    "review_record.py": "71879d4be97cb41052661376fd8e58247863f831c1e22be97b678551234e53d8",
+    "owner-flight-card.md": "2cdf6df936335bd9e1c17c86f8eac0ea9ada9136ae8bd9d699eef2ec96c53d4d",
+    "reviewer-cards-and-go.md": "668bc70a964d43f048a146ada217eaad6f8ca34f8eb17b13def05907a65e22eb",
+    "A4-incomplete.json": "d1d9fff759cc06c8d4c2edb3e8178ec27f82a68a3cf3b5dda0bc45a70edc2a5b",
+    "A5-contradiction.json": "6a9a2447df8d3d73879684020bc3d32c02f46ebec0308bf7352c7bc8bcba1f4a",
+    "control.json": "26e194b6a755dc3626194057c9b65f1f085df5cc0601388c1dcc7fda669417de"
+  },
+  "after_sha256": {
+    "review_record.py": "71879d4be97cb41052661376fd8e58247863f831c1e22be97b678551234e53d8",
+    "owner-flight-card.md": "2cdf6df936335bd9e1c17c86f8eac0ea9ada9136ae8bd9d699eef2ec96c53d4d",
+    "reviewer-cards-and-go.md": "668bc70a964d43f048a146ada217eaad6f8ca34f8eb17b13def05907a65e22eb",
+    "A4-incomplete.json": "d1d9fff759cc06c8d4c2edb3e8178ec27f82a68a3cf3b5dda0bc45a70edc2a5b",
+    "A5-contradiction.json": "6a9a2447df8d3d73879684020bc3d32c02f46ebec0308bf7352c7bc8bcba1f4a",
+    "control.json": "26e194b6a755dc3626194057c9b65f1f085df5cc0601388c1dcc7fda669417de"
+  },
+  "receipts": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "review_record.py",
+        "A4-incomplete.json"
+      ],
+      "exit_status": 1,
+      "stdout": "{\"status\": \"BLOCKED\", \"reason\": \"INCOMPLETE_EVIDENCE\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "review_record.py",
+        "A5-contradiction.json"
+      ],
+      "exit_status": 1,
+      "stdout": "{\"status\": \"BLOCKED\", \"reason\": \"CONTRADICTORY_EVIDENCE\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "review_record.py",
+        "control.json"
+      ],
+      "exit_status": 0,
+      "stdout": "{\"status\": \"ACCEPTED\", \"reason\": \"EVIDENCE_CONSISTENT\"}\n",
+      "stderr": ""
+    }
+  ]
+}
