@@ -57,3 +57,10 @@ additional tool call. This is direct evidence that the smaller configured
 limit was reached. The runs used different models, so the comparison
 does not isolate the setting as the sole cause of the observed difference.
 The lower-limit run's missing user-facing explanation remains a FAIL.
+
+### Native rerun with Qwen
+
+Use local Qwen3 4B in OpenCode 1.18.20 with the same read-only chain,
+configuration limit, and criteria as attempt 2. A missing explicit
+step-limit explanation still fails. Disable thinking to keep the response
+within the output budget. The only endpoint is the local model service.

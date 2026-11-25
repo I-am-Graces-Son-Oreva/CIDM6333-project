@@ -83,3 +83,11 @@ retrieval. The [runner](run.py.txt) preserves the executed source for review.
 **FAIL — independent Codex Chase — 2026-11-25 — ON-only retry (GO `e0e3a9c`).**
 The receipt IDs and scores establish retrieval above the 0.30 threshold.
 The answer omitted all three required fields. The earlier OFF PASS stands.
+
+### Native ON rerun with Qwen
+
+Keep the prior OFF control and rerun ON with local Qwen3 4B in OpenCode
+1.18.20. Preserve the fixed retriever command, sandbox profile, preflight
+probes and exact fact, ID and source criteria. Disable thinking to keep
+the answer within the output budget. The fact and source must come from
+the retrieved record. Publish a sanitized projection only.
