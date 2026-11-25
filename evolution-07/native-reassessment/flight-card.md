@@ -68,3 +68,18 @@ fixed command and policies. The prompt supplies a numeric timeout of
 command and success criteria fixed. No further run before a fresh GO.
 
 GO — Codex independent Chase — on-only — 2026-11-25 — 9b320d8
+
+## Native outcome
+
+The [OFF control](attempt-2.json) passed 75 isolation probes, made no
+tool call and reported the fact unavailable. The [ON retry](attempt-3.json)
+passed 78 isolation probes. Three completed Bash calls used the fixed
+client and the [sanitized projection](on-retry-projection.json) records
+three returns of `m-9001`, each with score 0.6717. The model's final
+answer omitted the exact fact, record ID and source. ON therefore failed
+the answer criterion despite the successful process exit and verified
+retrieval. The [runner](run.py.txt) preserves the executed source for review.
+
+**FAIL — independent Codex Chase — 2026-11-25 — ON-only retry (GO `e0e3a9c`).**
+The receipt IDs and scores establish retrieval above the 0.30 threshold.
+The answer omitted all three required fields. The earlier OFF PASS stands.

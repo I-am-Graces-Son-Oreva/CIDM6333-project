@@ -596,3 +596,19 @@ later action and measured input reduction. The four E7 conditions passed.
 [E6/E7 ledger](evolution-06/reassessment/evidence/attempt-1/run.jsonl) ·
 [E10 witness](evolution-10/hollow-amendment.md) ·
 [E12 independent cold retry](evolution-12/evidence/chase-cold-retry.jsonl)
+
+### Native coursework witnesses and reciprocal exchange · November 25, 2026
+
+Codex prepared the E6 native threshold witness and the E7 local OpenCode
+retry. E6 used a scripted OpenAI-compatible loopback fixture to make
+provider usage and the summary deterministic. E7 used
+`ollama/llama3.2:3b` under OpenCode 1.18.20. Separate Chase agents
+reviewed the controls and the evidence. I kept the failed E7 trials
+because a completed model process cannot establish file isolation or
+successful retrieval. The independent agent partner authored and ran
+the separate reciprocal target. Codex, delegated by Joseph, wrote its
+two probes, recorded GO and issued a verdict from the owner's receipts.
+The [E6 record](evolution-06/native-reassessment/flight-card.md),
+[E7 record](evolution-07/native-reassessment/flight-card.md), and
+[reciprocal review](evolution-11/reciprocal/chase-review.md) retain those
+distinctions.

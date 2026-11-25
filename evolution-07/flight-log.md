@@ -116,3 +116,11 @@ after eviction. [Condition results](../evolution-06/reassessment/evidence/attemp
 The Chase's E7 PASS applies to the alternate harness. It does not supply
 missing OpenCode or OS-isolation evidence. The combined trial's separate
 E6 control failed on its first attempt.
+
+## Reassessment · Native OpenCode retrieval
+
+OpenCode 1.18.20 with local Llama passed the OFF control. The ON retry
+passed isolation and reached the retriever, which returned the expected
+record ID. The model’s answer omitted the exact synthetic fact, the
+record ID and the source. The native answer criterion remains failed.
+[Card and retained evidence](native-reassessment/flight-card.md).

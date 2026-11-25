@@ -1,0 +1,43 @@
+{
+  "tool_calls": [
+    {
+      "tool": "bash",
+      "status": "error",
+      "is_fixed_thin_client_query": false
+    },
+    {
+      "tool": "bash",
+      "status": "completed",
+      "is_fixed_thin_client_query": true
+    },
+    {
+      "tool": "bash",
+      "status": "completed",
+      "is_fixed_thin_client_query": true
+    },
+    {
+      "tool": "bash",
+      "status": "completed",
+      "is_fixed_thin_client_query": true
+    }
+  ],
+  "recall_events": [
+    {
+      "schema": "e7-memory-v2",
+      "top_id": "m-9001",
+      "top_score": 0.6717
+    },
+    {
+      "schema": "e7-memory-v2",
+      "top_id": "m-9001",
+      "top_score": 0.6717
+    },
+    {
+      "schema": "e7-memory-v2",
+      "top_id": "m-9001",
+      "top_score": 0.6717
+    }
+  ],
+  "final_answer_sha256": "534865620a6a12e223aeaa430ec9421d0b69079aaabd5fa657f8f955f357539b",
+  "final_answer_bytes": 56
+}

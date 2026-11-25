@@ -1,0 +1,35 @@
+{
+  "on": {
+    "code": 0,
+    "session_ids": [
+      "ses_decd7f434ffeUtYTejo6UouRgE"
+    ],
+    "isolation_passed": true,
+    "isolation_count": 78,
+    "service_unreachable_before_start": true,
+    "tools": [
+      [
+        "bash",
+        "error"
+      ],
+      [
+        "bash",
+        "completed"
+      ],
+      [
+        "bash",
+        "completed"
+      ],
+      [
+        "bash",
+        "completed"
+      ]
+    ],
+    "exact_fact_in_answer": false,
+    "answer_reports_unavailable": false,
+    "recall_match": true,
+    "recall_score": 0.6717,
+    "cited_id": false,
+    "cited_source": false
+  }
+}
