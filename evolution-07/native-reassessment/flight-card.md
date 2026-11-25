@@ -22,3 +22,15 @@ timeout aborts.
 ## CHASE
 
 Pending.
+
+## Egress amendment
+
+NO-GO — Codex independent Chase — 2026-11-25 — 4bb87b7.
+The historical filesystem profile alone does not restrict outbound traffic.
+
+Retain its filesystem denials and append a scratch-only outbound network
+deny. Allow only loopback TCP to the local model port and, in ON only,
+the thin-client service port. Restrict the ON shell tool to the exact
+fixture query. Use isolated XDG configuration, cache and state directories,
+disable sharing and external plugins, and pass no provider credentials.
+Recheck isolation after adding the rules. No run before fresh GO.
