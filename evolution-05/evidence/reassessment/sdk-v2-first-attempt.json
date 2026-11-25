@@ -1,0 +1,8 @@
+{
+  "sdk": "2.0.0",
+  "observed_server_event": "read_success",
+  "client_error": "AttributeError",
+  "cause": "The recorder used the old isError accessor instead of the SDK v2 is_error property.",
+  "write_dispatched": false,
+  "classification": "incomplete recorder attempt"
+}

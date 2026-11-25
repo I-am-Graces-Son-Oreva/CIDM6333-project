@@ -1,0 +1,32 @@
+{
+  "sdk": "2.0.0",
+  "pin": "TP0 PASS: scope and description pins match",
+  "read_ok": true,
+  "write_result": "MCPError",
+  "before": {
+    "fixture.md": "ef1a9d2306468a5b0e1760c8d00d788fb85d821e19f69a739f1d39e4e451b267"
+  },
+  "after": {
+    "fixture.md": "ef1a9d2306468a5b0e1760c8d00d788fb85d821e19f69a739f1d39e4e451b267"
+  },
+  "events": [
+    {
+      "event": "read_success",
+      "tool": "read_note",
+      "subject": "synthetic-e5-reader",
+      "validated_scopes": [
+        "notes:read"
+      ]
+    },
+    {
+      "event": "scope_denied",
+      "tool": "write_note",
+      "subject": "synthetic-e5-reader",
+      "reason": "insufficient_scope",
+      "required_scope": "notes:write",
+      "validated_scopes": [
+        "notes:read"
+      ]
+    }
+  ]
+}

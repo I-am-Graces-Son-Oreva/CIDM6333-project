@@ -22,7 +22,19 @@ class FixtureModel(BaseHTTPRequestHandler):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         names = [tool["function"]["name"] for tool in body.get("tools", [])]
         turns = sum(message["role"] == "tool" for message in body["messages"])
-        observations.append({"turn": turns, "edit_exposed": "edit" in names})
+        request_text = json.dumps(body["messages"])
+        stage = "unknown"
+        if "TP4 STAGE B" in request_text:
+            stage = "reviewer"
+        elif "Do not return a review" in request_text and "verdict in Stage A" in request_text:
+            stage = "challenge"
+        observations.append({
+            "stage": stage,
+            "turn": turns,
+            "read_exposed": "read" in names,
+            "edit_exposed": "edit" in names,
+            "write_exposed": "write" in names,
+        })
         if turns == 0 and "edit" in names:
             delta = {
                 "tool_calls": [
@@ -126,6 +138,9 @@ with (
         )
     after = hashlib.sha256(target.read_bytes()).hexdigest()
     assert before == after and verdict.status == "FAIL"
+    reviewer = [row for row in observations if row["stage"] == "reviewer"]
+    assert reviewer and all(not row["edit_exposed"] and not row["write_exposed"] for row in reviewer)
+    assert any(row["stage"] == "challenge" and row["edit_exposed"] for row in observations)
     print(
         json.dumps(
             {

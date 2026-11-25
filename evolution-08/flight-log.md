@@ -360,3 +360,14 @@ request from that route. Tool withholding and request denial are distinct
 observables. The Chase PASS is scoped to the registered challenge and
 separate review, and the earlier attempt records remain the source for
 their own runtime observations.
+
+### Native Reviewer tool exposure · November 25, 2026
+
+The [role-correlated probe](evidence/reassessment/tool-exposure.json)
+observed OpenCode 1.18.20's outgoing tool schemas against the existing
+scripted loopback fixture. In the tool-bearing challenge request, read,
+edit and write were exposed. In the tool-bearing Reviewer request, read
+was exposed and edit and write were withheld. The before and after fixture
+hashes match. The scripted Reviewer result is not a live model judgment,
+and the Reviewer submitted no write request. This verifies withholding
+on the named E8 Reviewer route.

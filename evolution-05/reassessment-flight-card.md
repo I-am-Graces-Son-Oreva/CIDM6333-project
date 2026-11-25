@@ -18,3 +18,22 @@ disclosed key falsifies the witness. A missing compatible runtime aborts.
 ## CHASE
 
 GO — Codex independent Chase — 2026-11-25 — 39a3d54
+
+## Native evidence
+
+The [first attempt](evidence/reassessment/sdk-v2-first-attempt.json)
+reached the server read, then stopped on a client SDK v2 field-access
+error before the write request. The retry corrected the result accessor.
+It left the scope, input, configuration, and criteria fixed.
+
+The [retry record](evidence/reassessment/sdk-v2-observed.json) includes
+a successful read, the server's named scope denial for the same subject,
+and identical before-and-after fixture hashes. The SDK result did not
+supply the verdict by itself. The server-side event established it.
+
+PASS — Codex independent Chase — 2026-11-25 — E5 SDK 2.0.0 local synthetic witness (GO 97a9a75).
+
+The server allowed the read and denied the write for the same read-only
+subject. The pin matched scope and description, and the exact file hash
+and directory manifest stayed unchanged. The verdict covers the
+deterministic SDK authorization boundary. It does not cover agent dispatch.
