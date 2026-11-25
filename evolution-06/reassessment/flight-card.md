@@ -29,3 +29,22 @@ preserves the original OpenCode E6 evidence and E7 aborts.
 GO — Codex independent Chase — 2026-11-24 — e6147aa
 
 Scope: alternate local E6/E7 controls.
+
+## Attempt 1 outcome
+
+Independent Chase FAIL overall. Llama answered the future action on turn
+one when the executable preregistration expected READY. The same project
+session later returned the expected action after compaction at 68 input
+tokens, down from 925. All four E7 controls passed in the alternate harness.
+The [ledger](evidence/attempt-1/run.jsonl) and [recall events](evidence/attempt-1/recall.jsonl)
+preserve the observed outcomes.
+
+## E6-only amendment
+
+Keep the exact original E6 success criteria. Disambiguate the first turn
+prompt by separating the plan for a later turn from the immediate READY
+response in the same message. Run only the E6 pair with `--e6-only`. E7
+retains attempt 1. The trigger remains a forced compaction for this witness,
+so this does not test automatic threshold crossing.
+
+Chase decision pending for the E6-only amendment.

@@ -1,0 +1,5 @@
+{"event": "remember", "schema": "e7-memory-v2", "date": "2026-11-25", "id": "m-0001", "source": "synthetic museum fixture", "supersedes": null}
+{"event": "recall", "schema": "e7-memory-v2", "date": "2026-11-25", "question": "What is the museum access identifier?", "results": [{"id": "m-0001", "source": "synthetic museum fixture", "score": 0.4404}], "top_id": "m-0001", "top_source": "synthetic museum fixture", "top_score": 0.4404}
+{"event": "recall", "schema": "e7-memory-v2", "date": "2026-11-25", "question": "What is the orchid greenhouse temperature?", "results": [], "top_id": null, "top_source": null, "top_score": null}
+{"event": "evict", "schema": "e7-memory-v2", "date": "2026-11-25", "id": "m-0001", "reason": "retention_expired", "effective_date": "2026-12-01"}
+{"event": "recall", "schema": "e7-memory-v2", "date": "2026-11-25", "question": "What is the museum access identifier?", "results": [], "top_id": null, "top_source": null, "top_score": null}

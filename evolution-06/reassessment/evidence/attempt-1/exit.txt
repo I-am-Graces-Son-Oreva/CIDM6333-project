@@ -1,0 +1,2 @@
+exit_status=1
+E6 first answer diverged; all four E7 condition assertions passed.

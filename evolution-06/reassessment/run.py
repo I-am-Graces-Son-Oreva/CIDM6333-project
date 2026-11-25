@@ -43,18 +43,27 @@ def item(text: str) -> dict[str, str]:
     return {"role": "user", "content": text}
 
 
-def run(output: Path) -> None:
+def run(output: Path, e6_only: bool = False) -> None:
     card = Path(__file__).with_name("flight-card.md").read_text()
     status = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT)
     if "\nGO — Codex independent Chase" not in card or status:
         raise ValueError("committed GO and a clean checkout are required")
+    if e6_only and "GO — Codex independent Chase — E6-only" not in card:
+        raise ValueError("a fresh E6-only GO is required")
     output.mkdir()
     ledger = RuntimeLedger(output / "run.jsonl")
     action = "VERIFY_AMBER"
     session = uuid4().hex
     disposable = "The synthetic museum opened on Monday. " * 125
     keep = f"The exact next action is {action}. Return that exact action when asked."
-    before = ask([item(disposable), item(f"{keep} Acknowledge with READY as your answer.")])
+    if e6_only:
+        before = ask([item(
+            f"For a later turn, retain this plan: {action}. "
+            f"The following history is disposable: {disposable} "
+            "For this initial turn only, return READY in the JSON answer field."
+        )])
+    else:
+        before = ask([item(disposable), item(f"{keep} Acknowledge with READY as your answer.")])
     meter = record_turn_budget(ledger, session, 1, before["input"], before["output"])
     retained = compact([disposable], ledger, meter["total"], keep=[keep])
     after = ask([item(retained), item("Return the exact next action.")])
@@ -64,6 +73,11 @@ def run(output: Path) -> None:
     )
     ledger.append(dict(event="continuation", session=session, before=before, after=after,
                        passed=continued))
+
+    if e6_only:
+        if not continued:
+            raise ValueError("E6 preregistered observables failed")
+        return
 
     spec = importlib.util.spec_from_file_location("e7_recall", SOURCE)
     assert spec is not None and spec.loader is not None
@@ -105,4 +119,4 @@ def run(output: Path) -> None:
 
 
 if __name__ == "__main__":
-    run(Path(sys.argv[1]))
+    run(Path(sys.argv[1]), e6_only=sys.argv[2:] == ["--e6-only"])

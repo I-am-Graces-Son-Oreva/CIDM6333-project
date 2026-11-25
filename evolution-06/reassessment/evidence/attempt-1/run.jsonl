@@ -1,0 +1,8 @@
+{"action": "nothing", "budget": 8000, "event": "turn_budget", "in": 925, "out": 11, "pct": 12, "session": "f2a7f635c7594486bc26c392e39ac254", "total": 936, "turn": 1}
+{"after": 46, "before": 936, "event": "compaction", "kept": ["The exact next action is VERIFY_AMBER. Return that exact action when asked."]}
+{"action": "nothing", "budget": 8000, "event": "turn_budget", "in": 68, "out": 11, "pct": 1, "session": "f2a7f635c7594486bc26c392e39ac254", "total": 79, "turn": 2}
+{"after": {"answer": "VERIFY_AMBER", "input": 68, "output": 11}, "before": {"answer": "VERIFY_AMBER", "input": 925, "output": 11}, "event": "continuation", "passed": false, "session": "f2a7f635c7594486bc26c392e39ac254"}
+{"answer": {"answer": "UNKNOWN", "input": 59, "output": 7}, "condition": "off", "event": "memory_answer", "expected": "UNKNOWN", "memory_ids": [], "passed": true}
+{"answer": {"answer": "15541C3380", "input": 67, "output": 11}, "condition": "on", "event": "memory_answer", "expected": "15541C3380", "memory_ids": ["m-0001"], "passed": true}
+{"answer": {"answer": "UNKNOWN", "input": 60, "output": 7}, "condition": "absent", "event": "memory_answer", "expected": "UNKNOWN", "memory_ids": [], "passed": true}
+{"answer": {"answer": "UNKNOWN", "input": 59, "output": 7}, "condition": "evicted", "event": "memory_answer", "expected": "UNKNOWN", "memory_ids": [], "passed": true}
