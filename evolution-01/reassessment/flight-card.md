@@ -46,3 +46,14 @@ produce the required explicit explanation that the step limit left the
 chain incomplete. Exit 0 does not prove the explanation. This witness
 establishes the lower read count and leaves the older five-step verdict
 unchanged. [Trace projection](attempt-2.json) · [Fixture digests](fixture-digests.json)
+
+### Configured-limit comparison
+
+The [original native export](../evidence/tp2-sanitized.json) contains five
+step starts, four completed reads and a final stop. The
+[lower-limit export](attempt-2.json) contains three step starts, two
+completed reads and a final stop. In both cases, the last step made no
+additional tool call. This is direct evidence that the smaller configured
+limit was reached. The runs used different models, so the comparison
+does not isolate the setting as the sole cause of the observed difference.
+The lower-limit run's missing user-facing explanation remains a FAIL.

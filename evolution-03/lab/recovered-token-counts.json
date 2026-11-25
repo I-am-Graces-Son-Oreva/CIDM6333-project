@@ -1,0 +1,58 @@
+{
+  "source": "Read-only OpenCode message and part records",
+  "scope": "Same-prompt candidate pairs for historical lab. The retained report does not identify the pair it used.",
+  "messages": [
+    {
+      "message_id": "msg_0cc39c50d001sJ6wb7mbR14Xs4",
+      "session_id": "ses_f33c63b32ffeFsULZ5jZpVUkIS",
+      "observed_utc": "2026-09-23 03:05:33Z",
+      "model": "big-pickle",
+      "provider": "opencode",
+      "prompt_sha256": "ef7e7ff96d04cdcdb9a405d5319bdc1b52adabc168eea9179dfc1352aad79231",
+      "uncached_input": 6738,
+      "cache_read": 1792,
+      "cache_write": 0,
+      "total_input": 8530
+    },
+    {
+      "message_id": "msg_0cc40529b001r63lHm5655zwF9",
+      "session_id": "ses_f33bfada4ffeaYXLt1TymNa0dM",
+      "observed_utc": "2026-09-23 03:12:42Z",
+      "model": "big-pickle",
+      "provider": "opencode",
+      "prompt_sha256": "ef7e7ff96d04cdcdb9a405d5319bdc1b52adabc168eea9179dfc1352aad79231",
+      "uncached_input": 6928,
+      "cache_read": 1792,
+      "cache_write": 0,
+      "total_input": 8720
+    },
+    {
+      "message_id": "msg_0cc4b4791001HUMp5P1NBg3EV5",
+      "session_id": "ses_f33b4b8adffeptVqntGMEd7hVt",
+      "observed_utc": "2026-09-23 03:24:40Z",
+      "model": "big-pickle",
+      "provider": "opencode",
+      "prompt_sha256": "ef7e7ff96d04cdcdb9a405d5319bdc1b52adabc168eea9179dfc1352aad79231",
+      "uncached_input": 6738,
+      "cache_read": 1792,
+      "cache_write": 0,
+      "total_input": 8530
+    },
+    {
+      "message_id": "msg_0cc4debc7001EnDwOy4dA6rOsk",
+      "session_id": "ses_f33b21475ffezktJhoo5Pc4NjD",
+      "observed_utc": "2026-09-23 03:27:33Z",
+      "model": "big-pickle",
+      "provider": "opencode",
+      "prompt_sha256": "ef7e7ff96d04cdcdb9a405d5319bdc1b52adabc168eea9179dfc1352aad79231",
+      "uncached_input": 6912,
+      "cache_read": 1792,
+      "cache_write": 0,
+      "total_input": 8704
+    }
+  ],
+  "pair_deltas": [
+    190,
+    174
+  ]
+}

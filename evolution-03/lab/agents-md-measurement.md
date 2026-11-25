@@ -36,3 +36,41 @@ If each value was rounded to the nearest 100, the difference could range
 from about 100 to 300 tokens. Session identifiers for that before/after
 pair are absent from this record, so an exact provider-counter difference
 is unverified. The original partner verdict remains pending.
+
+### Recovered exact counters
+
+A read-only inspection of OpenCode's retained message records found two
+chronological pairs of Big Pickle calls with the same single-word prompt
+and matching rounded display counts. The original worksheet did not record
+the IDs needed to identify which pair it used.
+
+| Candidate pair (UTC, September 23, 2026) | Baseline candidate | With-file candidate | Exact observed difference |
+|---|---:|---:|---:|
+| 03:05:33 → 03:12:42 | 8,530 | 8,720 | +190 |
+| 03:24:40 → 03:27:33 | 8,530 | 8,704 | +174 |
+
+The [sanitized measurement receipt](recovered-token-counts.json) preserves
+session and message IDs, prompt hashes, and exact counters. Input includes
+uncached and cache-read tokens. Cache writes were zero and output is excluded.
+The exact observed differences corroborate the estimate of about 200 tokens.
+The original record cannot bind either pair to the reported file toggle.
+
+### Carry-forward question
+
+The current rule has an enforcement point in
+[`_finalize_locked_slate`](../../../final-project/src/fifth_pick/finalization.py).
+When finalization has no blocking reasons and the proposed set is empty,
+Python assigns `NO_ENTRY` and the exact recommendation text. A blocked
+finalization follows a separate branch. The
+[zero-game regression test](../../../final-project/tests/test_finalization.py)
+asserts both the state and the exact sentence.
+
+### Independent reassessment verdict
+
+**Scoped PASS — Codex independent Chase — November 25, 2026 — `8b2cbc9`.**
+The 852-byte file passed the budget and concise-pointer check. It explicitly
+marked the admission rule as unenforced and pointed to GHI #1. The
+first-use definition instruction provides a specific output reviewers can
+check. The recorded read check correctly found no test command. This
+archival verdict covers the three probes. The original partner's
+confirmation remains pending.
