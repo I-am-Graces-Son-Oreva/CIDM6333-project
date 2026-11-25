@@ -24,5 +24,7 @@ with no container or model-dependent smoke.
 
 ## CHASE
 
-Pending. The independent Chase reviews evidence and exercises the
+GO — Codex independent Chase — 2026-11-24 — ee542f2
+
+The independent Chase reviews evidence and exercises the
 runbook's rollback in a scratch environment before issuing a verdict.
