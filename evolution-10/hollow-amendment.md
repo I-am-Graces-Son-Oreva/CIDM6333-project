@@ -17,4 +17,6 @@ answers the instructor's question about a hollow case.
 
 ## CHASE
 
-Pending review before the witness.
+GO — Codex independent Chase — 2026-11-24 — 7cf3f86
+
+Scope: review the one-case mutation and unchanged original corpus.
