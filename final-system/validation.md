@@ -1,7 +1,5 @@
 # Instructor validation task card
 
-## Hand this section to the instructor
-
 **Role.** An NBA fantasy participant who wants to apply a consistent
 screen before deciding whether to enter a slate.
 
