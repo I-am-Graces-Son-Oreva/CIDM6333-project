@@ -54,3 +54,15 @@ null values. This does not change the expected OFF/ON outcomes or the
 file and network policy. No retry before fresh GO.
 
 GO — Codex independent Chase — retry — 2026-11-25 — 3b34028
+
+## ON-only schema repair
+
+The [second attempt](attempt-2.json) verified isolation in both conditions.
+OFF reported the fact unavailable and made no tool call. ON attempted
+two native Bash calls but both were rejected because Llama emitted null
+for the numeric timeout. No retrieval reached the service.
+
+Keep the passing OFF evidence. Re-run ON alone using the same model,
+fixed command and policies. The prompt supplies a numeric timeout of
+30,000 ms and the exact scratch working directory, leaving the requested
+command and success criteria fixed. No further run before a fresh GO.
