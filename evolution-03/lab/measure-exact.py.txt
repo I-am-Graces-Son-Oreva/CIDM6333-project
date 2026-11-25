@@ -1,0 +1,61 @@
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+
+original = subprocess.check_output(['git', 'show', '8b2cbc9:AGENTS.md'])
+assert len(original) == 852
+with tempfile.TemporaryDirectory(prefix='cidm-lab-pair-') as scratch:
+    root = Path(scratch)
+    repo = root / 'repo'
+    repo.mkdir()
+    subprocess.run(['git', 'init', '-q'], cwd=repo, check=True)
+    agents = repo / '.opencode' / 'agents'
+    agents.mkdir(parents=True)
+    (agents / 'lab-meter.md').write_text('---\ndescription: Lab measurement assistant\nmode: primary\nsteps: 1\n---\nAnswer briefly without tools.\n')
+    model = 'llama3.2:3b'
+    env = {
+        'PATH': os.environ['PATH'],
+        'HOME': str(root),
+        'OPENCODE_DISABLE_MODELS_FETCH': '1',
+        'OPENCODE_DISABLE_AUTOUPDATE': '1',
+        **{f'XDG_{key}_HOME': str(root / key.lower()) for key in ('CONFIG','DATA','CACHE','STATE')},
+        'OPENCODE_CONFIG_CONTENT': json.dumps({
+            'share': 'disabled',
+            'enabled_providers': ['ollama'],
+            'provider': {'ollama': {
+                'npm': '@ai-sdk/openai-compatible',
+                'name': 'Local Ollama',
+                'options': {'baseURL': 'http://127.0.0.1:11434/v1'},
+                'models': {model: {'name': model, 'limit': {'context': 8192, 'output': 192}}},
+            }},
+            'permission': {'*': 'deny'},
+        }),
+    }
+    profile = '(version 1) (allow default) (deny network-outbound) (allow network-outbound (remote tcp "localhost:11434"))'
+    prompt = 'Reply with the single word OK.'
+    observations = []
+    for with_file in (False, True):
+        path = repo / 'AGENTS.md'
+        if with_file:
+            path.write_bytes(original)
+        assert path.exists() == with_file
+        proc = subprocess.run(
+            ['/usr/bin/sandbox-exec','-p',profile,'opencode','run','--pure','--format','json','--agent','lab-meter','--model',f'ollama/{model}',prompt],
+            cwd=repo, env=env, capture_output=True, check=True, timeout=180,
+        )
+        rows = [json.loads(line) for line in proc.stdout.splitlines()]
+        assert not any(row['type'] in ('tool_use', 'error') for row in rows)
+        event, = [row for row in rows if row['type'] == 'step_finish']
+        tokens = event['part']['tokens']
+        observations.append({
+            'file_present': with_file, 'file_sha256': hashlib.sha256(original).hexdigest() if with_file else None,
+            'session_id': event['sessionID'], 'tokens': tokens,
+            'input_total': tokens['input'] + sum(tokens['cache'].values()),
+        })
+    assert observations[0]['session_id'] != observations[1]['session_id']
+    print(json.dumps({'model':f'ollama/{model}', 'opencode_version':subprocess.check_output(['opencode','--version'], text=True).strip(),
+        'prompt':prompt,'source_commit':'8b2cbc9','observations':observations,
+        'input_delta':observations[1]['input_total'] - observations[0]['input_total']}, indent=2))

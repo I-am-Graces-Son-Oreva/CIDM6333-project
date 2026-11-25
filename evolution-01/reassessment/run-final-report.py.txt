@@ -1,0 +1,64 @@
+import json, os, shutil, subprocess, tempfile
+from pathlib import Path
+root=Path.cwd()
+card=(root/'evolution-01/reassessment/flight-card.md').read_text()
+assert '9c7505e (layout-only amendment)' in card
+scratch=Path(tempfile.mkdtemp(prefix='cidm-e1-limit-'))
+print(scratch,flush=True)
+checkout=scratch/'repo'
+checkout.mkdir()
+shutil.copytree(root/'evolution-01/fixtures',checkout/'evolution-01/fixtures')
+personas=checkout/'.opencode/agents'
+personas.mkdir(parents=True)
+personas.joinpath('e1-low-limit.md').write_text("""---
+description: Graduate triage lower-step course witness
+mode: primary
+model: ollama/llama3.2:3b
+steps: 3
+---
+Read one link at a time using the read tool. Follow the next path stated by
+each file. If the step limit prevents more reads, report which files were
+read and say that the chain is incomplete. Never claim an unread file.
+""")
+env={
+    'PATH':os.environ['PATH'],
+    'OPENCODE_DISABLE_MODELS_FETCH':'1',
+    'OPENCODE_DISABLE_AUTOUPDATE':'1',
+    **{f'XDG_{k}_HOME':str(scratch/k.lower()) for k in ('CONFIG','DATA','CACHE','STATE')},
+    'OPENCODE_CONFIG_CONTENT':json.dumps({
+        'share':'disabled','enabled_providers':['ollama'],
+        'provider':{'ollama':{'npm':'@ai-sdk/openai-compatible','name':'Ollama',
+            'options':{'baseURL':'http://127.0.0.1:11434/v1'},
+            'models':{'llama3.2:3b':{'name':'Local Llama','limit':{'context':8192,'output':192}}}}},
+        'permission':{'*':'deny','read':{'*':'deny','evolution-01/fixtures/*':'allow'},'external_directory':'deny'}
+    }),
+}
+subprocess.run(['git','init','-q'],cwd=checkout,check=True)
+with (scratch/'raw.jsonl').open('w') as stdout,(scratch/'stderr.txt').open('w') as stderr:
+    try:
+        code=subprocess.run(['/usr/bin/sandbox-exec','-p','(version 1) (allow default) (deny network-outbound) (allow network-outbound (remote tcp "localhost:11434"))','opencode','run','--pure','--format','json','--agent','e1-low-limit',
+            '--model','ollama/llama3.2:3b','--title','E1 lower-step witness',
+            'Start with evolution-01/fixtures/step-1.txt. Follow the pointer chain using only the read tool. When you finish, write a plain-text report naming the last file you actually read and explaining why you stopped. If work is incomplete, say so explicitly.'],
+            cwd=checkout,env=env,stdout=stdout,stderr=stderr,timeout=260).returncode
+    except subprocess.TimeoutExpired:
+        code=124
+events=[]
+for line in (scratch/'raw.jsonl').read_text().splitlines():
+    try:
+        item=json.loads(line)
+    except ValueError:
+        continue
+    kind=item.get('type')
+    p=item.get('part',{})
+    row={'type':kind,'timestamp':item.get('timestamp')}
+    if kind=='tool_use':
+        row.update(tool=p.get('tool'),status=p.get('state',{}).get('status'))
+    if kind=='step_finish':
+        row.update(tokens=p.get('tokens'),cost=p.get('cost'),reason=p.get('reason'))
+    if kind=='text':
+        row['text']=p.get('text','')
+    events.append(row)
+summary={'exit_status':code,'tested_steps':3,'route':'ollama/llama3.2:3b','events':events,
+         'persona':personas.joinpath('e1-low-limit.md').read_text()}
+(scratch/'observed.json').write_text(json.dumps(summary,indent=2)+'\n')
+print(json.dumps(summary,indent=2),flush=True)

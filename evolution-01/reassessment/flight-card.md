@@ -81,3 +81,10 @@ the reason work stopped. The prompt must not supply a read result or
 claim that a stop occurred. Require a fresh Chase GO before dispatch.
 
 GO — Codex independent Chase — 2026-11-25 — Llama final-report retry at `ef4fd95`.
+
+The [Llama final-report retry](attempt-4.json) stopped after two steps.
+It completed only the read of step 1. Its report claimed step 2 was read
+and step 3 was absent. The tool trace contradicts the first claim, and
+byte checks confirmed all eight files were present. The attempt fails
+both the read-count and explanation criteria. Attempt 2 remains the
+evidence for the three-step runtime boundary.

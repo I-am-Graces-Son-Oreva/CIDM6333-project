@@ -1,0 +1,23 @@
+{
+  "model": "ollama/llama3.2:3b",
+  "opencode_version": "1.18.20",
+  "source_commit": "8b2cbc9",
+  "prompt": "Reply with the single word OK.",
+  "observations": [
+    {
+      "file_present": false,
+      "file_sha256": null,
+      "session_id": "ses_dec969c76ffepmbVVqY3R9K9c1",
+      "tokens": {"total": 372, "input": 371, "output": 1, "reasoning": 0, "cache": {"write": 0, "read": 0}},
+      "input_total": 371
+    },
+    {
+      "file_present": true,
+      "file_sha256": "80227e1551251f11b67b8556843ffc2bcfffdd875c2852fb1023d5da0d9434a4",
+      "session_id": "ses_dec961d5effeaTuiwbGnZIR0si",
+      "tokens": {"total": 596, "input": 595, "output": 1, "reasoning": 0, "cache": {"write": 0, "read": 0}},
+      "input_total": 595
+    }
+  ],
+  "input_delta": 224
+}

@@ -18,3 +18,12 @@ The frozen target is archived verbatim as
 [review_record.py.txt](review_record.py.txt). Copy it to
 `review_record.py` in scratch to replay the owner's commands. The
 archived bytes match the recorded `review_record.py` SHA-256.
+
+## Independent receipt replay
+
+A fresh scratch replay verified every archived SHA-256 and reproduced all
+three recorded command results, including standard output and standard
+error. Incomplete evidence exited 1 with `INCOMPLETE_EVIDENCE`. Contradictory
+evidence exited 1 with `CONTRADICTORY_EVIDENCE`. The matching control
+exited 0 with `EVIDENCE_CONSISTENT`. This verifies the submitted exercise's
+receipts. The instructor's recognition of an agent partner is still pending.

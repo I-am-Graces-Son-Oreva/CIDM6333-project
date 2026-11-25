@@ -74,3 +74,17 @@ first-use definition instruction provides a specific output reviewers can
 check. The recorded read check correctly found no test command. This
 archival verdict covers the three probes. The original partner's
 confirmation remains pending.
+
+### Controlled exact remeasurement
+
+A fresh Qwen measurement timed out. The replacement paired run used local
+Llama 3.2 3B and OpenCode 1.18.20. It sent the same prompt in two fresh
+sessions from the same scratch Git repository with tools denied. Between
+sessions it added the 852-byte `AGENTS.md` from `8b2cbc9`. The native JSON
+step counters reported **371 input tokens without the file and 595 with
+it, an exact increase of 224 tokens**. Both responses used one output
+token and neither used cached input.
+
+This measures the file's cost under the local model. The historical
+Big Pickle pair remains unidentified. [Receipt](controlled-token-counts.json)
+· [Executed measurement script](measure-exact.py.txt)
