@@ -1,0 +1,35 @@
+{
+  "off": {
+    "code": 0,
+    "session_ids": [
+      "ses_decdfeaedffenIse3Bfs6IWEtE"
+    ],
+    "isolation_passed": false,
+    "isolation_count": 53,
+    "service_unreachable_before_start": true,
+    "tools": [],
+    "exact_fact_in_answer": false,
+    "answer_reports_unavailable": false
+  },
+  "on": {
+    "code": 0,
+    "session_ids": [
+      "ses_decdedd9affejGbA5gIEu5ARzO"
+    ],
+    "isolation_passed": false,
+    "isolation_count": 67,
+    "service_unreachable_before_start": true,
+    "tools": [
+      [
+        "bash",
+        "error"
+      ]
+    ],
+    "exact_fact_in_answer": false,
+    "answer_reports_unavailable": false,
+    "recall_match": false,
+    "recall_score": null,
+    "cited_id": false,
+    "cited_source": false
+  }
+}

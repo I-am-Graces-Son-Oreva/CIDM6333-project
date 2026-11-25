@@ -36,3 +36,19 @@ disable sharing and external plugins, and pass no provider credentials.
 Recheck isolation after adding the rules. No run before fresh GO.
 
 GO — Codex independent Chase — egress — 2026-11-25 — 22e5f44
+
+## Attempt record and preflight repair
+
+The first launch aborted at profile compilation. Seatbelt requires
+`localhost` in its port-specific rule. With that spelling corrected,
+the [first model attempt](attempt-1.json) completed neither condition's
+acceptance checks. File probes reported accessible artifacts from the
+same scratch prefix, and Llama's ON Bash call was rejected by the tool
+schema before dispatch. No matching retrieval receipt was recorded.
+
+The retry uses a scratch parent outside the historical `e7-*` artifact
+discovery pattern, preserves explicit denied sibling paths, and fails
+closed before launching either condition if its filesystem probe fails.
+The prompt tells the model to omit optional Bash arguments, including
+null values. This does not change the expected OFF/ON outcomes or the
+file and network policy. No retry before fresh GO.
