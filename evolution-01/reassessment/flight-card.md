@@ -20,3 +20,16 @@ historical Big Pickle route. It does not change the historical verdict.
 ## CHASE
 
 GO — Codex independent Chase — 2026-11-25 — 2df54f3
+
+## Attempt 1 and substrate amendment
+
+Attempt 1 had one completed read and one tool error, followed by a stop
+without the required explanation. The files were copied under `fixtures/`,
+but the unchanged links specify `evolution-01/fixtures/`. The successful
+process exit does not count as a witness PASS.
+[Recorded events](attempt-1.json)
+
+The retry places the same fixture bytes at their original relative path
+and updates the single read allowlist and initial path to match. The
+route, limit, expected behavior and falsifiers are unchanged. No retry
+until the Chase records a new GO here.
