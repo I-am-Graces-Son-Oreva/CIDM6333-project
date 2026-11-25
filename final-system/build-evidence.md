@@ -110,3 +110,27 @@ focused checks, and the 30-receipt offline demo. It also records PASS
 for a review of the staged changes. A sanitized source-edit session
 bound to the resulting commit, a matching per-commit ledger event,
 and a historical eval-gate receipt are still missing from this chain.
+
+### Recovered source edits for M9
+
+The OpenCode controller session contains successful `apply_patch`
+events for files first introduced by `60fd576`. Comparing the original
+patch text to the committed blobs establishes the following overlap:
+
+| OpenCode patch | Ordered matching lines | Longest contiguous match |
+| --- | ---: | ---: |
+| Initial settlement implementation | 207 of 392 patch lines | 45 lines |
+| Replacement settlement implementation | 329 of 438 patch lines | 71 lines |
+| Settlement test suite | 321 of 369 patch lines | 46 lines |
+
+The two settlement patches are successive versions. Their counts may
+overlap. The [sanitized patch projection](evidence/m9-patch-projection.json)
+identifies the original successful tool events and hashes their stored
+records. This links actual source edits to the feature commit. The
+complete patch sequence, exact reviewed tree, historical eval receipt,
+and per-commit ledger entry remain unverified.
+
+A separate [Codex patch search](evidence/codex-patch-search.json) found
+zero full-file diff matches in the 41 available archives under its
+strict comparison rule. It did not cover scripted writes, edits that
+were subsequently revised, or sessions outside the retained archive.

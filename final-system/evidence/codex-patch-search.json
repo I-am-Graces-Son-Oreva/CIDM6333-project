@@ -1,0 +1,5 @@
+{
+  "session_files_scanned": 41,
+  "match_rule": "Successful apply_patch output and full ordered added/removed lines for that source file and commit, excluding context.",
+  "matches": []
+}
