@@ -93,3 +93,17 @@ the answer within the output budget. The fact and source must come from
 the retrieved record. Publish a sanitized projection only.
 
 GO — Codex independent Chase — 2026-11-25 — Qwen rerun at `458ceac`.
+
+The [Qwen ON run](attempt-4.json) passed all 78 isolation probes but
+stopped at its 200-token output cap without a native tool call. The
+earlier Llama run's completed tool outputs all contained the exact
+fact, ID and source. Its final answer omitted them. This identifies
+the failure after retrieval and before the final response.
+
+### Llama ON rerun with labeled final fields
+
+Return to Llama 3.2 3B. Preserve the successful OFF control, scope and
+isolation. Keep the exact native Bash invocation and evidence criteria.
+Request one invocation, then copy the three values from the returned
+tool output into labeled Fact, Memory ID and Source lines. Supply none
+of their values in the prompt. Require a fresh GO before dispatch.

@@ -1,0 +1,18 @@
+{
+  "on": {
+    "code": 0,
+    "session_ids": [
+      "ses_dec9813fbffeWOQ3hOJO3Pb7v0"
+    ],
+    "isolation_passed": true,
+    "isolation_count": 78,
+    "service_unreachable_before_start": true,
+    "tools": [],
+    "exact_fact_in_answer": false,
+    "answer_reports_unavailable": false,
+    "recall_match": false,
+    "recall_score": null,
+    "cited_id": false,
+    "cited_source": false
+  }
+}
