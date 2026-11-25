@@ -47,4 +47,4 @@ response in the same message. Run only the E6 pair with `--e6-only`. E7
 retains attempt 1. The trigger remains a forced compaction for this witness,
 so this does not test automatic threshold crossing.
 
-Chase decision pending for the E6-only amendment.
+GO — Codex independent Chase — E6-only — 2026-11-25 — bb4146c
