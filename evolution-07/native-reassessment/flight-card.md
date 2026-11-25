@@ -66,3 +66,5 @@ Keep the passing OFF evidence. Re-run ON alone using the same model,
 fixed command and policies. The prompt supplies a numeric timeout of
 30,000 ms and the exact scratch working directory, leaving the requested
 command and success criteria fixed. No further run before a fresh GO.
+
+GO — Codex independent Chase — on-only — 2026-11-25 — 9b320d8
