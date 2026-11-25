@@ -52,3 +52,5 @@ closed before launching either condition if its filesystem probe fails.
 The prompt tells the model to omit optional Bash arguments, including
 null values. This does not change the expected OFF/ON outcomes or the
 file and network policy. No retry before fresh GO.
+
+GO — Codex independent Chase — retry — 2026-11-25 — 3b34028
