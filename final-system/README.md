@@ -18,6 +18,8 @@ documents how Planner, Builder, and Reviewer support governed work.
 | Release and rollback | The [E12 trial](../evolution-12/flight-log.md) verified offline wheel rollback to version 0.1.0 at `d07383d`. The class repository’s GitHub release list was empty when checked. The grading freeze commit and its published release remain unconfirmed. Use the [deployment runbook](../docs/runbook.md) for the recorded rollback process. |
 | AI collaboration and reflection | [AI log and closeout reflection](../AI_LOG.md#final-system-closeout-reflection). |
 
+[Cold rehearsal and release-candidate receipts](cold-rehearsal.md)
+
 ## Closeout walkthrough
 
 1. Identify the instructor’s grading commit and run its documented gates.

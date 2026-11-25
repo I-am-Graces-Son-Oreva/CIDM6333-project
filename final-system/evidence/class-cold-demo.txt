@@ -1,0 +1,125 @@
+SYNTHETIC FIXTURE DEMO. All lines, times, and evidence are simulated.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ INPUT GUARD CHECK                                                            │
+├─────────┬────────────────────────────────────────────────────────────────────┤
+│ Result  │ Rejected as expected (exit 2)                                      │
+├─────────┼────────────────────────────────────────────────────────────────────┤
+│ Details │ fifth-pick analyze: error: argument --snapshot: invalid choice:    │
+│         │ '4' (choose from '1', '2')                                         │
+└─────────┴────────────────────────────────────────────────────────────────────┘
+
+Fixture A: 12 players, four games, and three snapshot stages
+┌──────────┬───────────────────────────┬──────────────┐
+│ Snapshot │ Observed at (UTC)         │ Observations │
+├──────────┼───────────────────────────┼──────────────┤
+│ 1        │ 2026-11-15T14:00:00+00:00 │ 15           │
+├──────────┼───────────────────────────┼──────────────┤
+│ 2        │ 2026-11-15T16:50:00+00:00 │ 15           │
+├──────────┼───────────────────────────┼──────────────┤
+│ 3        │ 2026-11-15T19:40:00+00:00 │ 14           │
+└──────────┴───────────────────────────┴──────────────┘
+
+PROPOSED SELECTIONS
+┌───┬───────────────┬──────┬────────┬────────┬──────┬────────────┬────────┐
+│ # │ Player        │ Plat │ Market │ Pick   │ Line │ Confidence │ T-20   │
+├───┼───────────────┼──────┼────────┼────────┼──────┼────────────┼────────┤
+│ 1 │ Joel Embiid   │ PP   │ PTS    │ Higher │ 28.5 │ High       │ Strong │
+├───┼───────────────┼──────┼────────┼────────┼──────┼────────────┼────────┤
+│ 2 │ Luka Doncic   │ PP   │ AST    │ Higher │ 9.5  │ Medium     │ Strong │
+├───┼───────────────┼──────┼────────┼────────┼──────┼────────────┼────────┤
+│ 3 │ Anthony Davis │ PP   │ PRA    │ Lower  │ 38.5 │ High       │ Strong │
+├───┼───────────────┼──────┼────────┼────────┼──────┼────────────┼────────┤
+│ 4 │ Jayson Tatum  │ UD   │ PRA    │ Lower  │ 41.5 │ Medium     │ Strong │
+└───┴───────────────┴──────┴────────┴────────┴──────┴────────────┴────────┘
+
+PP = PrizePicks · PTS = Points · Strong = Still Strong at T-20 · AST = Assists ·
+PRA = Points + Rebounds + Assists · UD = Underdog
+
+SUPPORTING EVIDENCE
+┌───────────────┬────────────────────┬─────────────────────────────────────────┐
+│ Player        │ Snapshot lines     │ T-20 rationale                          │
+├───────────────┼────────────────────┼─────────────────────────────────────────┤
+│ Joel Embiid   │ 27.5 → 28.0 → 28.5 │ Synthetic same-season head-to-head      │
+│               │                    │ scoring of 32 and 35 points supports    │
+│               │                    │ Points Higher against this opponent.    │
+├───────────────┼────────────────────┼─────────────────────────────────────────┤
+│ Luka Doncic   │ 8.5 → 9.0 → 9.5    │ The last eight simulated games are the  │
+│               │                    │ basis for Assists Higher. Luka cleared  │
+│               │                    │ 9.5 in six of those eight games.        │
+├───────────────┼────────────────────┼─────────────────────────────────────────┤
+│ Anthony Davis │ 37.5 → 38.0 → 38.5 │ The synthetic matchup shows high        │
+│               │                    │ foul-trouble risk: at least three       │
+│               │                    │ first-half fouls in five of eight       │
+│               │                    │ simulated games. Early fouls can cut    │
+│               │                    │ his minutes and PRA opportunities,      │
+│               │                    │ supporting Lower. Senior LOWER risk: If │
+│               │                    │ Davis avoids early fouls, he can play   │
+│               │                    │ his full rotation and clear the PRA     │
+│               │                    │ line.                                   │
+├───────────────┼────────────────────┼─────────────────────────────────────────┤
+│ Jayson Tatum  │ 40.5 → 41.0 → 41.5 │ In the synthetic slate, the No. 1 seed  │
+│               │                    │ plays the No. 20 seed. A lopsided game  │
+│               │                    │ could end Tatum’s minutes early and     │
+│               │                    │ reduce his chances to reach 41.5 PRA.   │
+│               │                    │ Senior LOWER risk: If the game stays    │
+│               │                    │ close, Tatum could play his full        │
+│               │                    │ rotation and clear the PRA line.        │
+└───────────────┴────────────────────┴─────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PROPOSAL STATUS                                                              │
+├───────────────┬──────────────────────────────────────────────────────────────┤
+│ Proposal      │ 4 of 4 selections proposed. Awaiting Joseph.                 │
+├───────────────┼──────────────────────────────────────────────────────────────┤
+│ Excluded rows │ IDENTITY_UNRESOLVED, NOT_AUTHORIZED, PROJECTION_UNAVAILABLE  │
+├───────────────┼──────────────────────────────────────────────────────────────┤
+│ Native review │ AWAITING_REVIEW (regression replay uses a test verdict)      │
+├───────────────┼──────────────────────────────────────────────────────────────┤
+│ Handoff       │ CONFIRM_INITIAL_REVIEW_NOT_ATTEMPTED                         │
+├───────────────┼──────────────────────────────────────────────────────────────┤
+│ Dispatch      │ Not authorized                                               │
+└───────────────┴──────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ AUDIT                                                                        │
+├──────────┬───────────────────────────────────────────────────────────────────┤
+│ Receipts │ 77                                                                │
+├──────────┼───────────────────────────────────────────────────────────────────┤
+│ Run ID   │ course-cbfc2d3691f54a0cadd7cacd9f6d41ef                           │
+└──────────┴───────────────────────────────────────────────────────────────────┘
+Replay audit: uv run --offline --no-sync fifth-pick audit --run-id course-cbfc2d3691f54a0cadd7cacd9f6d41ef
+
+Fixture B: provider has no line at T-20
+┌──────────┬───────────────────────────┬──────────────┐
+│ Snapshot │ Observed at (UTC)         │ Observations │
+├──────────┼───────────────────────────┼──────────────┤
+│ 1        │ 2026-11-15T14:00:00+00:00 │ 15           │
+├──────────┼───────────────────────────┼──────────────┤
+│ 2        │ 2026-11-15T16:50:00+00:00 │ 15           │
+├──────────┼───────────────────────────┼──────────────┤
+│ 3        │ 2026-11-15T19:40:00+00:00 │ 0            │
+└──────────┴───────────────────────────┴──────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SLATE OUTCOME                                                                │
+├──────────┬───────────────────────────────────────────────────────────────────┤
+│ Decision │ NO ENTRY RECOMMENDED TODAY.                                       │
+├──────────┼───────────────────────────────────────────────────────────────────┤
+│ Reason   │ No provider lines at T-20.                                        │
+└──────────┴───────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ AUDIT                                                                        │
+├──────────┬───────────────────────────────────────────────────────────────────┤
+│ Receipts │ 76                                                                │
+├──────────┼───────────────────────────────────────────────────────────────────┤
+│ Run ID   │ course-cbfc2d3691f54a0cadd7cacd9f6d41ef-empty                     │
+└──────────┴───────────────────────────────────────────────────────────────────┘
+Replay audit: uv run --offline --no-sync fifth-pick audit --run-id course-cbfc2d3691f54a0cadd7cacd9f6d41ef-empty
+
+Regression replay: review receipt binding, both ceilings, and no refill
+test_complete_workflow (tests.test_fixture_cli.FixtureCliTests.test_complete_workflow) ... ok
+test_authoritative_one_game_slate_is_half_with_ceiling_four (tests.test_finalization.FinalizationTests.test_authoritative_one_game_slate_is_half_with_ceiling_four) ... ok
+test_authoritative_five_game_slate_is_full_with_ceiling_five (tests.test_finalization.FinalizationTests.test_authoritative_five_game_slate_is_full_with_ceiling_five) ... ok
+test_t20_removal_does_not_replace_from_below_the_frozen_ceiling_pool (tests.test_finalization.FinalizationTests.test_t20_removal_does_not_replace_from_below_the_frozen_ceiling_pool) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 49.283s
+
+OK
