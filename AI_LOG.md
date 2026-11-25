@@ -612,3 +612,20 @@ The [E6 record](evolution-06/native-reassessment/flight-card.md),
 [E7 record](evolution-07/native-reassessment/flight-card.md), and
 [reciprocal review](evolution-11/reciprocal/chase-review.md) retain those
 distinctions.
+
+## Final System closeout reflection
+
+The standalone CLI makes the method testable. The same fixture can
+produce a four-selection proposal or NO ENTRY when the final lines are
+missing. Python applies the timing, authorization, and pick limits.
+The model-assisted Reviewer has a different job. In the pilot it missed
+the issues I planted, so the pilot does not establish that the Reviewer
+improves the outcome. The next comparison should score Python alone
+and Python plus the Reviewer on the same cases.
+
+For the closeout evidence audit, Codex compared the two course documents
+with the class checkpoint `1b8b549`. The checked claims were that the
+E12 ledger binds rollback to the original wheel hash and that the class
+GitHub release listing was empty. The assistant model ID was not exposed
+in this session. Session-to-commit gaps and the pending instructor trial
+are recorded in the [submission evidence](final-system/README.md).
