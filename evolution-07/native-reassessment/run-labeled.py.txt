@@ -1,0 +1,93 @@
+import json,os,subprocess,tempfile
+from pathlib import Path
+from src.e7_memory.conditions import (build_off_sandbox,build_on_sandbox,QUESTION_RECALL,
+  isolation_probes,probes_ok,service_port,service_reachable,sidecar_path,verify_on_event)
+from src.e7_memory.fixture import load_fixture
+repo=Path.cwd()
+assert '\nGO — Codex independent Chase — on-only' in (repo/'evolution-07/native-reassessment/flight-card.md').read_text()
+root=Path(tempfile.mkdtemp(prefix='cidm-native-memory-',dir='/tmp'))
+print(root,flush=True)
+off,on,private=[root/k for k in ('off','on','private')]
+build_off_sandbox(off,private_paths=[on,private,sidecar_path(on)])
+build_on_sandbox(on,private,private_paths=[off])
+model='ollama/llama3.2:3b'
+for path in (off,on):
+ f=path/'opencode.json'
+ config=json.loads(f.read_text())
+ config.update(share='disabled',model=model,enabled_providers=['ollama'],provider={'ollama':{
+  'npm':'@ai-sdk/openai-compatible','name':'Local Ollama',
+  'options':{'baseURL':'http://127.0.0.1:11434/v1'},
+  'models':{'llama3.2:3b':{'name':'Local Llama','limit':{'context':8192,'output':200}}}}})
+ if path==on:
+  config['permission']['bash']={'*':'deny',f'python3 ask_memory.py "{QUESTION_RECALL}"':'allow'}
+ f.write_text(json.dumps(config))
+ profile=path/'sandbox.sb'
+ ports=[11434]+([service_port(on)] if path==on else [])
+ with profile.open('a') as stream:
+  stream.write('\n(deny network-outbound)\n')
+  for port in ports:
+   stream.write(f'(allow network-outbound (remote tcp "localhost:{port}"))\n')
+ subprocess.run(['/usr/bin/sandbox-exec','-f',str(profile),'/usr/bin/true'],check=True)
+ launch=path/'launch.sh'
+ launch.write_text(launch.read_text().replace('opencode/big-pickle',model))
+fixture=load_fixture()
+env={'PATH':os.environ['PATH'],'HOME':os.environ['HOME'],'OPENCODE_DISABLE_MODELS_FETCH':'1',
+     'OPENCODE_DISABLE_AUTOUPDATE':'1'}
+results={}
+for path in (on,):
+ mode=path.name
+ env.update({f'XDG_{k}_HOME':str(path/k.lower()) for k in ('CONFIG','STATE','CACHE')})
+ profile=path/'sandbox.sb'
+ extra=[]
+ if path==on:
+  side=json.loads(sidecar_path(on).read_text())
+  extra=[('private_store',side['store']),('private_ledger',side['ledger']),('private_sidecar',str(sidecar_path(on)))]
+ checks=isolation_probes(path,profile,extra_denied=extra)
+ prompt=f'Answer exactly Not in memory if unsupported. {QUESTION_RECALL}'
+ if path==on:
+  prompt=f'Run the allowed command python3 ask_memory.py "{QUESTION_RECALL}". For the Bash arguments set timeout to integer 30000 and workdir to {path.resolve()}. Do not use null for either field. Run that query once. After the tool returns, copy its three values into three lines labeled Fact, Memory ID, and Source. Use the exact text after Memory, Memory ID, and Source in the output. Do not run the command again.'
+ service_off=not service_reachable(service_port(on))
+ if not probes_ok(checks) or not service_off:
+  results[mode]={'preflight_failed':True,'isolation_passed':probes_ok(checks),
+                'service_unreachable_before_start':service_off,
+                'isolation_count':len(checks)}
+  (root/'observed.json').write_text(json.dumps(results,indent=2)+'\n')
+  raise ValueError('native E7 preflight failed before model dispatch')
+ with (root/f'{mode}.jsonl').open('w') as stdout,(root/f'{mode}.stderr').open('w') as stderr:
+  try:
+   code=subprocess.run([str(path/'launch.sh'),'--format','json','--pure',prompt],env=env,stdout=stdout,stderr=stderr,timeout=230).returncode
+  except subprocess.TimeoutExpired:
+   code=124
+ rows=[]
+ for l in (root/f'{mode}.jsonl').read_text().splitlines():
+  try: rows.append(json.loads(l))
+  except ValueError: continue
+ answer=''.join(x.get('part',{}).get('text','') for x in rows if x.get('type')=='text')
+ tool_events=[(x.get('part',{}).get('tool'),x.get('part',{}).get('state',{}).get('status')) for x in rows if x.get('type')=='tool_use']
+ result=dict(code=code,session_ids=sorted({x['sessionID'] for x in rows if x.get('sessionID')}),
+             isolation_passed=probes_ok(checks),isolation_count=len(checks),
+             service_unreachable_before_start=service_off,tools=tool_events,
+             exact_fact_in_answer=fixture['text'].strip() in answer,answer_reports_unavailable='not in memory' in answer.lower())
+ if path==on:
+  matched_outputs=[]
+  for row in rows:
+   part=row.get('part',{})
+   state=part.get('state',{})
+   if row.get('type')=='tool_use' and state.get('status')=='completed':
+    output=state.get('output','')
+    matched_outputs.append({
+     'tool':part.get('tool'),
+     'fixed_command':state.get('input',{}).get('command')==f'python3 ask_memory.py "{QUESTION_RECALL}"',
+     'contains_exact_fact':fixture['text'].strip() in output,
+     'contains_id':fixture['id'] in output,
+     'contains_source':fixture['source'] in output,
+    })
+  result['completed_tool_checks']=matched_outputs
+  result['final_answer_sha256']=__import__('hashlib').sha256(answer.encode()).hexdigest()
+  ledger=private/'fixture-memory-ledger.jsonl'
+  ok,event=verify_on_event(ledger,fixture['id'],fixture['source'],QUESTION_RECALL)
+  result.update(recall_match=ok,recall_score=(event or {}).get('top_score'),
+    cited_id=fixture['id'] in answer,cited_source=fixture['source'] in answer)
+ results[mode]=result
+ (root/'observed.json').write_text(json.dumps(results,indent=2)+'\n')
+ print(json.dumps({mode:result}),flush=True)

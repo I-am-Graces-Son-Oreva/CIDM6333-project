@@ -88,3 +88,7 @@ and step 3 was absent. The tool trace contradicts the first claim, and
 byte checks confirmed all eight files were present. The attempt fails
 both the read-count and explanation criteria. Attempt 2 remains the
 evidence for the three-step runtime boundary.
+
+**FAIL — independent Codex Chase — 2026-11-25 — attempt 4 (GO `6ab1129`).**
+The trace shows one completed read and an early normal stop. The answer
+misidentified the last read and claimed a verified fixture was missing.

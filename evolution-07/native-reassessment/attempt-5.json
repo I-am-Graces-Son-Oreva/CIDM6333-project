@@ -1,0 +1,33 @@
+{
+  "on": {
+    "code": 0,
+    "session_ids": [
+      "ses_dec93d46fffeXtHSpnKiBY9wfE"
+    ],
+    "isolation_passed": true,
+    "isolation_count": 78,
+    "service_unreachable_before_start": true,
+    "tools": [
+      [
+        "bash",
+        "completed"
+      ]
+    ],
+    "exact_fact_in_answer": false,
+    "answer_reports_unavailable": false,
+    "completed_tool_checks": [
+      {
+        "tool": "bash",
+        "fixed_command": true,
+        "contains_exact_fact": true,
+        "contains_id": true,
+        "contains_source": true
+      }
+    ],
+    "final_answer_sha256": "615f6da24990b8424a6fbde3e8d6fde1998218d6cd91b7663b025965c28c2dc3",
+    "recall_match": true,
+    "recall_score": 0.6717,
+    "cited_id": true,
+    "cited_source": true
+  }
+}

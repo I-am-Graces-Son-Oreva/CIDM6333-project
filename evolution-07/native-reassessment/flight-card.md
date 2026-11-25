@@ -109,3 +109,14 @@ tool output into labeled Fact, Memory ID and Source lines. Supply none
 of their values in the prompt. Require a fresh GO before dispatch.
 
 GO — Codex independent Chase — 2026-11-25 — Llama labeled-answer retry at `127a944`.
+
+The [labeled-answer retry](attempt-5.json) passed all 78 isolation
+probes, completed one fixed query, and matched the retrieval receipt
+at 0.6717. The tool output contained all three required values. The
+final answer cited the record ID and source, but omitted the exact
+fact. The ON answer criterion therefore still fails. The original
+OFF control remains valid. [Executed driver](run-labeled.py.txt)
+
+**FAIL — independent Codex Chase — 2026-11-25 — attempt 5 (GO `39a341f`).**
+The fixed query and matching receipt establish retrieval. The final
+answer met the ID and source checks and failed the exact fact check.
