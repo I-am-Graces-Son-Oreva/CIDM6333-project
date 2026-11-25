@@ -1,0 +1,12 @@
+{
+  "commit": "8c7d01eb7ba61188ff343eb56b68f7ce6d26e6d2",
+  "subject": "M1: establish Fifth Pick health-only control plane",
+  "session_id": "ses_e2984fa98ffeIgwytOIDRcUbVr",
+  "part_id": "prt_1dcac53ed001OPxiBwoDPZ19sn",
+  "model": "gpt-6-luna",
+  "provider": "opencode-go",
+  "tool": "bash",
+  "status": "completed",
+  "source_part_sha256": "0e5f6e63b611c5ed8edb5ee30c58b91b29a4ead5594eb998ef89ca9782391d91",
+  "scope": "A retained Git commit command and matching output. Reviewer, eval, ledger, and source-write provenance require separate evidence."
+}

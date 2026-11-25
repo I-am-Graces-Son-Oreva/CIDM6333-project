@@ -22,6 +22,18 @@ result to establish a governed build.
   tested. A later rerun can verify current behavior. Neither establishes
   that an earlier commit passed every required gate before it landed.
 
+## M1 historical commit receipt
+
+A read-only scan matched completed OpenCode shell events containing
+`git commit` against the hashes in the inventory below. One matched:
+`8c7d01e`, the M1 control-plane commit. The Git output's abbreviated
+hash and subject match the Git object. The
+[session projection](evidence/m1-commit-projection.json) preserves the
+session ID, tool part ID and source digest. This proves where that
+commit command ran. It leaves separate questions about who generated
+each change and whether the committed tree had matching review, eval,
+and ledger records. The scan did not establish those links.
+
 ## M9 historical trace
 
 Commit `60fd576` contains the result-settlement implementation. The
