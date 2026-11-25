@@ -34,3 +34,5 @@ the thin-client service port. Restrict the ON shell tool to the exact
 fixture query. Use isolated XDG configuration, cache and state directories,
 disable sharing and external plugins, and pass no provider credentials.
 Recheck isolation after adding the rules. No run before fresh GO.
+
+GO — Codex independent Chase — egress — 2026-11-25 — 22e5f44
