@@ -107,3 +107,5 @@ isolation. Keep the exact native Bash invocation and evidence criteria.
 Request one invocation, then copy the three values from the returned
 tool output into labeled Fact, Memory ID and Source lines. Supply none
 of their values in the prompt. Require a fresh GO before dispatch.
+
+GO — Codex independent Chase — 2026-11-25 — Llama labeled-answer retry at `127a944`.
