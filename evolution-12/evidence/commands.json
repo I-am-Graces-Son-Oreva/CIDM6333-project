@@ -1,0 +1,220 @@
+[
+  {
+    "step": "clone",
+    "argv": [
+      "git",
+      "clone",
+      "--quiet",
+      "--local",
+      "--no-hardlinks",
+      "/Users/orevisco/CIDM6333-project",
+      "<scratch>/good"
+    ],
+    "exit_status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "step": "check clean",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "exit_status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "step": "clone",
+    "argv": [
+      "git",
+      "clone",
+      "--quiet",
+      "--local",
+      "--no-hardlinks",
+      "/Users/orevisco/CIDM6333-project",
+      "<scratch>/bad"
+    ],
+    "exit_status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "step": "check clean",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "exit_status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "step": "freeze and GO commit",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit_status": 0,
+    "stdout": "d07383ded048179bca96a118c4d0d8911e27e14e\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP1 build",
+    "argv": [
+      "uv",
+      "build",
+      "--offline",
+      "--wheel",
+      "--out-dir",
+      "<scratch>/good-wheel"
+    ],
+    "exit_status": 0,
+    "stdout": "",
+    "stderr": "Building wheel...\nSuccessfully built <scratch>/good-wheel/fifth_pick-0.1.0-py3-none-any.whl\n"
+  },
+  {
+    "step": "TP1 release",
+    "argv": [
+      "/Users/orevisco/CIDM6333-project/.venv/bin/python",
+      "deploy.py",
+      "--root",
+      "<scratch>/deploy",
+      "release",
+      "<scratch>/good-wheel/fifth_pick-0.1.0-py3-none-any.whl",
+      "--version",
+      "0.1.0",
+      "--commit",
+      "d07383ded048179bca96a118c4d0d8911e27e14e"
+    ],
+    "exit_status": 0,
+    "stdout": "{\"commit\": \"d07383ded048179bca96a118c4d0d8911e27e14e\", \"event\": \"release\", \"ok\": true, \"seconds\": 2.122177, \"sha256\": \"015d9b3f3522e1e8e87978c5f4fec6c325d4752893c2b13d05a4b2bc0ff14c34\", \"version\": \"0.1.0\", \"wheel\": \"fifth_pick-0.1.0-py3-none-any.whl\"}\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP1 health",
+    "argv": [
+      "<scratch>/deploy/current/bin/fifth-pick",
+      "health"
+    ],
+    "exit_status": 0,
+    "stdout": "{\"package\": \"fifth_pick\", \"status\": \"ok\", \"version\": \"0.1.0\"}\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP2 planted defect",
+    "argv": [
+      "git",
+      "diff",
+      "--no-ext-diff"
+    ],
+    "exit_status": 0,
+    "stdout": "diff --git a/final-project/src/fifth_pick/__init__.py b/final-project/src/fifth_pick/__init__.py\nindex 48ddc57..d86e7d1 100644\n--- a/final-project/src/fifth_pick/__init__.py\n+++ b/final-project/src/fifth_pick/__init__.py\n@@ -1,3 +1,3 @@\n \"\"\"Fifth Pick package.\"\"\"\n \n-__version__ = \"0.1.0\"\n+__version__ = \"0.1.1\"\ndiff --git a/final-project/src/fifth_pick/cli.py b/final-project/src/fifth_pick/cli.py\nindex 75bd6d1..ab5c27e 100644\n--- a/final-project/src/fifth_pick/cli.py\n+++ b/final-project/src/fifth_pick/cli.py\n@@ -76,7 +76,7 @@ USAGE = (\n )\n HEALTH = {\n     \"package\": \"fifth_pick\",\n-    \"status\": \"ok\",\n+    \"status\": \"fixture-unhealthy\",\n     \"version\": __version__,\n }\n \ndiff --git a/pyproject.toml b/pyproject.toml\nindex dc0c924..d0e4f56 100644\n--- a/pyproject.toml\n+++ b/pyproject.toml\n@@ -4,7 +4,7 @@ build-backend = \"hatchling.build\"\n \n [project]\n name = \"fifth-pick\"\n-version = \"0.1.0\"\n+version = \"0.1.1\"\n description = \"Human-governed NBA fantasy selection and discipline CLI\"\n requires-python = \">=3.11\"\n dependencies = [\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP2 build",
+    "argv": [
+      "uv",
+      "build",
+      "--offline",
+      "--wheel",
+      "--out-dir",
+      "<scratch>/bad-wheel"
+    ],
+    "exit_status": 0,
+    "stdout": "",
+    "stderr": "Building wheel...\nSuccessfully built <scratch>/bad-wheel/fifth_pick-0.1.1-py3-none-any.whl\n"
+  },
+  {
+    "step": "TP2 candidate refused",
+    "argv": [
+      "/Users/orevisco/CIDM6333-project/.venv/bin/python",
+      "deploy.py",
+      "--root",
+      "<scratch>/deploy",
+      "release",
+      "<scratch>/bad-wheel/fifth_pick-0.1.1-py3-none-any.whl",
+      "--version",
+      "0.1.1",
+      "--commit",
+      "d07383ded048179bca96a118c4d0d8911e27e14e"
+    ],
+    "exit_status": 1,
+    "stdout": "{\"commit\": \"d07383ded048179bca96a118c4d0d8911e27e14e\", \"error\": \"health smoke check failed\", \"event\": \"release\", \"ok\": false, \"seconds\": 1.686132, \"sha256\": \"13fa254b1c72b332810a2df496bee3dbc700524376220eef3d73534d9a6bc95d\", \"version\": \"0.1.1\", \"wheel\": \"fifth_pick-0.1.1-py3-none-any.whl\"}\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP2 health",
+    "argv": [
+      "<scratch>/deploy/current/bin/fifth-pick",
+      "health"
+    ],
+    "exit_status": 0,
+    "stdout": "{\"package\": \"fifth_pick\", \"status\": \"ok\", \"version\": \"0.1.0\"}\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP3 rollback",
+    "argv": [
+      "/Users/orevisco/CIDM6333-project/.venv/bin/python",
+      "deploy.py",
+      "--root",
+      "<scratch>/deploy",
+      "rollback",
+      "--version",
+      "0.1.0"
+    ],
+    "exit_status": 0,
+    "stdout": "{\"commit\": \"d07383ded048179bca96a118c4d0d8911e27e14e\", \"event\": \"rollback\", \"ok\": true, \"seconds\": 1.866413, \"sha256\": \"015d9b3f3522e1e8e87978c5f4fec6c325d4752893c2b13d05a4b2bc0ff14c34\", \"version\": \"0.1.0\", \"wheel\": \"fifth_pick-0.1.0-py3-none-any.whl\"}\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP3 health",
+    "argv": [
+      "<scratch>/deploy/current/bin/fifth-pick",
+      "health"
+    ],
+    "exit_status": 0,
+    "stdout": "{\"package\": \"fifth_pick\", \"status\": \"ok\", \"version\": \"0.1.0\"}\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP4 mismatched archive",
+    "argv": [
+      "/Users/orevisco/CIDM6333-project/.venv/bin/python",
+      "deploy.py",
+      "--root",
+      "<scratch>/deploy",
+      "rollback",
+      "--version",
+      "0.1.0"
+    ],
+    "exit_status": 1,
+    "stdout": "{\"error\": \"stored release hash mismatch\", \"event\": \"rollback\", \"ok\": false, \"seconds\": 0.001479, \"version\": \"0.1.0\"}\n",
+    "stderr": ""
+  },
+  {
+    "step": "TP4 unchanged health",
+    "argv": [
+      "<scratch>/deploy/current/bin/fifth-pick",
+      "health"
+    ],
+    "exit_status": 0,
+    "stdout": "{\"package\": \"fifth_pick\", \"status\": \"ok\", \"version\": \"0.1.0\"}\n",
+    "stderr": ""
+  },
+  {
+    "step": "final health",
+    "argv": [
+      "<scratch>/deploy/current/bin/fifth-pick",
+      "health"
+    ],
+    "exit_status": 0,
+    "stdout": "{\"package\": \"fifth_pick\", \"status\": \"ok\", \"version\": \"0.1.0\"}\n",
+    "stderr": ""
+  }
+]

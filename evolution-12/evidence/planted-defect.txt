@@ -1,0 +1,21 @@
+diff --git a/final-project/src/fifth_pick/__init__.py b/final-project/src/fifth_pick/__init__.py
+index 48ddc57..d86e7d1 100644
+--- a/final-project/src/fifth_pick/__init__.py
++++ b/final-project/src/fifth_pick/__init__.py
+@@ -3 +3 @@
+-__version__ = "0.1.0"
++__version__ = "0.1.1"
+diff --git a/final-project/src/fifth_pick/cli.py b/final-project/src/fifth_pick/cli.py
+index 75bd6d1..ab5c27e 100644
+--- a/final-project/src/fifth_pick/cli.py
++++ b/final-project/src/fifth_pick/cli.py
+@@ -79 +79 @@ HEALTH = {
+-    "status": "ok",
++    "status": "fixture-unhealthy",
+diff --git a/pyproject.toml b/pyproject.toml
+index dc0c924..d0e4f56 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -7 +7 @@ name = "fifth-pick"
+-version = "0.1.0"
++version = "0.1.1"

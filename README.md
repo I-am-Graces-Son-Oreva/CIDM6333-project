@@ -55,7 +55,10 @@ or inspect the [original walkthrough evidence](multi-tool-exercise/docs/closeout
 | [Evolution 06](evolution-06/) | Persistent context and evidence |
 | [Evolution 07](evolution-07/) | Memory and isolation |
 | [Evolution 08](evolution-08/) | Multi-agent control and review |
-| [Evolution 09](evolution-09/) | Claim, receipt, and verdict · preflight |
+| [Evolution 09](evolution-09/flight-log.md) | Cross-family claim, receipt, and verdict |
+| [Evolution 10](evolution-10/flight-log.md) | Evaluation gate and RED witness |
+| [Evolution 11](evolution-11/flight-log.md) | Red-team traces, refusals, and independent verdict |
+| [Evolution 12](evolution-12/flight-log.md) | Wheel release and timed rollback · attestation pending |
 
 See the [design-analysis ledger](design-analyses/LEDGER.md) and [AI interaction log](AI_LOG.md).
 

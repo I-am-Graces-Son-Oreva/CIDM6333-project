@@ -1,0 +1,4 @@
+{"commit": "d07383ded048179bca96a118c4d0d8911e27e14e", "event": "release", "ok": true, "seconds": 2.122177, "sha256": "015d9b3f3522e1e8e87978c5f4fec6c325d4752893c2b13d05a4b2bc0ff14c34", "version": "0.1.0", "wheel": "fifth_pick-0.1.0-py3-none-any.whl"}
+{"commit": "d07383ded048179bca96a118c4d0d8911e27e14e", "error": "health smoke check failed", "event": "release", "ok": false, "seconds": 1.686132, "sha256": "13fa254b1c72b332810a2df496bee3dbc700524376220eef3d73534d9a6bc95d", "version": "0.1.1", "wheel": "fifth_pick-0.1.1-py3-none-any.whl"}
+{"commit": "d07383ded048179bca96a118c4d0d8911e27e14e", "event": "rollback", "ok": true, "seconds": 1.866413, "sha256": "015d9b3f3522e1e8e87978c5f4fec6c325d4752893c2b13d05a4b2bc0ff14c34", "version": "0.1.0", "wheel": "fifth_pick-0.1.0-py3-none-any.whl"}
+{"error": "stored release hash mismatch", "event": "rollback", "ok": false, "seconds": 0.001479, "version": "0.1.0"}

@@ -560,3 +560,25 @@ and the generated receipts. See the [E9 flight log](evolution-09/flight-log.md).
 - **Rejected** · Treating a model reply or an absent marker as proof that OpenCode refused an edit.
 - **Why** · The native A0 exports show two successful reads and no write tool calls. The direct-control refusal belongs to its own runner.
 - **Verification** · Reconciled five delivery digests and six receipt/span links. The graded run was automated with no human monitoring time, and preparation and review time were untimed. See the [cost table](evolution-11/cost-table.md) and [flight log](evolution-11/flight-log.md).
+
+### E9 attempt 3 · Cross-family re-flight · November 23, 2026
+
+Codex prepared the new flight card, kept the prior FAIL, and obtained a
+fresh independent Chase GO. Ollama ran worker `qwen3:1.7b` and adversary
+`llama3.2:3b` in distinct calls. I kept the actual receipts and verdicts:
+Llama cited the planted exit code 1 to refute the false claim and did not
+refute the exit code 0 control. I rejected its claim that two output hashes
+were absent because the receipt contained both, and the Chase recomputed
+them. The qualified PASS covers claim adjudication under the card. The
+ledger and cost table record three calls at $0.00.
+[Evidence](evolution-09/evidence/attempt-3/)
+
+### E12 · Local wheel rollout · November 24, 2026
+
+Codex prepared the release and rollback tooling, and a separate Codex
+Chase reviewed the flight card. The smoke check and rollout made no model
+calls. I rejected treating a matching displayed version as proof of exact
+rollback. The scratch overwrite test showed that a mismatched artifact
+was refused before installation, and the valid rollback restored the
+recorded SHA-256. I would leave the final release attestation to Joseph.
+[Command capture](evolution-12/evidence/commands.json) · [Ledger](evolution-12/evidence/release-ledger.jsonl)

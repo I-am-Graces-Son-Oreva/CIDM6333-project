@@ -2,6 +2,13 @@ name: Fifth Pick authorization regression gate
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'evals/**'
+      - 'final-project/src/fifth_pick/**'
+      - 'final-project/config/fifth-pick/**'
+      - '.github/workflows/e10-gate.yml'
 permissions:
   contents: read
 

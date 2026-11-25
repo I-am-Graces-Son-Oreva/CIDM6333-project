@@ -37,7 +37,8 @@ python3 deploy.py --root "$DEPLOY_ROOT" rollback --version 0.1.0
 
 The command verifies archived bytes before reinstalling. Check the returned
 hash against the successful release event and rerun health. The measured
-rollback result belongs in the sortie record.
+rollback took 1.866413 seconds in the isolated E12 trial. See the
+[release ledger](../evolution-12/evidence/release-ledger.jsonl).
 
 ## Limits and budgets
 

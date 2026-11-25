@@ -13,3 +13,4 @@
 | E9 | [Anthropic’s multi-agent research system](E9-Research-Coordination.md) | Claim verification and cost-aware coordination | Use a harness receipt and one independent adversary for a narrow contradiction. Preserve the evidence and human verdict separately. |
 | E10 | [SWE-bench Verified](E10-SWE-bench-Verified.md) | Evaluation as a gate | Derive expectations independently and prove the gate fails when exact authorization disappears. |
 | E11 | [OpenCode export and local evidence](E11-OpenCode-Observability.md) | Trace privacy and adjudication | Require observed delivery and enforcement, with minimized trace contents and independent review. |
+| E12 | [GitHub Actions-based Copilot cloud agent](E12-Copilot-Cloud.md) | Deployment and closeout | Test health separately from artifact identity and require human attestation. |

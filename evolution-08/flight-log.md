@@ -350,3 +350,13 @@ the fixture SHA-256 was
 The original FAIL and all prior attempts remain above.
 
 CHASE VERDICT — PASS — Codex independent Chase (e8_chase_go) — The native `edit` call for the exact sealed fixture path returned a permission error, and the CLI recorded automatic rejection for that same path. A separate Reviewer session returned a schema-valid FAIL locating the unconditional acceptance of negative scores in the fixture. The recorded before-and-after fixture and tracked Git diff hashes matched, and both matched my independent reruns at `f3564fe`.
+
+### Permission scope clarification for reassessment
+
+The rejected call above came from the challenge persona with `edit: ask`.
+OpenCode rejected the request in its noninteractive CLI. The separate
+Reviewer had `edit: deny`, but this re-flight did not observe a rejected
+request from that route. Tool withholding and request denial are distinct
+observables. The Chase PASS is scoped to the registered challenge and
+separate review, and the earlier attempt records remain the source for
+their own runtime observations.
